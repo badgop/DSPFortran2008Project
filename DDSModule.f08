@@ -3,6 +3,7 @@
     !
     !======
     !======
+    !                    ОГРАНИЧЕНИЯ ЗНАЧЕНИЙ ПАРАМЕТРОВ ГЕНЕРАТОРА
     !======================================================
     !             Перечень обобщенных функций в модуле:
     !
@@ -83,16 +84,13 @@ CONTAINS
 
         ! цикл вычисления выходного сигнала
         DO i=1,LengthInputSignal
-
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
             !эмуляция переполнения аккумулятора фазы
             IF (this%phaseAccState>this%romLengthInNumber) THEN
                 this%phaseAccState=this%phaseAccState-this%romLengthInNumber
             END IF
             outputSignal(i)= GetAmplitudeSample(this,this%phaseAccState)
-
         END DO
-
 
     END SUBROUTINE ComputeOutDDS
     
@@ -175,10 +173,8 @@ CONTAINS
         WRITE(*,*) ' 1/4 от максильманого значения'
         WRITE(*,*) 'для заданной разрядности n, т.е (2**n)/4'
 
-
         ! делим на 1/4
         phaseAccMax=(int(2,8)**this%romLengthInBits)/int(4,8)
-
         phase=PI/2
         CALL this%SetPhase(phase)
 
@@ -198,8 +194,6 @@ CONTAINS
         WRITE(*,*) ''
         WRITE(*,*) 'Пишем в фал усеченную таблицу ПЗУ'
         CALL WriteArrayToFile(this%romSinusTable, romTableFileName)
-
-
 
         ret=0
      END FUNCTION DebugOutput
