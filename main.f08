@@ -1,30 +1,19 @@
 PROGRAM main
 
-
-
     IMPLICIT NONE
-
-
-
-
-
-
-
 
     CALL InitDDSTest()
 
     WRITE(*,*) 'DONE!'
 
 
-
-
     CONTAINS
 
 
+    ! процедура для тестирования функции конструктора класса DDS
     SUBROUTINE InitDDSTest()
 
             USE DDSModule
-
 
             TYPE(DDS) ::ddsGenerator
             !разрядность аккамулятора фазы
@@ -46,6 +35,8 @@ PROGRAM main
 
             status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,samplingFrequency,outputSignalSampleCapacity)
 
+            !Сравни заданные выше значения и значения что выводит ddsGenerator%DebugOutput
+            !проверь содержимое таблицы
             status=ddsGenerator%DebugOutput('ddsromtable.pcm')
 
     END SUBROUTINE

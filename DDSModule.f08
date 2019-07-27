@@ -51,7 +51,8 @@ MODULE DDSModule
         PROCEDURE :: ComputeOutput => ComputeOutDDS
         PROCEDURE :: Constructor => InitDDS
         PROCEDURE :: DebugOutput
-        PROCEDURE :: GetAmplitudeSample
+        PROCEDURE,PRIVATE :: GetAmplitudeSample
+        PROCEDURE :: SetPhase
 
         FINAL :: destructor
 
@@ -63,37 +64,30 @@ CONTAINS
     SUBROUTINE ComputeOutDDS(this, inputSignal, outputSignal)
 
         CLASS(DDS), INTENT(INOUT)              :: this
-
         ! массив  со значениями частоты
         INTEGER(8), INTENT(IN)              :: inputSignal (:)
-
         ! массив с выходом генератора
         INTEGER(8), INTENT(OUT),ALLOCATABLE :: outputSignal(:)
-
+        ! массив с кодами часоты, которые надо подавать на генератора
         INTEGER(8), ALLOCATABLE             :: frequencyCodes (:)
         INTEGER(8)                          :: LengthInputSignal
         INTEGER(8)                          :: i
 
-
         LengthInputSignal=SIZE(inputSignal)
-
         ALLOCATE(frequencyCodes(1:LengthInputSignal) )
         ALLOCATE(outputSignal  (1:LengthInputSignal) )
-
         ! из массива со значениями частоты, получаем массив с  значениями кодов частоты
         frequencyCodes= INT((REAL(inputSignal)/this%frequencyStep),8)
 
-        ! цикл вычисления
+        ! цикл вычисления выходного сигнала
         DO i=1,LengthInputSignal
 
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
-
             !эмуляция переполнения аккумулятора фазы
             IF (this%phaseAccState>this%romLengthInNumber) THEN
                 this%phaseAccState=this%phaseAccState-this%romLengthInNumber
             END IF
-
-            ! ВСТАВИТЬ СЮДА НАПОЛНЕНЕИ МАССИВА
+            outputSignal(i)= GetAmplitudeSample(this,this%phaseAccState)
 
         END DO
 
@@ -169,27 +163,35 @@ CONTAINS
         ret=0
      END FUNCTION DebugOutput
 
-
+     ! функция что возвращает значение амлитуды. Входной аргумет - значение фазы аккумулятора
      PURE FUNCTION GetAmplitudeSample(this,inputPhase) RESULT (amplitude)
 
         IMPLICIT NONE
         CLASS(DDS), INTENT(IN) :: this
         INTEGER(8), INTENT(IN) ::inputPhase
         INTEGER(2)             ::amplitude
-        INTEGER(8),            ::resultPhase
+        INTEGER(8)             ::resultPhase
 
         !значение на которое нужно сдвигать значение акумулятора фазы для взятия требуемого числа старших бит
         INTEGER(1)                          :: neededShift
-
-
         neededShift=this%romLengthInBits-this%romLengthTruncedInBits
 
         ! УСЕЧЕНИЕ значения аккумулятора фазы до LengthTruncedInBits значащих бит
         resultPhase=SHIFTA(inputPhase,neededShift)
 
-        amplitude= this%romSinusTable(phase)
+        amplitude= this%romSinusTable(resultPhase)
 
      END FUNCTION
+
+     FUNCTION SetPhase(this,phaseInRadian)
+
+        IMPLICIT NONE
+        CLASS(DDS), INTENT(IN) :: this
+        REAL(8)   , INTENT(IN) :: phaseInRadian
+
+
+
+     END FUNCTION SetPhase
 
     ! деструкторы запускаются автоматически, после того как
     ! созданный обьект выйдет из области видимости.
@@ -197,7 +199,7 @@ CONTAINS
         TYPE(DDS), INTENT(INOUT) :: this
 
         DEALLOCATE(this%romSinusTable)
-        WRITE(*,*) 'DDS destructor done!'
+        WRITE(*,*) 'DDS destructor завершил работу!'
 
     END SUBROUTINE
 
