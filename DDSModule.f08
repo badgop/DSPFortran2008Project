@@ -43,16 +43,18 @@ MODULE DDSModule
 
             ! шаг перестройки частоты
             REAL(8)    :: frequencyStep
+            ! шаг перестройки фазы
+            REAL(8)    :: phaseStep
 
 
 
     CONTAINS
 
-        PROCEDURE :: ComputeOutput => ComputeOutDDS
-        PROCEDURE :: Constructor => InitDDS
-        PROCEDURE :: DebugOutput
-        PROCEDURE,PRIVATE :: GetAmplitudeSample
-        PROCEDURE :: SetPhase
+        PROCEDURE          :: ComputeOutput => ComputeOutDDS
+        PROCEDURE          :: Constructor => InitDDS
+        PROCEDURE          :: DebugOutput
+        PROCEDURE, PRIVATE :: GetAmplitudeSample
+        PROCEDURE          :: SetPhase
 
         FINAL :: destructor
 
@@ -135,7 +137,8 @@ CONTAINS
        END DO
        ! вычисление значения шага перестройки частоты
        this%frequencyStep=real(samplingFrequency)/real(int(2,8)**romLengthInBits)
-
+       ! вычисление значения шага перестройки фазы
+       this%phaseStep=real(2*PI)/real(int(2,8)**romLengthInBits)
        ret=0
     END FUNCTION InitDDS
 
@@ -144,21 +147,59 @@ CONTAINS
      ! Запускать после вызова конструктора если нужно проверить заданные значения и глянуть тублици ПЗУ
      FUNCTION  DebugOutput(this,romTableFileName) RESULT(ret)
         USE ModuleWriteReadArrayFromToFile
+        USE MathConstModule
         IMPLICIT NONE
 
-        CLASS(DDS), INTENT(IN) :: this
-        INTEGER(1)  :: ret
+        CLASS(DDS), INTENT(INOUT)   :: this
+        INTEGER(1)               :: ret
 
         CHARACTER(*), INTENT(IN) :: romTableFileName
 
+        REAL(8)                  :: phase
+        INTEGER(8)               :: phaseAccMax
+
+        WRITE(*,*) 'Тест DDS запущен - проверка значений полученных конструктором'
         WRITE(*,*) 'this%romLengthInBits ' ,this%romLengthInBits
         WRITE(*,*) 'this%romLengthTruncedInBits' ,this%romLengthTruncedInBits
         WRITE(*,*) 'this%samplingFrequency' ,this%samplingFrequency
         WRITE(*,*) 'this%outputSignalSampleCapacity' ,this%outputSignalSampleCapacity
         WRITE(*,*) 'this%romLengthInNumber' ,this%romLengthInNumber
-        WRITE(*,*) 'frequencyStep' ,this%frequencyStep
+        WRITE(*,*) 'frequencyStep, Hz' ,this%frequencyStep
+        WRITE(*,*) 'phaseStep, radians' ,this%phaseStep
 
+        WRITE(*,*) ''
+        WRITE(*,*) 'проверка преобразования вещественного значения'
+        WRITE(*,*)' фазы в целое число'
+        WRITE(*,*) 'пусть сдвиг фазы будет PI/2 тогда'
+        WRITE(*,*) 'значение аккумулятора фазы будет'
+        WRITE(*,*) ' 1/4 от максильманого значения'
+        WRITE(*,*) 'для заданной разрядности n, т.е (2**n)/4'
+
+
+        ! делим на 1/4
+        phaseAccMax=(int(2,8)**this%romLengthInBits)/int(4,8)
+
+        phase=PI/2
+        CALL this%SetPhase(phase)
+
+        WRITE(*,*) 'максимальное значение/4 ',    phaseAccMax
+        WRITE(*,*) 'значение аккумулятора   '  ,  this%phaseAccState
+
+        IF(phaseAccMax==this%phaseAccState) THEN
+            WRITE(*,*) 'Проверка преобразования прошла'
+        ELSE
+            WRITE(*,*) 'Проверка преобразования НЕ прошла'
+        END IF
+
+        !возвращаем фазу в нуль обратно
+        phase=0
+        CALL this%SetPhase(phase)
+
+        WRITE(*,*) ''
+        WRITE(*,*) 'Пишем в фал усеченную таблицу ПЗУ'
         CALL WriteArrayToFile(this%romSinusTable, romTableFileName)
+
+
 
         ret=0
      END FUNCTION DebugOutput
@@ -183,15 +224,17 @@ CONTAINS
 
      END FUNCTION
 
-     FUNCTION SetPhase(this,phaseInRadian)
+     SUBROUTINE SetPhase(this,phaseInRadian)
 
         IMPLICIT NONE
-        CLASS(DDS), INTENT(IN) :: this
+        CLASS(DDS), INTENT(INOUT) :: this
         REAL(8)   , INTENT(IN) :: phaseInRadian
 
+        !https://habr.com/ru/company/xakep/blog/257897/
+        !должно раьриаит
+        this%phaseAccState=int((phaseInRadian/this%phaseStep),8)
 
-
-     END FUNCTION SetPhase
+     END SUBROUTINE SetPhase
 
     ! деструкторы запускаются автоматически, после того как
     ! созданный обьект выйдет из области видимости.
