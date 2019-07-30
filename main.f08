@@ -3,7 +3,7 @@ PROGRAM main
     IMPLICIT NONE
 
     CALL InitDDSTest()
-
+    CALL DDSOutputTest()
     WRITE(*,*) 'DONE!'
 
 
@@ -44,9 +44,10 @@ PROGRAM main
     END SUBROUTINE InitDDSTest
 
     SUBROUTINE DDSOutputTest()
-     USE DDSModule
+            USE DDSModule
             USE MathConstModule
             USE PrefixModule
+            USE ModuleWriteReadArrayFromToFile
 
             TYPE(DDS) ::ddsGenerator
             !разрядность аккамулятора фазы
@@ -57,17 +58,52 @@ PROGRAM main
             INTEGER(1) :: romLenthTruncedInBits
             !разрядность выходного сигнала
             INTEGER(1) :: outputSignalSampleCapacity
-
             INTEGER(1) :: status
 
+            INTEGER(4) :: signalLengthInSamples
+            INTEGER(4) :: oscillationPeriod
+            INTEGER(4) :: centralFrequency
+
+            INTEGER(8), ALLOCATABLE :: frequencys(:)
+            INTEGER(8), ALLOCATABLE :: outputSignal(:)
+            INTEGER(2), ALLOCATABLE :: outputSignal2byte(:)
+
+            REAL(8)                  :: phase
+
+
             romLengthInBits=32
-            romLenthTruncedInBits=14
+            romLenthTruncedInBits=12
             outputSignalSampleCapacity=8
-            samplingFrequency= 5*MEGA
+            samplingFrequency= 20*MEGA
+
+            centralFrequency= 1*MEGA
+            oscillationPeriod=samplingFrequency/ centralFrequency
 
             status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
                                              samplingFrequency,outputSignalSampleCapacity)
 
+            WRITE(*,*) 'Тест DDS запущен - '
+            WRITE(*,*) 'проверка значений полученных конструктором'
+            WRITE(*,*) 'отсчетов на период', oscillationPeriod
+
+             phase=0.0
+             CALL ddsGenerator%SetPhase(phase)
+
+            signalLengthInSamples=oscillationPeriod*2
+
+            ALLOCATE(frequencys(1:signalLengthInSamples))
+
+
+            frequencys=centralFrequency
+
+
+            CALL ddsGenerator%ComputeOutput(frequencys, outputsignal)
+
+            ALLOCATE(outputSignal2byte(1:size(outputsignal)))
+
+            outputSignal2byte=int(outputsignal,2)
+
+            CALL WriteArrayToFile(outputSignal2byte,'dds_output_rest.pcm')
 
 
 

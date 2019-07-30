@@ -16,9 +16,10 @@ MODULE BaseBlockModule
 
     PRIVATE
     !************************  _t - метка того, что это Derived Type - произвольный тип
+    ! см Маркус Современный Фортран на практике 221 страница, раздел 11.2
     TYPE, PUBLIC,  ABSTRACT :: baseBlock_t
 
-    integer(1):: x
+
 
 
     CONTAINS

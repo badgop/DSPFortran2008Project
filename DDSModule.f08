@@ -39,8 +39,10 @@ MODULE DDSModule
             !разрядность выходного сигнала с УЧЕТОМ ЗНАКА
             INTEGER(1) :: outputSignalSampleCapacity
 
-            !размеры усеченнной ПЗУ - число
+            !размеры  ПЗУ - число
             INTEGER(8) :: romLengthInNumber
+            !размеры усеченнной ПЗУ - число
+            INTEGER(8) :: truncedRomLengthInNumber
 
             ! шаг перестройки частоты
             REAL(8)    :: frequencyStep
@@ -77,19 +79,33 @@ CONTAINS
         INTEGER(8)                          :: i
 
         LengthInputSignal=SIZE(inputSignal)
+        WRITE(*,*) 'LengthInputSignal', LengthInputSignal
+
         ALLOCATE(frequencyCodes(1:LengthInputSignal) )
         ALLOCATE(outputSignal  (1:LengthInputSignal) )
+
+
+
         ! из массива со значениями частоты, получаем массив с  значениями кодов частоты
+
+
         frequencyCodes= INT((REAL(inputSignal)/this%frequencyStep),8)
+
+
 
         ! цикл вычисления выходного сигнала
         DO i=1,LengthInputSignal
+
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
             !эмуляция переполнения аккумулятора фазы
             IF (this%phaseAccState>this%romLengthInNumber) THEN
                 this%phaseAccState=this%phaseAccState-this%romLengthInNumber
             END IF
+            WRITE(*,*) 'ФАЗА', this%phaseAccState
+
             outputSignal(i)= GetAmplitudeSample(this,this%phaseAccState)
+
+
         END DO
 
     END SUBROUTINE ComputeOutDDS
@@ -108,31 +124,35 @@ CONTAINS
        INTEGER(1), INTENT(IN)    :: romLengthTruncedInBits
        INTEGER(4), INTENT(IN)    :: samplingFrequency
        INTEGER(1), INTENT(IN)    :: outputSignalSampleCapacity
-       INTEGER(1)  :: ret
-       INTEGER (8) :: i
+       INTEGER(1)                :: ret
+       INTEGER (8)               :: i
        ! Максимальное выходное значение генератора
        INTEGER (2) :: dacMaxOutputValue
        REAL(8)     :: arg
 
        this%romLengthInBits               = romLengthInBits
-       this%romLengthTruncedInBits         = romLengthTruncedInBits
+       this%romLengthTruncedInBits        = romLengthTruncedInBits
        this%samplingFrequency             = samplingFrequency
        this%outputSignalSampleCapacity    = outputSignalSampleCapacity
 
        !для правильного приведения типов необходимо приводить к размеру и числа, написанные в коде
        ! т.к при умножении компилятор результат помещает в регистр, чей размер соотвествует размеру операнда с наиб размером
-       this%romLengthInNumber             = int(2,8)**this%romLengthTruncedInBits
+       this%romLengthInNumber                      = int(2,8)**this%romLengthInBits
+       this%truncedRomLengthInNumber               = int(2,8)**this%romLengthTruncedInBits
 
-       ALLOCATE(this%romSinusTable(0:this%romLengthInNumber-1))
+       ALLOCATE(this%romSinusTable(0:this%truncedRomLengthInNumber -1))
        ! максимальная амплитуда цифрового сигнала на выходе ЦАП
        ! с учетом ЗНАКА
        dacMaxOutputValue=int(  (int(2,2)**(outputSignalSampleCapacity-1)-1),2  )
-       arg = 2*PI*(1/float(this%romLengthInNumber))
 
-       DO i=0,this%romLengthInNumber-1
+
+       arg = 2*PI*(1/float(this%truncedRomLengthInNumber))
+
+       DO i=0,this%truncedRomLengthInNumber-1
             !Обрезать или округлять? Вот в чем вопрос!
             this%romSinusTable(i)= int(FLOOR(sin(arg*i)*dacMaxOutputValue),2)
        END DO
+
        ! вычисление значения шага перестройки частоты
        this%frequencyStep=real(samplingFrequency)/real(int(2,8)**romLengthInBits)
        ! вычисление значения шага перестройки фазы
@@ -162,6 +182,7 @@ CONTAINS
         WRITE(*,*) 'this%samplingFrequency' ,this%samplingFrequency
         WRITE(*,*) 'this%outputSignalSampleCapacity' ,this%outputSignalSampleCapacity
         WRITE(*,*) 'this%romLengthInNumber' ,this%romLengthInNumber
+        WRITE(*,*) 'truncedRomLengthInNumber',this%truncedRomLengthInNumber
         WRITE(*,*) 'frequencyStep, Hz' ,this%frequencyStep
         WRITE(*,*) 'phaseStep, radians' ,this%phaseStep
 
@@ -199,7 +220,7 @@ CONTAINS
      END FUNCTION DebugOutput
 
      ! функция что возвращает значение амлитуды. Входной аргумет - значение фазы аккумулятора
-     PURE FUNCTION GetAmplitudeSample(this,inputPhase) RESULT (amplitude)
+      PURE FUNCTION GetAmplitudeSample(this,inputPhase) RESULT (amplitude)
 
         IMPLICIT NONE
         CLASS(DDS), INTENT(IN) :: this
@@ -213,7 +234,6 @@ CONTAINS
 
         ! УСЕЧЕНИЕ значения аккумулятора фазы до LengthTruncedInBits значащих бит
         resultPhase=SHIFTA(inputPhase,neededShift)
-
         amplitude= this%romSinusTable(resultPhase)
 
      END FUNCTION
