@@ -95,6 +95,8 @@ CONTAINS
 
         ! цикл вычисления выходного сигнала
         DO i=1,LengthInputSignal
+            ! С ПОСЛЕД ФАЗЫ!!!!!
+            outputSignal(i)= GetAmplitudeSample(this,this%phaseAccState)
 
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
             !эмуляция переполнения аккумулятора фазы
@@ -103,7 +105,7 @@ CONTAINS
             END IF
             WRITE(*,*) 'ФАЗА', this%phaseAccState
 
-            outputSignal(i)= GetAmplitudeSample(this,this%phaseAccState)
+
 
 
         END DO
