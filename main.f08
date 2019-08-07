@@ -128,7 +128,7 @@ PROGRAM main
 
            CALL signal_1%Constructor(  int(testSignal,8))
            WRITE(*,*)  signal_1%signalSize
-           signal_2=signal_2
+           signal_2=signal_1
            WRITE(*,*)  signal_2%signalSize
 
      END SUBROUTINE AnalyticSignalTest

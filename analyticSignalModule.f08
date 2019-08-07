@@ -22,13 +22,16 @@ MODULE analyticSignalModule
 CONTAINS
 
     SUBROUTINE AssignData(leftOp,rightOp)
-        CLASS(analyticSignal_t), INTENT(OUT), ALLOCATABLE  :: leftOp
+        CLASS(analyticSignal_t), INTENT(INOUT), ALLOCATABLE  :: leftOp
         CLASS(analyticSignal_t), INTENT(IN)                :: rightOp
 
         ! ЗАЩИТА
-        allocate (leftOp,source=rightOp)
 
+        allocate (leftOp%signal,source=rightOp%signal)
         leftOp%isAllocated=.TRUE.
+        leftOp%signalSize=size(rightOp%signal)
+
+
     END SUBROUTINE AssignData
 
     SUBROUTINE Constructor(this,loadedSignal)
