@@ -1,0 +1,20 @@
+MODULE analyticSigmanlOperatorsModule
+    USE analyticSignalModule
+    IMPLICIT NONE
+
+    interface assignment(=)
+        module procedure AssignData
+    end interface
+   CONTAINS
+
+    SUBROUTINE AssignData(leftOp,rightOp)
+        CLASS(analyticSignal_t), INTENT(OUT), ALLOCATABLE  :: leftOp
+        CLASS(analyticSignal_t), INTENT(IN)                :: rightOp
+
+        ! ЗАЩИТА
+        allocate (leftOp,source=rightOp)
+
+        leftOp%isAllocated=.TRUE.
+    END SUBROUTINE AssignData
+
+END MODULE analyticSigmanlOperatorsModule

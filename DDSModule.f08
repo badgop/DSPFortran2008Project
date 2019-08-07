@@ -103,7 +103,7 @@ CONTAINS
             IF (this%phaseAccState>this%romLengthInNumber) THEN
                 this%phaseAccState=this%phaseAccState-this%romLengthInNumber
             END IF
-            WRITE(*,*) 'ФАЗА', this%phaseAccState
+            !WRITE(*,*) 'ФАЗА', this%phaseAccState
 
 
 

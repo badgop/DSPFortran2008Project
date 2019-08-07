@@ -2,8 +2,9 @@ PROGRAM main
 
     IMPLICIT NONE
 
-    CALL InitDDSTest()
-    CALL DDSOutputTest()
+!    CALL InitDDSTest()
+!    CALL DDSOutputTest()
+     CALL AnalyticSignalTest()
     WRITE(*,*) 'DONE!'
 
 
@@ -72,8 +73,8 @@ PROGRAM main
 
 
             romLengthInBits=32
-            romLenthTruncedInBits=12
-            outputSignalSampleCapacity=8
+            romLenthTruncedInBits=14
+            outputSignalSampleCapacity=12
             samplingFrequency= 20*MEGA
 
             centralFrequency= 1*MEGA
@@ -89,7 +90,7 @@ PROGRAM main
              phase=0.0
              CALL ddsGenerator%SetPhase(phase)
 
-            signalLengthInSamples=oscillationPeriod*2
+            signalLengthInSamples=oscillationPeriod*2000
 
             ALLOCATE(frequencys(1:signalLengthInSamples))
 
@@ -108,5 +109,28 @@ PROGRAM main
 
 
     END SUBROUTINE DDSOutputTest
+
+     SUBROUTINE AnalyticSignalTest()
+
+           USE analyticSignalModule
+           USE ModuleWriteReadArrayFromToFile
+           IMPLICIT NONE
+
+           TYPE(analyticSignal_t) ::signal_1
+           TYPE(analyticSignal_t), ALLOCATABLE ::signal_2
+
+           CHARACTER(50) :: inputSignalFileName
+           INTEGER(2),ALLOCATABLE :: testSignal(:)
+
+           inputSignalFileName='dds_output_rest.pcm'
+
+           CALL ReadArrayFromFile(testSignal,inputSignalFileName)
+
+           CALL signal_1%Constructor(  int(testSignal,8))
+           WRITE(*,*)  signal_1%signalSize
+           signal_2=signal_2
+           WRITE(*,*)  signal_2%signalSize
+
+     END SUBROUTINE AnalyticSignalTest
 
 END PROGRAM main
