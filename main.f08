@@ -120,9 +120,13 @@ PROGRAM main
            TYPE(analyticSignal_t), ALLOCATABLE ::signal_2
 
            CHARACTER(50) :: inputSignalFileName
+           CHARACTER(50) :: outputSignalFileName
+
            INTEGER(2),ALLOCATABLE :: testSignal(:)
+           INTEGER(8),ALLOCATABLE :: testSignalExtract(:)
 
            inputSignalFileName='dds_output_rest.pcm'
+           outputSignalFileName='dds_output_extracted.pcm'
 
            CALL ReadArrayFromFile(testSignal,inputSignalFileName)
 
@@ -130,6 +134,11 @@ PROGRAM main
            WRITE(*,*)  signal_1%signalSize
            signal_2=signal_1
            WRITE(*,*)  signal_2%signalSize
+           CALL signal_2% ExtractSignalData(testSignalExtract)
+
+           CALL WriteArrayToFile(int(testSignal,2),outputSignalFileName)
+
+
 
      END SUBROUTINE AnalyticSignalTest
 

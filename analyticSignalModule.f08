@@ -11,6 +11,7 @@ MODULE analyticSignalModule
 
     CONTAINS
         PROCEDURE Constructor
+        PROCEDURE ExtractSignalData
         FINAL :: destructor
 
     END TYPE analyticSignal_t
@@ -40,14 +41,24 @@ CONTAINS
 
         INTEGER(8) :: fileSize
 
-
+        !что если обьект уже проинициализирован - проверить!!!
         fileSize=size(loadedSignal)
         this%signalSize=fileSize
-        ALLOCATE( this%signal(1:fileSize))
+        ALLOCATE( this%signal, source=loadedSignal)
         this%isAllocated=.TRUE.
 
+    END SUBROUTINE Constructor
 
-    END SUBROUTINE
+    SUBROUTINE ExtractSignalData(this,extractedSignal)
+
+        INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedSignal(:)
+        CLASS(analyticSignal_t), INTENT(IN)  :: this
+
+        !ЗАЩИТА
+        ALLOCATE(extractedSignal,source=this%signal)
+
+
+     END SUBROUTINE ExtractSignalData
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
