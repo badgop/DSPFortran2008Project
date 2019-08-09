@@ -1,4 +1,4 @@
-MODULE complexSignalModule
+ MODULE complexSignalModule
     USE analyticSignalModule
     IMPLICIT NONE
     PRIVATE
@@ -6,17 +6,17 @@ MODULE complexSignalModule
     TYPE, PUBLIC :: complexSignal_t
 
         !PRIVATE
-        TYPE(analyticSignal_t) ::i
-        TYPE(analyticSignal_t) ::q
+        TYPE(analyticSignal_t),ALLOCATABLE ::i
+        TYPE(analyticSignal_t),ALLOCATABLE ::q
         INTEGER(8),ALLOCATABLE :: signal(:)
         LOGICAL                :: isAllocated
         INTEGER(8)             :: signalSize
 
     CONTAINS
-        PROCEDURE Constructor
-        PROCEDURE Constructor2
+        PROCEDURE ConstructorFromArrays
+        PROCEDURE ConstructorFromAnalyticSignals
         ! через 2 массива и через 2 сигнала аналитических
-        GENERIC :: cons => Constructor,Constructor2
+        GENERIC :: Constructor => ConstructorFromArrays,ConstructorFromAnalyticSignals
         PROCEDURE ExtractSignalData
         FINAL :: destructor
 
@@ -34,41 +34,58 @@ CONTAINS
 
         ! ЗАЩИТА
 
-        allocate (leftOp%signal,source=rightOp%signal)
-        leftOp%isAllocated=.TRUE.
-        leftOp%signalSize=size(rightOp%signal)
+!        allocate (leftOp%i%signal,source=rightOp%i%signal)
+!        allocate (leftOp%q%signal,source=rightOp%q%signal)
+!
+!        leftOp%isAllocated=.TRUE.
+!        leftOp%signalSize=size(rightOp%i%signal)
 
 
     END SUBROUTINE AssignData
 
-    SUBROUTINE Constructor(this,loadedSignal)
-        INTEGER(8), INTENT(IN) :: loadedSignal(:)
+    SUBROUTINE ConstructorFromArrays(this,componentI,componentQ)
         CLASS(complexSignal_t), INTENT(INOUT)  :: this
-
-        INTEGER(8) :: fileSize
+        INTEGER(8), INTENT(IN)                 :: componentI(:)
+        INTEGER(8), INTENT(IN)                 :: componentQ(:)
+        INTEGER(8) :: fileSizeI
 
         !что если обьект уже проинициализирован - проверить!!!
-        fileSize=size(loadedSignal)
-        this%signalSize=fileSize
-        ALLOCATE( this%signal, source=loadedSignal)
+
+        ALLOCATE(this%i)
+        ALLOCATE(this%q)
+        fileSizeI=size(componentI)
+        this%signalSize=fileSizeI
+
+        CALL this%i%Constructor(componentI)
+        CALL this%q%Constructor(componentQ)
+
         this%isAllocated=.TRUE.
 
-    END SUBROUTINE Constructor
+    END SUBROUTINE ConstructorFromArrays
 
-     SUBROUTINE Constructor2(this,loadedSignal,aa)
-        INTEGER(8), INTENT(IN) :: aa(:)
-        INTEGER(8), INTENT(IN) :: loadedSignal(:)
+     SUBROUTINE ConstructorFromAnalyticSignals(this,iSig_t,qSig_t)
+        USE analyticSignalModule
+
         CLASS(complexSignal_t), INTENT(INOUT)  :: this
-
-        INTEGER(8) :: fileSize
+        CLASS(analyticSignal_t), INTENT(IN)  :: iSig_t
+        CLASS(analyticSignal_t), INTENT(IN)  :: qSig_t
 
         !что если обьект уже проинициализирован - проверить!!!
-        fileSize=size(loadedSignal)
-        this%signalSize=fileSize
-        ALLOCATE( this%signal, source=loadedSignal)
+
+!        CALL this%i%Constructor(iSig_t%signal)
+!        CALL this%q%Constructor(qSig_t%signal)
+
+        ALLOCATE(this%i)
+        ALLOCATE(this%q)
+
+        this%i=iSig_t
+        this%q=qSig_t
+!        CALL this%i%AssignData(iSig_t)
+!        CALL this%q%AssignData(qSig_t)
+
         this%isAllocated=.TRUE.
 
-    END SUBROUTINE Constructor2
+    END SUBROUTINE ConstructorFromAnalyticSignals
 
 
     SUBROUTINE ExtractSignalData(this,extractedSignal)
@@ -85,7 +102,10 @@ CONTAINS
     SUBROUTINE destructor(this)
         TYPE(complexSignal_t), INTENT(INOUT) :: this
 
-        DEALLOCATE(this%signal)
+        !**деструкторы комноментов вызывают сами
+
+!        DEALLOCATE(this%i%signal)
+!        DEALLOCATE(this%q%signal)
         this%isAllocated=.FALSE.
 
     END SUBROUTINE

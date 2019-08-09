@@ -4,16 +4,18 @@ MODULE analyticSignalModule
 
     TYPE, PUBLIC :: analyticSignal_t
 
-        !PRIVATE
+        PRIVATE
         INTEGER(8),ALLOCATABLE :: signal(:)
         LOGICAL                :: isAllocated
-        INTEGER(8)             :: signalSize
+        INTEGER(8),PUBLIC             :: signalSize
 
     CONTAINS
+
         PROCEDURE Constructor
-
-
         PROCEDURE ExtractSignalData
+        PROCEDURE GetAllocationStatus
+!        PROCEDURE AssignData
+!        GENERIC :: assignment(=) => AssignData
         FINAL :: destructor
 
     END TYPE analyticSignal_t
@@ -25,7 +27,7 @@ MODULE analyticSignalModule
 CONTAINS
 
     SUBROUTINE AssignData(leftOp,rightOp)
-        CLASS(analyticSignal_t), INTENT(INOUT), ALLOCATABLE  :: leftOp
+        CLASS(analyticSignal_t), INTENT(INOUT),ALLOCATABLE  :: leftOp
         CLASS(analyticSignal_t), INTENT(IN)                :: rightOp
 
         ! ЗАЩИТА
@@ -64,11 +66,19 @@ CONTAINS
 
      END SUBROUTINE ExtractSignalData
 
+     FUNCTION GetAllocationStatus(this) RESULT(stat)
+        CLASS(analyticSignal_t), INTENT(IN)  :: this
+        LOGICAL :: stat
+
+        stat = this%isAllocated
+     END FUNCTION GetAllocationStatus
+
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
 
         DEALLOCATE(this%signal)
         this%isAllocated=.FALSE.
+        WRITE(*,*) 'ANALYTIC DESTRUCTOR WORKS!'
 
     END SUBROUTINE
 

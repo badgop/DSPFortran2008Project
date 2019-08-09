@@ -113,11 +113,18 @@ PROGRAM main
      SUBROUTINE AnalyticSignalTest()
 
            USE analyticSignalModule
+           USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
            IMPLICIT NONE
 
            TYPE(analyticSignal_t) ::signal_1
            TYPE(analyticSignal_t), ALLOCATABLE ::signal_2
+
+           TYPE(complexSignal_t) ::signalComplex_1
+           TYPE(complexSignal_t) ::signalComplex_2
+
+
+           TYPE(complexSignal_t), ALLOCATABLE ::signalComplex_3
 
            CHARACTER(50) :: inputSignalFileName
            CHARACTER(50) :: outputSignalFileName
@@ -131,14 +138,18 @@ PROGRAM main
            CALL ReadArrayFromFile(testSignal,inputSignalFileName)
 
            CALL signal_1%Constructor(  int(testSignal,8))
-           WRITE(*,*)  signal_1%signalSize
+           !WRITE(*,*)  signal_1%signalSize
            signal_2=signal_1
-           WRITE(*,*)  signal_2%signalSize
+           !WRITE(*,*)  signal_2%signalSize
            CALL signal_2% ExtractSignalData(testSignalExtract)
 
            CALL WriteArrayToFile(int(testSignal,2),outputSignalFileName)
 
 
+           CALL signalComplex_1%Constructor(int(testSignal,8),int(testSignal,8))
+           WRITE(*,*) 'А теперь комплексный!', signalComplex_1%signalSize
+           CALL signalComplex_2%Constructor(signal_1,signal_2)
+           WRITE(*,*) 'А теперь комплексный 2!', signalComplex_2%signalSize
 
      END SUBROUTINE AnalyticSignalTest
 
