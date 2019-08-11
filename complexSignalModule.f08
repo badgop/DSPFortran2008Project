@@ -6,11 +6,11 @@
     TYPE, PUBLIC :: complexSignal_t
 
         !PRIVATE
-        TYPE(analyticSignal_t),ALLOCATABLE ::i
-        TYPE(analyticSignal_t),ALLOCATABLE ::q
+        TYPE(analyticSignal_t) ::i
+        TYPE(analyticSignal_t) ::q
         INTEGER(8),ALLOCATABLE :: signal(:)
-        LOGICAL                :: isAllocated
-        INTEGER(8)             :: signalSize
+        LOGICAL                :: isAllocated=.FALSE.
+        INTEGER(8)             :: signalSize = 0
 
     CONTAINS
         PROCEDURE ConstructorFromArrays
@@ -18,6 +18,7 @@
         ! через 2 массива и через 2 сигнала аналитических
         GENERIC :: Constructor => ConstructorFromArrays,ConstructorFromAnalyticSignals
         PROCEDURE ExtractSignalData
+        PROCEDURE GetAllocationStatus
         FINAL :: destructor
 
     END TYPE complexSignal_t
@@ -51,8 +52,8 @@ CONTAINS
 
         !что если обьект уже проинициализирован - проверить!!!
 
-        ALLOCATE(this%i)
-        ALLOCATE(this%q)
+!        ALLOCATE(this%i)
+!        ALLOCATE(this%q)
         fileSizeI=size(componentI)
         this%signalSize=fileSizeI
 
@@ -71,19 +72,13 @@ CONTAINS
         CLASS(analyticSignal_t), INTENT(IN)  :: qSig_t
 
         !что если обьект уже проинициализирован - проверить!!!
-
-!        CALL this%i%Constructor(iSig_t%signal)
-!        CALL this%q%Constructor(qSig_t%signal)
-
-        ALLOCATE(this%i)
-        ALLOCATE(this%q)
-
         this%i=iSig_t
         this%q=qSig_t
 !        CALL this%i%AssignData(iSig_t)
 !        CALL this%q%AssignData(qSig_t)
-
+        !SIZE!!!! hz
         this%isAllocated=.TRUE.
+        this%signalSize=this%i%GetSignalSize()
 
     END SUBROUTINE ConstructorFromAnalyticSignals
 
@@ -98,6 +93,13 @@ CONTAINS
 
 
      END SUBROUTINE ExtractSignalData
+
+     FUNCTION GetAllocationStatus(this) RESULT(stat)
+        CLASS(complexSignal_t), INTENT(IN)  :: this
+        LOGICAL :: stat
+
+        stat = this%isAllocated
+     END FUNCTION GetAllocationStatus
 
     SUBROUTINE destructor(this)
         TYPE(complexSignal_t), INTENT(INOUT) :: this

@@ -6,29 +6,32 @@ MODULE analyticSignalModule
 
         PRIVATE
         INTEGER(8),ALLOCATABLE :: signal(:)
-        LOGICAL                :: isAllocated
-        INTEGER(8),PUBLIC             :: signalSize
+        LOGICAL                :: isAllocated=.FALSE.
+        INTEGER(8),PUBLIC             :: signalSize= 0
 
     CONTAINS
 
         PROCEDURE Constructor
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
-!        PROCEDURE AssignData
+        PROCEDURE GetSignalSize
+
+        PROCEDURE AssignData
 !        GENERIC :: assignment(=) => AssignData
         FINAL :: destructor
 
     END TYPE analyticSignal_t
 
     interface assignment(=)
-        module procedure AssignData
+        module procedure AssignDataFromAssignment
+
     end interface assignment(=)
 
 CONTAINS
 
-    SUBROUTINE AssignData(leftOp,rightOp)
-        CLASS(analyticSignal_t), INTENT(INOUT),ALLOCATABLE  :: leftOp
-        CLASS(analyticSignal_t), INTENT(IN)                :: rightOp
+    SUBROUTINE AssignDataFromAssignment(leftOp,rightOp)
+        CLASS(analyticSignal_t), INTENT(INOUT)  :: leftOp
+        CLASS(analyticSignal_t), INTENT(IN)     :: rightOp
 
         ! ЗАЩИТА
 
@@ -36,8 +39,24 @@ CONTAINS
         leftOp%isAllocated=.TRUE.
         leftOp%signalSize=size(rightOp%signal)
 
+    END SUBROUTINE AssignDataFromAssignment
+
+     SUBROUTINE AssignData(this,rightOp)
+        CLASS(analyticSignal_t), INTENT(INOUT)  :: this
+        CLASS(analyticSignal_t), INTENT(IN)     :: rightOp
+
+        ! ЗАЩИТА
+
+        allocate (this%signal,source=rightOp%signal)
+        this%isAllocated=.TRUE.
+        this%signalSize=size(rightOp%signal)
+        WRITE(*,*) ' AssignData = ', size(rightOp%signal), this%signalSize
 
     END SUBROUTINE AssignData
+
+
+
+
 
     SUBROUTINE Constructor(this,loadedSignal)
         INTEGER(8), INTENT(IN) :: loadedSignal(:)
@@ -72,6 +91,16 @@ CONTAINS
 
         stat = this%isAllocated
      END FUNCTION GetAllocationStatus
+
+     FUNCTION GetSignalSize(this) RESULT( signalSize)
+        CLASS(analyticSignal_t), INTENT(IN)  :: this
+        INTEGER(8) :: signalSize
+
+         signalSize = this%signalSize
+     END FUNCTION GetSignalSize
+
+
+
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
