@@ -5,7 +5,7 @@
 
     TYPE, PUBLIC :: complexSignal_t
 
-        !PRIVATE
+        PRIVATE
         TYPE(analyticSignal_t) ::i
         TYPE(analyticSignal_t) ::q
         INTEGER(8),ALLOCATABLE :: signal(:)
@@ -19,6 +19,7 @@
         GENERIC :: Constructor => ConstructorFromArrays,ConstructorFromAnalyticSignals
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
+        PROCEDURE GetSignalSize
         FINAL :: destructor
 
     END TYPE complexSignal_t
@@ -38,8 +39,7 @@ CONTAINS
 !        allocate (leftOp%i%signal,source=rightOp%i%signal)
 !        allocate (leftOp%q%signal,source=rightOp%q%signal)
 !
-!        leftOp%isAllocated=.TRUE.
-!        leftOp%signalSize=size(rightOp%i%signal)
+
 
 
     END SUBROUTINE AssignData
@@ -52,8 +52,7 @@ CONTAINS
 
         !что если обьект уже проинициализирован - проверить!!!
 
-!        ALLOCATE(this%i)
-!        ALLOCATE(this%q)
+
         fileSizeI=size(componentI)
         this%signalSize=fileSizeI
 
@@ -74,9 +73,7 @@ CONTAINS
         !что если обьект уже проинициализирован - проверить!!!
         this%i=iSig_t
         this%q=qSig_t
-!        CALL this%i%AssignData(iSig_t)
-!        CALL this%q%AssignData(qSig_t)
-        !SIZE!!!! hz
+
         this%isAllocated=.TRUE.
         this%signalSize=this%i%GetSignalSize()
 
@@ -100,6 +97,16 @@ CONTAINS
 
         stat = this%isAllocated
      END FUNCTION GetAllocationStatus
+
+      FUNCTION GetSignalSize(this) RESULT( signalSize)
+        CLASS(complexSignal_t), INTENT(IN)  :: this
+        INTEGER(8) :: signalSize
+
+         signalSize = this%signalSize
+     END FUNCTION GetSignalSize
+
+
+
 
     SUBROUTINE destructor(this)
         TYPE(complexSignal_t), INTENT(INOUT) :: this

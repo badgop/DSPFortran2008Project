@@ -7,7 +7,7 @@ MODULE analyticSignalModule
         PRIVATE
         INTEGER(8),ALLOCATABLE :: signal(:)
         LOGICAL                :: isAllocated=.FALSE.
-        INTEGER(8),PUBLIC             :: signalSize= 0
+        INTEGER(8),PUBLIC      :: signalSize= 0
 
     CONTAINS
 
@@ -17,7 +17,7 @@ MODULE analyticSignalModule
         PROCEDURE GetSignalSize
 
         PROCEDURE AssignData
-!        GENERIC :: assignment(=) => AssignData
+
         FINAL :: destructor
 
     END TYPE analyticSignal_t
