@@ -8,7 +8,7 @@
         PRIVATE
         TYPE(analyticSignal_t) ::i
         TYPE(analyticSignal_t) ::q
-        INTEGER(8),ALLOCATABLE :: signal(:)
+
         LOGICAL                :: isAllocated=.FALSE.
         INTEGER(8)             :: signalSize = 0
 
@@ -17,6 +17,10 @@
         PROCEDURE ConstructorFromAnalyticSignals
         ! через 2 массива и через 2 сигнала аналитических
         GENERIC :: Constructor => ConstructorFromArrays,ConstructorFromAnalyticSignals
+        PROCEDURE AssignDataComplex
+        generic :: assignment(=) => AssignDataComplex
+!https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
+!https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
         PROCEDURE GetSignalSize
@@ -24,25 +28,26 @@
 
     END TYPE complexSignal_t
 
-    interface assignment(=)
-        module procedure AssignData
-    end interface assignment(=)
+!    interface assignment(=)
+!        module procedure AssignDataComplex
+!    end interface assignment(=)
 
 CONTAINS
 
-    SUBROUTINE AssignData(leftOp,rightOp)
-        CLASS(complexSignal_t), INTENT(INOUT), ALLOCATABLE  :: leftOp
+    SUBROUTINE AssignDataComplex(leftOp,rightOp)
+        CLASS(complexSignal_t), INTENT(INOUT)  :: leftOp
         CLASS(complexSignal_t), INTENT(IN)                :: rightOp
 
         ! ЗАЩИТА
 
-!        allocate (leftOp%i%signal,source=rightOp%i%signal)
-!        allocate (leftOp%q%signal,source=rightOp%q%signal)
-!
+        leftOp%i=rightOp%i
+        leftOp%q=rightOp%q
+
+        leftOp%isAllocated=.TRUE.
+        leftOp%signalSize=leftOp%i%GetSignalSize()
 
 
-
-    END SUBROUTINE AssignData
+    END SUBROUTINE AssignDataComplex
 
     SUBROUTINE ConstructorFromArrays(this,componentI,componentQ)
         CLASS(complexSignal_t), INTENT(INOUT)  :: this
@@ -71,6 +76,7 @@ CONTAINS
         CLASS(analyticSignal_t), INTENT(IN)  :: qSig_t
 
         !что если обьект уже проинициализирован - проверить!!!
+
         this%i=iSig_t
         this%q=qSig_t
 
@@ -80,13 +86,21 @@ CONTAINS
     END SUBROUTINE ConstructorFromAnalyticSignals
 
 
-    SUBROUTINE ExtractSignalData(this,extractedSignal)
+    SUBROUTINE ExtractSignalData(this,extractedI,extractedq)
 
-        INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedSignal(:)
+        INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedI(:)
+        INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedQ(:)
         CLASS(complexSignal_t), INTENT(IN)  :: this
 
+
+         INTEGER(8),ALLOCATABLE :: tmpI
+         INTEGER(8),ALLOCATABLE :: tmpQ
+
         !ЗАЩИТА
-        ALLOCATE(extractedSignal,source=this%signal)
+
+
+!        ALLOCATE(extractedI,source=this%i%signal)
+!        ALLOCATE(extractedQ,source=this%i%signal)
 
 
      END SUBROUTINE ExtractSignalData

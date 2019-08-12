@@ -17,15 +17,18 @@ MODULE analyticSignalModule
         PROCEDURE GetSignalSize
 
         PROCEDURE AssignData
+        PROCEDURE AssignDataFromAssignment
 
+        generic :: assignment(=) =>  AssignDataFromAssignment
+!https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
+!https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         FINAL :: destructor
 
     END TYPE analyticSignal_t
 
-    interface assignment(=)
-        module procedure AssignDataFromAssignment
-
-    end interface assignment(=)
+!    interface assignment(=)
+!        module procedure AssignDataFromAssignment
+!    end interface assignment(=)
 
 CONTAINS
 
@@ -104,10 +107,18 @@ CONTAINS
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
+        INTEGER(4) :: stat
 
-        DEALLOCATE(this%signal)
-        this%isAllocated=.FALSE.
-        WRITE(*,*) 'ANALYTIC DESTRUCTOR WORKS!'
+        DEALLOCATE(this%signal, STAT=stat)
+        IF (STAT==0) THEN
+            WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize
+            this%isAllocated=.FALSE.
+        ELSE
+            WRITE(*,*) 'Не могу освободить память '
+        END IF
+
+
+
 
     END SUBROUTINE
 

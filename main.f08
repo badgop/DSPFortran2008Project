@@ -119,23 +119,25 @@ PROGRAM main
 
            TYPE(analyticSignal_t) ::signal_1
            TYPE(analyticSignal_t) ::signal_2
-           TYPE(analyticSignal_t) ::signal_3
+
 
            TYPE(complexSignal_t) ::signalComplex_1
            TYPE(complexSignal_t) ::signalComplex_2
+           TYPE(complexSignal_t) ::signalComplex_3
 
 
-           TYPE(complexSignal_t), ALLOCATABLE ::signalComplex_3
+
 
            CHARACTER(50) :: inputSignalFileName
            CHARACTER(50) :: outputSignalFileName
-           LOGICAL :: state=.FALSE.
+           LOGICAL       :: state=.FALSE.
+           INTEGER(8)    :: signalSize=0
 
            INTEGER(2),ALLOCATABLE :: testSignal(:)
            INTEGER(8),ALLOCATABLE :: testSignalExtract(:)
 
-           inputSignalFileName='dds_output_rest.pcm'
-           outputSignalFileName='dds_output_extracted.pcm'
+           inputSignalFileName  = 'dds_output_rest.pcm'
+           outputSignalFileName = 'dds_output_extracted.pcm'
 
            CALL ReadArrayFromFile(testSignal,inputSignalFileName)
 
@@ -164,6 +166,11 @@ PROGRAM main
            state= signalComplex_2%GetAllocationStatus()
            WRITE(*,*) 'А теперь комплексный 2!', signalComplex_2%GetSignalSize(), state
 
+
+
+           signalComplex_3=signalComplex_2
+           WRITE(*,*) 'А теперь комплексный 3!', signalComplex_3%GetSignalSize(),&
+            signalComplex_3%GetAllocationStatus()
 
      END SUBROUTINE AnalyticSignalTest
 
