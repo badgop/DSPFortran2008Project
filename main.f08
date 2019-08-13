@@ -136,6 +136,11 @@ PROGRAM main
            INTEGER(2),ALLOCATABLE :: testSignal(:)
            INTEGER(8),ALLOCATABLE :: testSignalExtract(:)
 
+           INTEGER(8),ALLOCATABLE :: testSignalExtractI(:)
+           INTEGER(8),ALLOCATABLE :: testSignalExtractQ(:)
+
+
+
            inputSignalFileName  = 'dds_output_rest.pcm'
            outputSignalFileName = 'dds_output_extracted.pcm'
 
@@ -170,7 +175,13 @@ PROGRAM main
 
            signalComplex_3=signalComplex_2
            WRITE(*,*) 'А теперь комплексный 3!', signalComplex_3%GetSignalSize(),&
-            signalComplex_3%GetAllocationStatus()
+           signalComplex_3%GetAllocationStatus()
+
+           CALL signalComplex_3%ExtractSignalData(testSignalExtractI,testSignalExtractQ)
+
+
+           CALL WriteArrayToFile(int(testSignalExtractI,2),'testSignalExtractI.pcm')
+           CALL WriteArrayToFile(int(testSignalExtractQ,2),'testSignalExtractQ.pcm')
 
      END SUBROUTINE AnalyticSignalTest
 

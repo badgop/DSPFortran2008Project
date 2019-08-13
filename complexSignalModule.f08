@@ -101,7 +101,8 @@ CONTAINS
 
 !        ALLOCATE(extractedI,source=this%i%signal)
 !        ALLOCATE(extractedQ,source=this%i%signal)
-
+        CALL this%i%ExtractSignalData(extractedI)
+        CALL this%q%ExtractSignalData(extractedQ)
 
      END SUBROUTINE ExtractSignalData
 
