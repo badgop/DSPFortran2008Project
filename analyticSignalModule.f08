@@ -62,8 +62,9 @@ CONTAINS
 
 
     SUBROUTINE Constructor(this,loadedSignal)
-        INTEGER(8), INTENT(IN) :: loadedSignal(:)
+
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
+        INTEGER(8), INTENT(IN) :: loadedSignal(:)
 
         INTEGER(8) :: fileSize
 

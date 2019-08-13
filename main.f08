@@ -3,8 +3,8 @@ PROGRAM main
     IMPLICIT NONE
 
 !    CALL InitDDSTest()
-!    CALL DDSOutputTest()
-     CALL AnalyticSignalTest()
+    CALL DDSOutputTest()
+    CALL AnalyticSignalTest()
     WRITE(*,*) 'DONE!'
 
 
@@ -45,6 +45,8 @@ PROGRAM main
     END SUBROUTINE InitDDSTest
 
     SUBROUTINE DDSOutputTest()
+
+            USE analyticSignalModule
             USE DDSModule
             USE MathConstModule
             USE PrefixModule
@@ -66,8 +68,12 @@ PROGRAM main
             INTEGER(4) :: centralFrequency
 
             INTEGER(8), ALLOCATABLE :: frequencys(:)
-            INTEGER(8), ALLOCATABLE :: outputSignal(:)
+
             INTEGER(2), ALLOCATABLE :: outputSignal2byte(:)
+
+            TYPE(analyticSignal_t) ::imputFreqSignal
+            TYPE(analyticSignal_t) ::outputSignal
+            INTEGER(8), ALLOCATABLE :: outputArray(:)
 
             REAL(8)                  :: phase
 
@@ -90,19 +96,23 @@ PROGRAM main
              phase=0.0
              CALL ddsGenerator%SetPhase(phase)
 
-            signalLengthInSamples=oscillationPeriod*2000
+            signalLengthInSamples=oscillationPeriod*300
 
             ALLOCATE(frequencys(1:signalLengthInSamples))
 
 
             frequencys=centralFrequency
 
+            CALL imputFreqSignal%Constructor(frequencys)
 
-            CALL ddsGenerator%ComputeOutput(frequencys, outputsignal)
 
-            ALLOCATE(outputSignal2byte(1:size(outputsignal)))
+            CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
 
-            outputSignal2byte=int(outputsignal,2)
+            CALL outputsignal%ExtractSignalData(outputArray)
+
+            ALLOCATE(outputSignal2byte(1:size(outputArray)))
+
+            outputSignal2byte=int(outputArray,2)
 
             CALL WriteArrayToFile(outputSignal2byte,'dds_output_rest.pcm')
 
@@ -131,7 +141,7 @@ PROGRAM main
            CHARACTER(50) :: inputSignalFileName
            CHARACTER(50) :: outputSignalFileName
            LOGICAL       :: state=.FALSE.
-           INTEGER(8)    :: signalSize=0
+
 
            INTEGER(2),ALLOCATABLE :: testSignal(:)
            INTEGER(8),ALLOCATABLE :: testSignalExtract(:)
