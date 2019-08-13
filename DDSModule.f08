@@ -13,12 +13,12 @@
 
 MODULE DDSModule
 
-    USE analyticSignalModule
+    USE BaseBlockModule
 
     IMPLICIT NONE
     PRIVATE
 
-    TYPE,  PUBLIC :: DDS
+    TYPE, EXTENDS(baseBlock_t) , PUBLIC :: DDS
 
             PRIVATE
             ! ПЗУ таблицы с отчетами синуса
@@ -53,7 +53,7 @@ MODULE DDSModule
 
     CONTAINS
 
-        PROCEDURE          :: ComputeOutput
+        PROCEDURE          :: ComputeOutput => ComputeOutDDS
         PROCEDURE          :: Constructor => InitDDS
         PROCEDURE          :: DebugOutput
         PROCEDURE, PRIVATE :: GetAmplitudeSample
@@ -66,40 +66,37 @@ MODULE DDSModule
 CONTAINS
 
 
-    SUBROUTINE ComputeOutput(this, inputSignal, outputSignal)
-        USE analyticSignalModule
+    SUBROUTINE ComputeOutDDS(this, inputSignal, outputSignal)
 
         CLASS(DDS), INTENT(INOUT)              :: this
         ! массив  со значениями частоты
-        CLASS(analyticSignal_t), INTENT(IN)     :: inputSignal
+        INTEGER(8), INTENT(IN)              :: inputSignal (:)
         ! массив с выходом генератора
-        CLASS(analyticSignal_t), INTENT(INOUT) :: outputSignal
-
-
+        INTEGER(8), INTENT(OUT),ALLOCATABLE :: outputSignal(:)
         ! массив с кодами часоты, которые надо подавать на генератора
         INTEGER(8), ALLOCATABLE             :: frequencyCodes (:)
-        INTEGER(8), ALLOCATABLE             :: tempArray (:)
         INTEGER(8)                          :: LengthInputSignal
         INTEGER(8)                          :: i
 
-        LengthInputSignal=inputSignal%GetSignalSize()
+        LengthInputSignal=SIZE(inputSignal)
         WRITE(*,*) 'LengthInputSignal', LengthInputSignal
 
+        ALLOCATE(frequencyCodes(1:LengthInputSignal) )
+        ALLOCATE(outputSignal  (1:LengthInputSignal) )
 
-        CALL   inputSignal%ExtractSignalData(frequencyCodes)
 
 
         ! из массива со значениями частоты, получаем массив с  значениями кодов частоты
 
 
-        frequencyCodes= INT((REAL(frequencyCodes)/this%frequencyStep),8)
+        frequencyCodes= INT((REAL(inputSignal)/this%frequencyStep),8)
 
-        ALLOCATE(tempArray,source=frequencyCodes)
+
 
         ! цикл вычисления выходного сигнала
         DO i=1,LengthInputSignal
             ! С ПОСЛЕД ФАЗЫ!!!!!
-            tempArray(i)= GetAmplitudeSample(this,this%phaseAccState)
+            outputSignal(i)= GetAmplitudeSample(this,this%phaseAccState)
 
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
             !эмуляция переполнения аккумулятора фазы
@@ -107,13 +104,13 @@ CONTAINS
                 this%phaseAccState=this%phaseAccState-this%romLengthInNumber
             END IF
             !WRITE(*,*) 'ФАЗА', this%phaseAccState
+
+
+
+
         END DO
 
-        CALL outputSignal%Constructor(tempArray)
-
-        DEALLOCATE(tempArray)
-        DEALLOCATE(frequencyCodes)
-    END SUBROUTINE ComputeOutput
+    END SUBROUTINE ComputeOutDDS
     
 
     ! Член функция типа КОНСТРУКТОР
