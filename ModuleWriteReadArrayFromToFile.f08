@@ -220,7 +220,9 @@ CONTAINS
         INTEGER(4):: iostat_Num=0
 
 
-        OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE", FORM="UNFORMATTED",IOSTAT=iostat_Num)
+        OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE",ASYNCHRONOUS="YES", FORM="UNFORMATTED",IOSTAT=iostat_Num)
+        ! ОЙ ОЙ ОЙ ОЙ
+!        FLUSH(10)
         SELECT CASE (iostat_Num)
             CASE (0)
                 WRITE(*,*) 'Пишется файл ', name_x
@@ -251,7 +253,7 @@ CONTAINS
 
         INTEGER(4):: iostat_Num=0
 
-        OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE", FORM="UNFORMATTED",IOSTAT=iostat_Num)
+        OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE",ASYNCHRONOUS="YES", FORM="UNFORMATTED",IOSTAT=iostat_Num)
         SELECT CASE (iostat_Num)
             CASE (0)
                 WRITE(*,*) 'Пишется файл  ', name_x
@@ -280,7 +282,7 @@ CONTAINS
 
         INTEGER(4):: iostat_Num=0
 
-        OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE", FORM="UNFORMATTED",IOSTAT=iostat_Num)
+        OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE",ASYNCHRONOUS="YES", FORM="UNFORMATTED",IOSTAT=iostat_Num)
         SELECT CASE (iostat_Num)
             CASE (0)
                 WRITE(*,*) 'Пишется файл  ', name_x

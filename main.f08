@@ -4,7 +4,8 @@ PROGRAM main
 
 !    CALL InitDDSTest()
 !    CALL DDSOutputTest()
-     CALL AnalyticSignalTest()
+!    CALL AnalyticSignalTestConstructors()
+    CALL AnalyticSignalTestWriteRead()
     WRITE(*,*) 'DONE!'
 
 
@@ -45,6 +46,8 @@ PROGRAM main
     END SUBROUTINE InitDDSTest
 
     SUBROUTINE DDSOutputTest()
+
+            USE analyticSignalModule
             USE DDSModule
             USE MathConstModule
             USE PrefixModule
@@ -66,8 +69,12 @@ PROGRAM main
             INTEGER(4) :: centralFrequency
 
             INTEGER(8), ALLOCATABLE :: frequencys(:)
-            INTEGER(8), ALLOCATABLE :: outputSignal(:)
+
             INTEGER(2), ALLOCATABLE :: outputSignal2byte(:)
+
+            TYPE(analyticSignal_t) ::imputFreqSignal
+            TYPE(analyticSignal_t) ::outputSignal
+            INTEGER(8), ALLOCATABLE :: outputArray(:)
 
             REAL(8)                  :: phase
 
@@ -90,19 +97,23 @@ PROGRAM main
              phase=0.0
              CALL ddsGenerator%SetPhase(phase)
 
-            signalLengthInSamples=oscillationPeriod*2000
+            signalLengthInSamples=oscillationPeriod*300
 
             ALLOCATE(frequencys(1:signalLengthInSamples))
 
 
             frequencys=centralFrequency
 
+            CALL imputFreqSignal%Constructor(frequencys)
 
-            CALL ddsGenerator%ComputeOutput(frequencys, outputsignal)
 
-            ALLOCATE(outputSignal2byte(1:size(outputsignal)))
+            CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
 
-            outputSignal2byte=int(outputsignal,2)
+            CALL outputsignal%ExtractSignalData(outputArray)
+
+            ALLOCATE(outputSignal2byte(1:size(outputArray)))
+
+            outputSignal2byte=int(outputArray,2)
 
             CALL WriteArrayToFile(outputSignal2byte,'dds_output_rest.pcm')
 
@@ -110,11 +121,12 @@ PROGRAM main
 
     END SUBROUTINE DDSOutputTest
 
-     SUBROUTINE AnalyticSignalTest()
+     SUBROUTINE AnalyticSignalTestConstructors()
 
            USE analyticSignalModule
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
+           USE WriteReadAnalyticSignalToFromFile
            IMPLICIT NONE
 
            TYPE(analyticSignal_t) ::signal_1
@@ -125,13 +137,10 @@ PROGRAM main
            TYPE(complexSignal_t) ::signalComplex_2
            TYPE(complexSignal_t) ::signalComplex_3
 
-
-
-
            CHARACTER(50) :: inputSignalFileName
            CHARACTER(50) :: outputSignalFileName
            LOGICAL       :: state=.FALSE.
-           INTEGER(8)    :: signalSize=0
+
 
            INTEGER(2),ALLOCATABLE :: testSignal(:)
            INTEGER(8),ALLOCATABLE :: testSignalExtract(:)
@@ -152,7 +161,7 @@ PROGRAM main
 
            CALL signal_2% ExtractSignalData(testSignalExtract)
 
-           CALL WriteArrayToFile(int(testSignal,2),outputSignalFileName)
+           CALL WriteArrayToFile(int(testSignalExtract,2),outputSignalFileName)
 
 
            state= signalComplex_1%GetAllocationStatus()
@@ -183,6 +192,43 @@ PROGRAM main
            CALL WriteArrayToFile(int(testSignalExtractI,2),'testSignalExtractI.pcm')
            CALL WriteArrayToFile(int(testSignalExtractQ,2),'testSignalExtractQ.pcm')
 
-     END SUBROUTINE AnalyticSignalTest
+     END SUBROUTINE  AnalyticSignalTestConstructors
+
+     SUBROUTINE AnalyticSignalTestWriteRead()
+
+           USE analyticSignalModule
+           USE complexSignalModule
+           USE ModuleWriteReadArrayFromToFile
+           USE WriteReadAnalyticSignalToFromFile
+           IMPLICIT NONE
+
+           TYPE(analyticSignal_t) ::signal_1
+
+
+           TYPE(complexSignal_t) ::signalComplex_1
+
+           INTEGER(1) :: intType
+
+
+           CHARACTER(50) :: inputSignalFileName
+           CHARACTER(50) :: outputSignalFileName
+           LOGICAL       :: state=.FALSE.
+
+
+           inputSignalFileName  = 'dds_output_rest.pcm'
+           outputSignalFileName = 'dds_output_writed_analytic.pcm'
+
+           intType=2
+           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName)
+
+           CALL WriteAnalyticSignalToFile(signal_1,intType,outputSignalFileName)
+
+
+
+
+
+     END SUBROUTINE AnalyticSignalTestWriteRead
+
+
 
 END PROGRAM main
