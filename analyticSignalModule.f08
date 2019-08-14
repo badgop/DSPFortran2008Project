@@ -15,11 +15,13 @@ MODULE analyticSignalModule
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
         PROCEDURE GetSignalSize
+        PROCEDURE :: MultiplyAnalyticSignals
 
-        PROCEDURE AssignData
+
         PROCEDURE AssignDataFromAssignment
 
         generic :: assignment(=) =>  AssignDataFromAssignment
+        generic :: operator(*) =>  MultiplyAnalyticSignals
 !https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
 !https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         FINAL :: destructor
@@ -43,22 +45,6 @@ CONTAINS
         leftOp%signalSize=size(rightOp%signal)
 
     END SUBROUTINE AssignDataFromAssignment
-
-     SUBROUTINE AssignData(this,rightOp)
-        CLASS(analyticSignal_t), INTENT(INOUT)  :: this
-        CLASS(analyticSignal_t), INTENT(IN)     :: rightOp
-
-        ! ЗАЩИТА
-
-        allocate (this%signal,source=rightOp%signal)
-        this%isAllocated=.TRUE.
-        this%signalSize=size(rightOp%signal)
-        WRITE(*,*) ' AssignData = ', size(rightOp%signal), this%signalSize
-
-    END SUBROUTINE AssignData
-
-
-
 
 
     SUBROUTINE Constructor(this,loadedSignal)
@@ -103,7 +89,18 @@ CONTAINS
          signalSize = this%signalSize
      END FUNCTION GetSignalSize
 
+     FUNCTION MultiplyAnalyticSignals(xOp,yOp)
+         CLASS(analyticSignal_t), INTENT(IN)  :: xOp
+         CLASS(analyticSignal_t), INTENT(IN)  :: yOp
+         CLASS(analyticSignal_t), allocatable ::MultiplyAnalyticSignals
 
+
+            !r%signal=xOp%signal*yOp%signal
+            allocate( MultiplyAnalyticSignals)
+
+            MultiplyAnalyticSignals%Signal=xOp%signal*yOp%signal
+
+     END FUNCTION MultiplyAnalyticSignals
 
 
     SUBROUTINE destructor(this)

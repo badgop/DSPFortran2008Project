@@ -3,10 +3,11 @@ PROGRAM main
     IMPLICIT NONE
 
 !    CALL InitDDSTest()
-!    CALL DDSOutputTest()
-!    CALL AnalyticSignalTestConstructors()
+    CALL DDSOutputTest()
+!    CALL  AnalyticComplexSignalTestConstructors
 !    CALL AnalyticSignalTestWriteRead()
-    CALL ComplexSignalTestWriteRead()
+!    CALL ComplexSignalTestWriteRead()
+    CALL AnalyticSignalMultiplyTest()
     WRITE(*,*) 'DONE!'
 
 
@@ -82,7 +83,7 @@ PROGRAM main
 
             romLengthInBits=32
             romLenthTruncedInBits=14
-            outputSignalSampleCapacity=12
+            outputSignalSampleCapacity=6
             samplingFrequency= 20*MEGA
 
             centralFrequency= 1*MEGA
@@ -122,7 +123,7 @@ PROGRAM main
 
     END SUBROUTINE DDSOutputTest
 
-     SUBROUTINE AnalyticSignalTestConstructors()
+     SUBROUTINE AnalyticComplexSignalTestConstructors()
 
            USE analyticSignalModule
            USE complexSignalModule
@@ -193,7 +194,7 @@ PROGRAM main
            CALL WriteArrayToFile(int(testSignalExtractI,2),'testSignalExtractI.pcm')
            CALL WriteArrayToFile(int(testSignalExtractQ,2),'testSignalExtractQ.pcm')
 
-     END SUBROUTINE  AnalyticSignalTestConstructors
+     END SUBROUTINE  AnalyticComplexSignalTestConstructors
 
      SUBROUTINE AnalyticSignalTestWriteRead()
            USE analyticSignalModule
@@ -237,6 +238,32 @@ PROGRAM main
            CALL WriteComplexSignalToFile(signal_1,intType,outputSignalFileNameI,outputSignalFileNameQ)
      END SUBROUTINE ComplexSignalTestWriteRead
 
+
+     SUBROUTINE AnalyticSignalMultiplyTest()
+           USE analyticSignalModule
+           USE complexSignalModule
+           USE ModuleWriteReadArrayFromToFile
+           USE WriteReadAnalyticSignalToFromFile
+           IMPLICIT NONE
+
+           TYPE(analyticSignal_t) ::signal_1
+           TYPE(analyticSignal_t) ::signal_2
+           TYPE(analyticSignal_t) ::signal_3
+           INTEGER(1) :: intType
+           CHARACTER(50) :: inputSignalFileName
+           CHARACTER(50) :: outputSignalFileName
+
+           inputSignalFileName  = 'dds_output_rest.pcm'
+           outputSignalFileName = 'dds_output_writed_multiplay.pcm'
+           intType=2
+           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName)
+           CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileName)
+
+           signal_3=signal_1*signal_2
+           CALL WriteAnalyticSignalToFile(signal_3,intType,outputSignalFileName)
+
+
+     END SUBROUTINE AnalyticSignalMultiplyTest
 
 
 END PROGRAM main
