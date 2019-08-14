@@ -24,7 +24,7 @@ MODULE WriteReadAnalyticSignalToFromFile
     !============= Процедура чтения из файла ==============
     !======================================================
     !                   Входные парметры:
-    ! name_x - имя файла из которого происходит чтение данных
+    ! fileName - имя файла из которого происходит чтение данных
     !======================================================
     !                   Выходные парметры:
     ! x - обьект типа analyticSignal_t, с не инициализированным членом  INTEGER(8) signal(:)
@@ -82,25 +82,27 @@ MODULE WriteReadAnalyticSignalToFromFile
 !        INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
 
+        CALL writedSignal%ExtractSignalData(arrayInt8)
+
         SELECT CASE (intType)
 
             CASE(2)
-                CALL writedSignal%ExtractSignalData(arrayInt8)
+
                 CALL WriteArrayToFile(int(arrayInt8,2),fileName)
                 DEALLOCATE(arrayInt8)
 
             CASE(4)
-                CALL writedSignal%ExtractSignalData(arrayInt8)
+
                 CALL WriteArrayToFile(int(arrayInt8,4),fileName)
                 DEALLOCATE(arrayInt8)
 
             CASE(8)
-                CALL writedSignal%ExtractSignalData(arrayInt8)
+
                 CALL WriteArrayToFile(arrayInt8,fileName)
                 DEALLOCATE(arrayInt8)
 
             CASE DEFAULT
-                WRITE(*,*) 'Неправильно выбран тип целого для чтения'
+                WRITE(*,*) 'Неправильно выбран тип целого для записи'
            END SELECT
 
    END SUBROUTINE WriteAnalyticSignalToFile

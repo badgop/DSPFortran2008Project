@@ -5,7 +5,8 @@ PROGRAM main
 !    CALL InitDDSTest()
 !    CALL DDSOutputTest()
 !    CALL AnalyticSignalTestConstructors()
-    CALL AnalyticSignalTestWriteRead()
+!    CALL AnalyticSignalTestWriteRead()
+    CALL ComplexSignalTestWriteRead()
     WRITE(*,*) 'DONE!'
 
 
@@ -195,7 +196,6 @@ PROGRAM main
      END SUBROUTINE  AnalyticSignalTestConstructors
 
      SUBROUTINE AnalyticSignalTestWriteRead()
-
            USE analyticSignalModule
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
@@ -203,31 +203,39 @@ PROGRAM main
            IMPLICIT NONE
 
            TYPE(analyticSignal_t) ::signal_1
-
-
-           TYPE(complexSignal_t) ::signalComplex_1
-
            INTEGER(1) :: intType
-
-
            CHARACTER(50) :: inputSignalFileName
            CHARACTER(50) :: outputSignalFileName
-           LOGICAL       :: state=.FALSE.
-
 
            inputSignalFileName  = 'dds_output_rest.pcm'
            outputSignalFileName = 'dds_output_writed_analytic.pcm'
-
            intType=2
            CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName)
-
            CALL WriteAnalyticSignalToFile(signal_1,intType,outputSignalFileName)
-
-
-
-
-
      END SUBROUTINE AnalyticSignalTestWriteRead
+
+     SUBROUTINE ComplexSignalTestWriteRead()
+
+           USE complexSignalModule
+           USE ModuleWriteReadArrayFromToFile
+           USE WriteReadComplexSignalToFromFile
+
+           IMPLICIT NONE
+
+           TYPE(complexSignal_t) ::signal_1
+           INTEGER(1) :: intType
+           CHARACTER(50) :: inputSignalFileNameI, inputSignalFileNameQ
+           CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
+
+           inputSignalFileNameI  = 'sig_outi.pcm'
+           inputSignalFileNameQ  = 'sig_outq.pcm'
+           outputSignalFileNameI = 'sig_outi_outtest.pcm'
+           outputSignalFileNameQ = 'sig_outq_outtest.pcm'
+
+           intType=2
+           CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ)
+           CALL WriteComplexSignalToFile(signal_1,intType,outputSignalFileNameI,outputSignalFileNameQ)
+     END SUBROUTINE ComplexSignalTestWriteRead
 
 
 
