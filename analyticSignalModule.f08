@@ -59,6 +59,7 @@ CONTAINS
         this%signalSize=fileSize
         ALLOCATE( this%signal, source=loadedSignal)
         this%isAllocated=.TRUE.
+        WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!'
 
     END SUBROUTINE Constructor
 
@@ -98,6 +99,9 @@ CONTAINS
             !r%signal=xOp%signal*yOp%signal
             allocate( MultiplyAnalyticSignals)
 
+            ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
+            ! Хотя деструктор вызывается спокойно с нужными парамерами
+            ! требуется расследование
             MultiplyAnalyticSignals%Signal=xOp%signal*yOp%signal
 
      END FUNCTION MultiplyAnalyticSignals

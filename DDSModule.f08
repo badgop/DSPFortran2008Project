@@ -150,12 +150,11 @@ CONTAINS
        ! с учетом ЗНАКА
        dacMaxOutputValue=int(  (int(2,2)**(outputSignalSampleCapacity-1)-1),2  )
 
-
        arg = 2*PI*(1/float(this%truncedRomLengthInNumber))
 
        DO i=0,this%truncedRomLengthInNumber-1
             !Обрезать или округлять? Вот в чем вопрос!
-            this%romSinusTable(i)= int(FLOOR(sin(arg*i)*dacMaxOutputValue),2)
+            this%romSinusTable(i)= int((sin(arg*i)*dacMaxOutputValue),2)
        END DO
 
        ! вычисление значения шага перестройки частоты

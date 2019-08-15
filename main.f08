@@ -3,11 +3,11 @@ PROGRAM main
     IMPLICIT NONE
 
 !    CALL InitDDSTest()
-    CALL DDSOutputTest()
+     CALL DDSOutputTest()
 !    CALL  AnalyticComplexSignalTestConstructors
 !    CALL AnalyticSignalTestWriteRead()
 !    CALL ComplexSignalTestWriteRead()
-    CALL AnalyticSignalMultiplyTest()
+    CALL AnalyticSignalMultiplyPlusShiftTest()
     WRITE(*,*) 'DONE!'
 
 
@@ -83,7 +83,7 @@ PROGRAM main
 
             romLengthInBits=32
             romLenthTruncedInBits=14
-            outputSignalSampleCapacity=6
+            outputSignalSampleCapacity=8
             samplingFrequency= 20*MEGA
 
             centralFrequency= 1*MEGA
@@ -99,7 +99,7 @@ PROGRAM main
              phase=0.0
              CALL ddsGenerator%SetPhase(phase)
 
-            signalLengthInSamples=oscillationPeriod*300
+            signalLengthInSamples=oscillationPeriod*3000
 
             ALLOCATE(frequencys(1:signalLengthInSamples))
 
@@ -239,31 +239,38 @@ PROGRAM main
      END SUBROUTINE ComplexSignalTestWriteRead
 
 
-     SUBROUTINE AnalyticSignalMultiplyTest()
+     SUBROUTINE AnalyticSignalMultiplyPlusShiftTest()
            USE analyticSignalModule
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
            USE WriteReadAnalyticSignalToFromFile
+           USE ShiftMultiplexorModule
            IMPLICIT NONE
 
            TYPE(analyticSignal_t) ::signal_1
            TYPE(analyticSignal_t) ::signal_2
            TYPE(analyticSignal_t) ::signal_3
-           INTEGER(1) :: intType
+           TYPE(analyticSignal_t) ::signal_4
+           TYPE(shiftMultiplexor_t) :: shiftPlexor1
+           INTEGER(1) :: shift,intType
            CHARACTER(50) :: inputSignalFileName
            CHARACTER(50) :: outputSignalFileName
 
+
+           shift=7
+           CALL shiftPlexor1%Constructor(shift)
            inputSignalFileName  = 'dds_output_rest.pcm'
            outputSignalFileName = 'dds_output_writed_multiplay.pcm'
            intType=2
            CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName)
            CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileName)
-
+           WRITE(*,*) 'signal_3=signal_1*signal_2'
            signal_3=signal_1*signal_2
-           CALL WriteAnalyticSignalToFile(signal_3,intType,outputSignalFileName)
+           CALL shiftPlexor1%PerformAnalyticSignalShift(signal_3,signal_4)
+           CALL WriteAnalyticSignalToFile(signal_4,intType,outputSignalFileName)
 
 
-     END SUBROUTINE AnalyticSignalMultiplyTest
+     END SUBROUTINE AnalyticSignalMultiplyPlusShiftTest
 
 
 END PROGRAM main
