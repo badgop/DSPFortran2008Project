@@ -1,5 +1,6 @@
 MODULE ShiftMultiplexorModule
     USE analyticSignalModule
+    USE complexSignalModule
     IMPLICIT NONE
     PRIVATE
 
@@ -13,6 +14,7 @@ MODULE ShiftMultiplexorModule
 
         PROCEDURE :: Constructor
         PROCEDURE :: PerformAnalyticSignalShift
+        PROCEDURE :: PerformComplexSignalShift
         FINAL     :: Destructor
 
     END TYPE shiftMultiplexor_t
@@ -47,6 +49,28 @@ CONTAINS
 
 
     END SUBROUTINE PerformAnalyticSignalShift
+
+     SUBROUTINE PerformComplexSignalShift(this,baseSignal, shiftedSignal)
+
+        CLASS(shiftMultiplexor_t), INTENT(INOUT) :: this
+        CLASS(complexSignal_t), INTENT(INOUT)   :: baseSignal
+        CLASS(complexSignal_t), INTENT(INOUT)   :: shiftedSignal
+
+        INTEGER(8), ALLOCATABLE                   :: tmpSignalI(:)
+        INTEGER(8), ALLOCATABLE                   :: tmpSignalQ(:)
+
+        CALL baseSignal%ExtractSignalData(tmpSignalI,tmpSignalQ)
+
+
+        tmpSignalI = SHIFTA( tmpSignalI,this%shift)
+        tmpSignalQ = SHIFTA( tmpSignalI,this%shift)
+
+        CALL shiftedSignal%Constructor(tmpSignalI,tmpSignalQ)
+        DEALLOCATE(tmpSignalI)
+        DEALLOCATE(tmpSignalQ)
+
+
+    END SUBROUTINE PerformComplexSignalShift
 
     SUBROUTINE Destructor(this)
 

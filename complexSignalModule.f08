@@ -19,9 +19,11 @@
         GENERIC :: Constructor => ConstructorFromArrays,ConstructorFromAnalyticSignals
         PROCEDURE AssignDataComplex
         generic :: assignment(=) => AssignDataComplex
+
 !https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
 !https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         PROCEDURE :: MultiplyComplexSignals
+        generic :: operator(*) =>  MultiplyComplexSignals
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
         PROCEDURE GetSignalSize

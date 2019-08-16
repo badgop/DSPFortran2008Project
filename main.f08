@@ -1,5 +1,5 @@
 PROGRAM main
-
+    USE PrefixModule
     IMPLICIT NONE
 
 !    CALL InitDDSTest()
@@ -8,7 +8,10 @@ PROGRAM main
 !    CALL AnalyticSignalTestWriteRead()
 !    CALL ComplexSignalTestWriteRead()
 !    CALL AnalyticSignalMultiplyPlusShiftTest()
-     CALL ComplexDDSTest()
+!     CALL ComplexDDSTest(int((800*KILO),4))
+
+     CALL ComplexMultiplyTest(int((100*KILO),4))
+
 
 
     WRITE(*,*) 'DONE!'
@@ -275,7 +278,7 @@ PROGRAM main
 
      END SUBROUTINE AnalyticSignalMultiplyPlusShiftTest
 
-       SUBROUTINE ComplexDDSTest()
+       SUBROUTINE ComplexDDSTest(freq_in)
 
            USE analyticSignalModule
            USE complexSignalModule
@@ -284,6 +287,8 @@ PROGRAM main
            USE ComplexDDSModule
            USE MathConstModule
            USE PrefixModule
+
+           INTEGER(4), INTENT(IN) :: freq_in
 
            TYPE(complexSignal_t)   ::signal_out
            TYPE(analyticSignal_t) ::frequencys
@@ -297,7 +302,7 @@ PROGRAM main
             INTEGER(1) :: romLenthTruncedInBits
             !разрядность выходного сигнала
             INTEGER(1) :: outputSignalSampleCapacity
-            INTEGER(1) :: status
+
             INTEGER(4) :: centralFrequency
             REAL(8)                  :: phase
             INTEGER(8),allocatable :: freq(:)
@@ -312,12 +317,12 @@ PROGRAM main
             romLenthTruncedInBits=14
             outputSignalSampleCapacity=8
             samplingFrequency= 20*MEGA
-            centralFrequency= 800*KILO
+            centralFrequency= freq_in
 
             phase=PI/2
             intType=2
-
-           sig_len=5000
+           WRITE(*,*) 'ПОМНИ ПРО ДЛИНУ!'
+           sig_len=380001
 
            ALLOCATE(freq(1:sig_len))
 
@@ -336,7 +341,7 @@ PROGRAM main
 
        END SUBROUTINE ComplexDDSTest
 
-      SUBROUTINE ComplexMultiplyTest()
+      SUBROUTINE ComplexMultiplyTest(freq_in)
 
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
@@ -344,19 +349,48 @@ PROGRAM main
            USE ShiftMultiplexorModule
 
            TYPE(complexSignal_t) ::signal_1
-           INTEGER(1) :: intType
+           TYPE(complexSignal_t) ::signal_2
+           TYPE(complexSignal_t) ::signal_3
+           TYPE(complexSignal_t) ::signal_4
+           TYPE(shiftMultiplexor_t) :: shiftPlexor1
+
+
+
+           INTEGER(4), INTENT(IN) :: freq_in
+           INTEGER(1) :: shift,intType
+
+
+
            CHARACTER(50) :: inputSignalFileNameI, inputSignalFileNameQ
+           CHARACTER(50) :: inputDDSSignalFileNameI,inputDDSSignalFileNameQ
            CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
 
-
+           CALL ComplexDDSTest(freq_in)
 
            inputSignalFileNameI  = 'sig_outi.pcm'
            inputSignalFileNameQ  = 'sig_outq.pcm'
            outputSignalFileNameI = 'sig_outi_mult_test.pcm'
            outputSignalFileNameQ = 'sig_outq_mult_test.pcm'
+           inputDDSSignalFileNameI='complex_dds_test_i.pcm'
+           inputDDSSignalFileNameQ='complex_dds_test_q.pcm'
 
            intType=2
            CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ)
+           CALL ReadComplexSignalFromFile(signal_2,intType,inputDDSSignalFileNameI,inputDDSSignalFileNameQ)
+
+
+          shift=10
+          CALL shiftPlexor1%Constructor(shift)
+
+          signal_3=signal_1*signal_2
+
+          CALL shiftPlexor1%PerformComplexSignalShift(signal_3,signal_4)
+
+          intType=2
+          CALL WriteComplexSignalToFile(signal_4,intType,outputSignalFileNameI,outputSignalFileNameQ)
+
+
+
 
 
 
