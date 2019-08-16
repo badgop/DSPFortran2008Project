@@ -3,24 +3,27 @@ PROGRAM main
     IMPLICIT NONE
 
 !    CALL InitDDSTest()
-     CALL DDSOutputTest()
+!    CALL DDSOutputTest()
 !    CALL  AnalyticComplexSignalTestConstructors
 !    CALL AnalyticSignalTestWriteRead()
 !    CALL ComplexSignalTestWriteRead()
-    CALL AnalyticSignalMultiplyPlusShiftTest()
+!    CALL AnalyticSignalMultiplyPlusShiftTest()
+     CALL ComplexDDSTest()
+
+
     WRITE(*,*) 'DONE!'
 
 
     CONTAINS
 
 
-    ! процедура для тестирования функции конструктора класса DDS
+    ! процедура для тестирования функции конструктора класса DDS_t
     SUBROUTINE InitDDSTest()
 
             USE DDSModule
             USE MathConstModule
 
-            TYPE(DDS) ::ddsGenerator
+            TYPE(DDS_t) ::ddsGenerator
             !разрядность аккамулятора фазы
             INTEGER(1) :: romLengthInBits
             !частота дискретизации
@@ -55,7 +58,7 @@ PROGRAM main
             USE PrefixModule
             USE ModuleWriteReadArrayFromToFile
 
-            TYPE(DDS) ::ddsGenerator
+            TYPE(DDS_t) ::ddsGenerator
             !разрядность аккамулятора фазы
             INTEGER(1) :: romLengthInBits
             !частота дискретизации
@@ -92,7 +95,7 @@ PROGRAM main
             status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
                                              samplingFrequency,outputSignalSampleCapacity)
 
-            WRITE(*,*) 'Тест DDS запущен - '
+            WRITE(*,*) 'Тест DDS_t запущен - '
             WRITE(*,*) 'проверка значений полученных конструктором'
             WRITE(*,*) 'отсчетов на период', oscillationPeriod
 
@@ -271,6 +274,94 @@ PROGRAM main
 
 
      END SUBROUTINE AnalyticSignalMultiplyPlusShiftTest
+
+       SUBROUTINE ComplexDDSTest()
+
+           USE analyticSignalModule
+           USE complexSignalModule
+           USE ModuleWriteReadArrayFromToFile
+           USE WriteReadComplexSignalToFromFile
+           USE ComplexDDSModule
+           USE MathConstModule
+           USE PrefixModule
+
+           TYPE(complexSignal_t)   ::signal_out
+           TYPE(analyticSignal_t) ::frequencys
+           TYPE(complexDDS_t)     :: ddsGeneratorComplex
+
+           !разрядность аккамулятора фазы
+            INTEGER(1) :: romLengthInBits
+            !частота дискретизации
+            INTEGER(4) :: samplingFrequency
+            !число бит до которых усекатется таблица ПЗУ
+            INTEGER(1) :: romLenthTruncedInBits
+            !разрядность выходного сигнала
+            INTEGER(1) :: outputSignalSampleCapacity
+            INTEGER(1) :: status
+            INTEGER(4) :: centralFrequency
+            REAL(8)                  :: phase
+            INTEGER(8),allocatable :: freq(:)
+            INTEGER(4) :: sig_len
+            CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
+            INTEGER(1) :: intType
+
+            outputSignalFileNameI = 'complex_dds_test_i.pcm'
+            outputSignalFileNameQ = 'complex_dds_test_q.pcm'
+
+            romLengthInBits=32
+            romLenthTruncedInBits=14
+            outputSignalSampleCapacity=8
+            samplingFrequency= 20*MEGA
+            centralFrequency= 800*KILO
+
+            phase=PI/2
+            intType=2
+
+           sig_len=5000
+
+           ALLOCATE(freq(1:sig_len))
+
+           freq=centralFrequency
+
+           CALL frequencys%Constructor(freq)
+
+           CALL ddsGeneratorComplex%Constructor(romLengthInBits,romLenthTruncedInBits,samplingFrequency,&
+                                                outputSignalSampleCapacity,phase)
+
+
+           CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+
+           intType=2
+           CALL WriteComplexSignalToFile(signal_out,intType,outputSignalFileNameI,outputSignalFileNameQ)
+
+       END SUBROUTINE ComplexDDSTest
+
+      SUBROUTINE ComplexMultiplyTest()
+
+           USE complexSignalModule
+           USE ModuleWriteReadArrayFromToFile
+           USE WriteReadComplexSignalToFromFile
+           USE ShiftMultiplexorModule
+
+           TYPE(complexSignal_t) ::signal_1
+           INTEGER(1) :: intType
+           CHARACTER(50) :: inputSignalFileNameI, inputSignalFileNameQ
+           CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
+
+
+
+           inputSignalFileNameI  = 'sig_outi.pcm'
+           inputSignalFileNameQ  = 'sig_outq.pcm'
+           outputSignalFileNameI = 'sig_outi_mult_test.pcm'
+           outputSignalFileNameQ = 'sig_outq_mult_test.pcm'
+
+           intType=2
+           CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ)
+
+
+
+
+      END SUBROUTINE ComplexMultiplyTest
 
 
 END PROGRAM main

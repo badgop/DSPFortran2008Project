@@ -18,7 +18,7 @@ MODULE DDSModule
     IMPLICIT NONE
     PRIVATE
 
-    TYPE,  PUBLIC :: DDS
+    TYPE,  PUBLIC :: DDS_t
 
             PRIVATE
             ! ПЗУ таблицы с отчетами синуса
@@ -61,7 +61,7 @@ MODULE DDSModule
 
         FINAL :: destructor
 
-    END TYPE DDS
+    END TYPE DDS_t
 
 CONTAINS
 
@@ -69,7 +69,7 @@ CONTAINS
     SUBROUTINE ComputeOutput(this, inputSignal, outputSignal)
         USE analyticSignalModule
 
-        CLASS(DDS), INTENT(INOUT)              :: this
+        CLASS(DDS_t), INTENT(INOUT)              :: this
         ! массив  со значениями частоты
         CLASS(analyticSignal_t), INTENT(IN)     :: inputSignal
         ! массив с выходом генератора
@@ -117,14 +117,14 @@ CONTAINS
     
 
     ! Член функция типа КОНСТРУКТОР
-    !Выполняет инициализацию генератора ПЦС (DDS)
-    ! Вызывать после обявления переменой типа DDS
+    !Выполняет инициализацию генератора ПЦС (DDS_t)
+    ! Вызывать после обявления переменой типа DDS_t
     FUNCTION InitDDS(this, romLengthInBits, romLengthTruncedInBits, samplingFrequency, outputSignalSampleCapacity) RESULT (ret)
 
        USE MathConstModule
        IMPLICIT NONE
 
-       CLASS(DDS), INTENT(INOUT) :: this
+       CLASS(DDS_t), INTENT(INOUT) :: this
        INTEGER(1), INTENT(IN)    :: romLengthInBits
        INTEGER(1), INTENT(IN)    :: romLengthTruncedInBits
        INTEGER(4), INTENT(IN)    :: samplingFrequency
@@ -172,7 +172,7 @@ CONTAINS
         USE MathConstModule
         IMPLICIT NONE
 
-        CLASS(DDS), INTENT(INOUT)   :: this
+        CLASS(DDS_t), INTENT(INOUT)   :: this
         INTEGER(1)               :: ret
 
         CHARACTER(*), INTENT(IN) :: romTableFileName
@@ -180,7 +180,8 @@ CONTAINS
         REAL(8)                  :: phase
         INTEGER(8)               :: phaseAccMax
 
-        WRITE(*,*) 'Тест DDS запущен - проверка значений полученных конструктором'
+        WRITE(*,*) 'Тест DDS_t запущен'
+         WRITE(*,*) 'проверка значений полученных конструктором'
         WRITE(*,*) 'this%romLengthInBits ' ,this%romLengthInBits
         WRITE(*,*) 'this%romLengthTruncedInBits' ,this%romLengthTruncedInBits
         WRITE(*,*) 'this%samplingFrequency' ,this%samplingFrequency
@@ -227,7 +228,7 @@ CONTAINS
       PURE FUNCTION GetAmplitudeSample(this,inputPhase) RESULT (amplitude)
 
         IMPLICIT NONE
-        CLASS(DDS), INTENT(IN) :: this
+        CLASS(DDS_t), INTENT(IN) :: this
         INTEGER(8), INTENT(IN) ::inputPhase
         INTEGER(2)             ::amplitude
         INTEGER(8)             ::resultPhase
@@ -245,7 +246,7 @@ CONTAINS
      SUBROUTINE SetPhase(this,phaseInRadian)
 
         IMPLICIT NONE
-        CLASS(DDS), INTENT(INOUT) :: this
+        CLASS(DDS_t), INTENT(INOUT) :: this
         REAL(8)   , INTENT(IN) :: phaseInRadian
 
         !https://habr.com/ru/company/xakep/blog/257897/
@@ -257,10 +258,10 @@ CONTAINS
     ! деструкторы запускаются автоматически, после того как
     ! созданный обьект выйдет из области видимости.
     SUBROUTINE destructor(this)
-        TYPE(DDS), INTENT(INOUT) :: this
+        TYPE(DDS_t), INTENT(INOUT) :: this
 
         DEALLOCATE(this%romSinusTable)
-        WRITE(*,*) 'DDS destructor завершил работу!'
+        WRITE(*,*) 'DDS_t destructor завершил работу!'
 
     END SUBROUTINE
 

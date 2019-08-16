@@ -21,6 +21,7 @@
         generic :: assignment(=) => AssignDataComplex
 !https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
 !https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
+        PROCEDURE :: MultiplyComplexSignals
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
         PROCEDURE GetSignalSize
@@ -84,6 +85,26 @@ CONTAINS
         this%signalSize=this%i%GetSignalSize()
 
     END SUBROUTINE ConstructorFromAnalyticSignals
+
+    FUNCTION MultiplyComplexSignals(xOp,yOp)
+         CLASS(complexSignal_t), INTENT(IN)  :: xOp
+         CLASS(complexSignal_t), INTENT(IN)  :: yOp
+         CLASS(complexSignal_t), allocatable ::MultiplyComplexSignals
+
+
+            !r%signal=xOp%signal*yOp%signal
+            allocate( MultiplyComplexSignals)
+
+            ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
+            ! Хотя деструктор вызывается спокойно с нужными парамерами
+            ! требуется расследование
+            !MultiplyComplexSignals%Signal=xOp%signal*yOp%signal
+            MultiplyComplexSignals%i=xOp%i*yOp%i-xOp%q*yOp%q
+            MultiplyComplexSignals%q=xOp%i*yOp%q-yOp%i*xOp%q
+
+
+
+     END FUNCTION MultiplyComplexSignals
 
 
     SUBROUTINE ExtractSignalData(this,extractedI,extractedq)

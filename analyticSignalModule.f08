@@ -15,13 +15,19 @@ MODULE analyticSignalModule
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
         PROCEDURE GetSignalSize
+
         PROCEDURE :: MultiplyAnalyticSignals
+        PROCEDURE :: SubtractAnalyticSignals
+        PROCEDURE :: AddAnalyticSignals
 
 
         PROCEDURE AssignDataFromAssignment
 
         generic :: assignment(=) =>  AssignDataFromAssignment
         generic :: operator(*) =>  MultiplyAnalyticSignals
+        generic :: operator(-) =>  SubtractAnalyticSignals
+        generic :: operator(+) =>   AddAnalyticSignals
+
 !https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
 !https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         FINAL :: destructor
@@ -105,6 +111,39 @@ CONTAINS
             MultiplyAnalyticSignals%Signal=xOp%signal*yOp%signal
 
      END FUNCTION MultiplyAnalyticSignals
+
+     FUNCTION SubtractAnalyticSignals(xOp,yOp)
+         CLASS(analyticSignal_t), INTENT(IN)  :: xOp
+         CLASS(analyticSignal_t), INTENT(IN)  :: yOp
+         CLASS(analyticSignal_t), allocatable ::SubtractAnalyticSignals
+
+
+            !r%signal=xOp%signal*yOp%signal
+            allocate( SubtractAnalyticSignals)
+
+            ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
+            ! Хотя деструктор вызывается спокойно с нужными парамерами
+            ! требуется расследование
+            SubtractAnalyticSignals%Signal=xOp%signal-yOp%signal
+
+     END FUNCTION SubtractAnalyticSignals
+
+      FUNCTION   AddAnalyticSignals(xOp,yOp)
+         CLASS(analyticSignal_t), INTENT(IN)  :: xOp
+         CLASS(analyticSignal_t), INTENT(IN)  :: yOp
+         CLASS(analyticSignal_t), allocatable :: AddAnalyticSignals
+
+
+            !r%signal=xOp%signal*yOp%signal
+            allocate(   AddAnalyticSignals)
+
+            ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
+            ! Хотя деструктор вызывается спокойно с нужными парамерами
+            ! требуется расследование
+              AddAnalyticSignals%Signal=xOp%signal+yOp%signal
+
+     END FUNCTION   AddAnalyticSignals
+
 
 
     SUBROUTINE destructor(this)
