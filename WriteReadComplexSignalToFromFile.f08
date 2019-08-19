@@ -104,21 +104,21 @@ MODULE WriteReadComplexSignalToFromFile
 
 
                 CALL WriteArrayToFile(int(arrayInt8I,2),fileNameI)
-                CALL WriteArrayToFile(int(arrayInt8I,2),fileNameQ)
+                CALL WriteArrayToFile(int(arrayInt8Q,2),fileNameQ)
 
                 DEALLOCATE(arrayInt8I)
                 DEALLOCATE(arrayInt8Q)
 
             CASE(4)
                 CALL WriteArrayToFile(int(arrayInt8I,4),fileNameI)
-                CALL WriteArrayToFile(int(arrayInt8I,4),fileNameQ)
+                CALL WriteArrayToFile(int(arrayInt8Q,4),fileNameQ)
 
                 DEALLOCATE(arrayInt8I)
                 DEALLOCATE(arrayInt8Q)
 
             CASE(8)
                 CALL WriteArrayToFile(arrayInt8I,fileNameI)
-                CALL WriteArrayToFile(arrayInt8I,fileNameQ)
+                CALL WriteArrayToFile(arrayInt8Q,fileNameQ)
 
                 DEALLOCATE(arrayInt8I)
                 DEALLOCATE(arrayInt8Q)

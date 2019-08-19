@@ -27,6 +27,7 @@
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
         PROCEDURE GetSignalSize
+        PROCEDURE SetName
         FINAL :: destructor
 
     END TYPE complexSignal_t
@@ -101,8 +102,11 @@ CONTAINS
             ! Хотя деструктор вызывается спокойно с нужными парамерами
             ! требуется расследование
             !MultiplyComplexSignals%Signal=xOp%signal*yOp%signal
-            MultiplyComplexSignals%i=xOp%i*yOp%i-xOp%q*yOp%q
-            MultiplyComplexSignals%q=xOp%i*yOp%q-yOp%i*xOp%q
+            CALL  MultiplyComplexSignals%SetName('комплпекс умн И','комплпекс умн Ку')
+            MultiplyComplexSignals%i=(xOp%i*yOp%i)-(xOp%q*yOp%q)
+            MultiplyComplexSignals%q=(xOp%i*yOp%q)+(yOp%i*xOp%q)
+
+            MultiplyComplexSignals%isAllocated=.TRUE.
 
 
 
@@ -134,6 +138,17 @@ CONTAINS
 
          signalSize = this%signalSize
      END FUNCTION GetSignalSize
+
+       SUBROUTINE SetName(this,signalNameI,signalNameQ)
+
+            CLASS(complexSignal_t), INTENT(INOUT)  :: this
+            CHARACTER(*),INTENT(IN)          :: signalNameI
+            CHARACTER(*),INTENT(IN)          :: signalNameQ
+
+            this%i%signalName=signalNameI
+            this%q%signalName=signalNameQ
+
+     END SUBROUTINE SetName
 
 
 

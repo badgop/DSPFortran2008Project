@@ -53,7 +53,9 @@ MODULE DDSModule
 
     CONTAINS
 
-        PROCEDURE          :: ComputeOutput
+        PROCEDURE          :: ComputeOutputFromArray
+        PROCEDURE          :: ComputeOutputFromScalar
+         generic           :: ComputeOutput =>  ComputeOutputFromArray,ComputeOutputFromScalar
         PROCEDURE          :: Constructor => InitDDS
         PROCEDURE          :: DebugOutput
         PROCEDURE, PRIVATE :: GetAmplitudeSample
@@ -66,7 +68,7 @@ MODULE DDSModule
 CONTAINS
 
 
-    SUBROUTINE ComputeOutput(this, inputSignal, outputSignal)
+    SUBROUTINE ComputeOutputFromArray(this, inputSignal, outputSignal)
         USE analyticSignalModule
 
         CLASS(DDS_t), INTENT(INOUT)              :: this
@@ -113,8 +115,50 @@ CONTAINS
 
         DEALLOCATE(tempArray)
         DEALLOCATE(frequencyCodes)
-    END SUBROUTINE ComputeOutput
+    END SUBROUTINE ComputeOutputFromArray
     
+
+     SUBROUTINE ComputeOutputFromScalar(this, frequency, signalLength, outputSignal)
+        USE analyticSignalModule
+
+        CLASS(DDS_t), INTENT(INOUT)              :: this
+
+        INTEGER(8), INTENT(IN) :: frequency
+        INTEGER(8), INTENT(IN) :: signalLength
+
+        CLASS(analyticSignal_t), INTENT(INOUT) :: outputSignal
+
+
+
+        INTEGER(8) :: frequencyCode
+        INTEGER(8), ALLOCATABLE             :: tempArray (:)
+        INTEGER(8)             :: i
+        ! из массива со значениями частоты, получаем массив с  значениями кодов частоты
+
+
+        frequencyCode= INT((REAL(frequency)/this%frequencyStep),8)
+
+         ALLOCATE(tempArray(1:signalLength))
+
+
+        ! цикл вычисления выходного сигнала
+        DO i=1,signalLength
+            ! С ПОСЛЕД ФАЗЫ!!!!!
+            tempArray(i)= GetAmplitudeSample(this,this%phaseAccState)
+
+            this%phaseAccState=this%phaseAccState+frequencyCode
+            !эмуляция переполнения аккумулятора фазы
+            IF (this%phaseAccState>this%romLengthInNumber) THEN
+                this%phaseAccState=this%phaseAccState-this%romLengthInNumber
+            END IF
+            !WRITE(*,*) 'ФАЗА', this%phaseAccState
+        END DO
+
+        CALL outputSignal%Constructor(tempArray)
+
+        DEALLOCATE(tempArray)
+
+    END SUBROUTINE ComputeOutputFromScalar
 
     ! Член функция типа КОНСТРУКТОР
     !Выполняет инициализацию генератора ПЦС (DDS_t)
@@ -248,11 +292,9 @@ CONTAINS
         IMPLICIT NONE
         CLASS(DDS_t), INTENT(INOUT) :: this
         REAL(8)   , INTENT(IN) :: phaseInRadian
-
         !https://habr.com/ru/company/xakep/blog/257897/
         !должно раьриаит
         this%phaseAccState=int((phaseInRadian/this%phaseStep),8)
-
      END SUBROUTINE SetPhase
 
     ! деструкторы запускаются автоматически, после того как
@@ -262,7 +304,6 @@ CONTAINS
 
         DEALLOCATE(this%romSinusTable)
         WRITE(*,*) 'DDS_t destructor завершил работу!'
-
     END SUBROUTINE
 
 END MODULE DDSModule

@@ -3,14 +3,16 @@ PROGRAM main
     IMPLICIT NONE
 
 !    CALL InitDDSTest()
-!    CALL DDSOutputTest()
+ !   CALL DDSOutputTest()
 !    CALL  AnalyticComplexSignalTestConstructors
 !    CALL AnalyticSignalTestWriteRead()
 !    CALL ComplexSignalTestWriteRead()
-!    CALL AnalyticSignalMultiplyPlusShiftTest()
-!     CALL ComplexDDSTest(int((800*KILO),4))
+ !   CALL AnalyticSignalMultiplyPlusShiftTest()
+!     CALL ComplexDDSTest(int((800*KILO),4),380001)
 
-     CALL ComplexMultiplyTest(int((100*KILO),4))
+
+!    CALL AnalyticSignalTestOperators()
+     CALL ComplexMultiplyTest(int((50*KILO)))
 
 
 
@@ -89,10 +91,10 @@ PROGRAM main
 
             romLengthInBits=32
             romLenthTruncedInBits=14
-            outputSignalSampleCapacity=8
-            samplingFrequency= 20*MEGA
+            outputSignalSampleCapacity=14
+            samplingFrequency= 40*MEGA
 
-            centralFrequency= 1*MEGA
+            centralFrequency= 100*KILO
             oscillationPeriod=samplingFrequency/ centralFrequency
 
             status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
@@ -102,10 +104,10 @@ PROGRAM main
             WRITE(*,*) 'проверка значений полученных конструктором'
             WRITE(*,*) 'отсчетов на период', oscillationPeriod
 
-             phase=0.0
+             phase=0
              CALL ddsGenerator%SetPhase(phase)
 
-            signalLengthInSamples=oscillationPeriod*3000
+            signalLengthInSamples=2000  !oscillationPeriod*3000
 
             ALLOCATE(frequencys(1:signalLengthInSamples))
 
@@ -260,16 +262,18 @@ PROGRAM main
            TYPE(shiftMultiplexor_t) :: shiftPlexor1
            INTEGER(1) :: shift,intType
            CHARACTER(50) :: inputSignalFileName
+           CHARACTER(50) :: inputSignalFileName2
            CHARACTER(50) :: outputSignalFileName
 
 
-           shift=7
+           shift=2
            CALL shiftPlexor1%Constructor(shift)
-           inputSignalFileName  = 'dds_output_rest.pcm'
+           inputSignalFileName  = 'dds_output_rest_4.pcm'
+           inputSignalFileName2  = 'dds_output_rest_1.pcm'
            outputSignalFileName = 'dds_output_writed_multiplay.pcm'
            intType=2
            CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName)
-           CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileName)
+           CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileName2)
            WRITE(*,*) 'signal_3=signal_1*signal_2'
            signal_3=signal_1*signal_2
            CALL shiftPlexor1%PerformAnalyticSignalShift(signal_3,signal_4)
@@ -278,7 +282,7 @@ PROGRAM main
 
      END SUBROUTINE AnalyticSignalMultiplyPlusShiftTest
 
-       SUBROUTINE ComplexDDSTest(freq_in)
+       SUBROUTINE ComplexDDSTest(freq_in,sig_len)
 
            USE analyticSignalModule
            USE complexSignalModule
@@ -289,6 +293,7 @@ PROGRAM main
            USE PrefixModule
 
            INTEGER(4), INTENT(IN) :: freq_in
+           INTEGER(4),INTENT(IN) :: sig_len
 
            TYPE(complexSignal_t)   ::signal_out
            TYPE(analyticSignal_t) ::frequencys
@@ -306,7 +311,7 @@ PROGRAM main
             INTEGER(4) :: centralFrequency
             REAL(8)                  :: phase
             INTEGER(8),allocatable :: freq(:)
-            INTEGER(4) :: sig_len
+
             CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
             INTEGER(1) :: intType
 
@@ -315,14 +320,14 @@ PROGRAM main
 
             romLengthInBits=32
             romLenthTruncedInBits=14
-            outputSignalSampleCapacity=8
-            samplingFrequency= 20*MEGA
+            outputSignalSampleCapacity=12
+            samplingFrequency= 2*MEGA
             centralFrequency= freq_in
 
-            phase=PI/2
+            phase=0.0
             intType=2
            WRITE(*,*) 'ПОМНИ ПРО ДЛИНУ!'
-           sig_len=380001
+           !sig_len=380001
 
            ALLOCATE(freq(1:sig_len))
 
@@ -365,37 +370,157 @@ PROGRAM main
            CHARACTER(50) :: inputDDSSignalFileNameI,inputDDSSignalFileNameQ
            CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
 
-           CALL ComplexDDSTest(freq_in)
+           CALL ComplexDDSTest(freq_in,1624993)
 
-           inputSignalFileNameI  = 'sig_outi.pcm'
-           inputSignalFileNameQ  = 'sig_outq.pcm'
+           inputSignalFileNameI  = 'gfsk_mux_i_cos.pcm'
+           inputSignalFileNameQ  = 'gfsk_mux_i_sin.pcm'
            outputSignalFileNameI = 'sig_outi_mult_test.pcm'
            outputSignalFileNameQ = 'sig_outq_mult_test.pcm'
            inputDDSSignalFileNameI='complex_dds_test_i.pcm'
            inputDDSSignalFileNameQ='complex_dds_test_q.pcm'
+
+
+           CALL signal_1%SetName('первый И',' первый Ку')
+           CALL signal_2%SetName('вторий И',' вторий Ку')
+           CALL signal_3%SetName('третий И',' третий Ку')
+           CALL signal_4%SetName('четвертый И',' четвертый Ку')
 
            intType=2
            CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ)
            CALL ReadComplexSignalFromFile(signal_2,intType,inputDDSSignalFileNameI,inputDDSSignalFileNameQ)
 
 
-          shift=10
-          CALL shiftPlexor1%Constructor(shift)
+           shift=10
+           CALL shiftPlexor1%Constructor(shift)
 
-          signal_3=signal_1*signal_2
 
-          CALL shiftPlexor1%PerformComplexSignalShift(signal_3,signal_4)
+!
+           signal_3=signal_2*signal_1
 
-          intType=2
-          CALL WriteComplexSignalToFile(signal_4,intType,outputSignalFileNameI,outputSignalFileNameQ)
-
+           CALL shiftPlexor1%PerformComplexSignalShift(signal_3,signal_4)
 
 
 
-
+           intType=2
+           CALL WriteComplexSignalToFile(signal_4,intType,outputSignalFileNameI,outputSignalFileNameQ)
 
 
       END SUBROUTINE ComplexMultiplyTest
+
+         SUBROUTINE AnalyticSignalTestOperators()
+
+           USE analyticSignalModule
+           USE complexSignalModule
+           USE ModuleWriteReadArrayFromToFile
+           USE WriteReadAnalyticSignalToFromFile
+           USE DDSModule
+           USE ShiftMultiplexorModule
+           IMPLICIT NONE
+
+           TYPE(analyticSignal_t) ::signal_1
+           TYPE(analyticSignal_t) ::signal_2
+           TYPE(analyticSignal_t) ::signal_3
+           TYPE(analyticSignal_t) ::signal_4
+           TYPE(analyticSignal_t) ::signal_5
+           TYPE(analyticSignal_t) ::signal_6
+            TYPE(analyticSignal_t) ::signal_7
+            TYPE(shiftMultiplexor_t) :: shiftPlexor1
+
+
+            TYPE(DDS_t) ::ddsGenerator
+            !разрядность аккамулятора фазы
+            INTEGER(1) :: romLengthInBits
+            !частота дискретизации
+            INTEGER(4) :: samplingFrequency
+            !число бит до которых усекатется таблица ПЗУ
+            INTEGER(1) :: romLenthTruncedInBits
+            !разрядность выходного сигнала
+            INTEGER(1) :: outputSignalSampleCapacity
+
+
+
+
+           CHARACTER(50) :: inputSignalFileName
+            CHARACTER(50) :: inputSignalFileName2
+           CHARACTER(50) :: outputSignalFileName
+           LOGICAL       :: state=.FALSE.
+
+
+           INTEGER(2),ALLOCATABLE :: testSignal(:)
+           INTEGER(2),ALLOCATABLE :: testSignal2(:)
+           INTEGER(8),ALLOCATABLE :: testSignalExtract(:)
+
+            REAL(8)                  :: phase
+            INTEGER(4) :: centralFrequency
+            INTEGER(1) :: status
+                INTEGER(1) :: shift,intType
+            romLengthInBits=32
+            romLenthTruncedInBits=14
+            outputSignalSampleCapacity=8
+            samplingFrequency= 20*MEGA
+
+            centralFrequency= 1*MEGA
+
+            status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
+                                             samplingFrequency,outputSignalSampleCapacity)
+
+
+             phase=0.0
+             CALL ddsGenerator%SetPhase(phase)
+
+             CALL ddsGenerator%ComputeOutput(int(centralFrequency,8),int(30000,8),signal_1)
+
+             centralFrequency= 100*KILO
+             CALL ddsGenerator%ComputeOutput(int(centralFrequency,8),int(30000,8),signal_6)
+
+!           inputSignalFileName2='dds_output_rest_4.pcm'
+!           inputSignalFileName  = 'dds_output_rest_1.pcm'
+!           outputSignalFileName = 'dds_output_extracted.pcm'
+!
+!           CALL ReadArrayFromFile(testSignal,inputSignalFileName)
+!           CALL ReadArrayFromFile(testSignal2,inputSignalFileName2)
+
+!           CALL signal_1%Constructor(  int(testSignal,8))
+!           CALL signal_6%Constructor(  int(testSignal2,8))
+
+           CALL signal_1%SetName('Первый!')
+
+           signal_2=signal_1
+
+           CALL signal_2%SetName('Второй!')
+
+           signal_3=signal_1+signal_6
+
+           CALL signal_3%SetName('Третрий!')
+
+           CALL signal_3%ExtractSignalData(testSignalExtract)
+           CALL WriteArrayToFile(int(testSignalExtract,2),'analytic_add_test.pcm')
+
+
+           DEALLOCATE(testSignalExtract)
+           signal_4=signal_1-signal_6
+
+           CALL signal_4%SetName('Чотвiртий!')
+           CALL signal_4%ExtractSignalData(testSignalExtract)
+           CALL WriteArrayToFile(int(testSignalExtract,2),'analytic_subctract_test.pcm')
+
+            DEALLOCATE(testSignalExtract)
+
+           CALL signal_5%SetName('Пятий!')
+
+           signal_5=signal_1*signal_6
+           CALL signal_5%ExtractSignalData(testSignalExtract)
+           !CALL WriteArrayToFile(int(testSignalExtract,2),'analytic_multi_test.pcm')
+
+           shift=3
+          CALL shiftPlexor1%Constructor(shift)
+
+          CALL shiftPlexor1%PerformAnalyticSignalShift(signal_5,signal_7)
+
+intType=2
+        CALL WriteAnalyticSignalToFile(signal_7,intType,'analytic_multi_test.pcm')
+
+     END SUBROUTINE  AnalyticSignalTestOperators
 
 
 END PROGRAM main

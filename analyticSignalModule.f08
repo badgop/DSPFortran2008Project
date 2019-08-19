@@ -7,7 +7,8 @@ MODULE analyticSignalModule
         PRIVATE
         INTEGER(8),ALLOCATABLE :: signal(:)
         LOGICAL                :: isAllocated=.FALSE.
-        INTEGER(8),PUBLIC      :: signalSize= 0
+        INTEGER(8)             :: signalSize= 0
+        CHARACTER(50),PUBLIC          :: signalName=''
 
     CONTAINS
 
@@ -15,6 +16,7 @@ MODULE analyticSignalModule
         PROCEDURE ExtractSignalData
         PROCEDURE GetAllocationStatus
         PROCEDURE GetSignalSize
+        PROCEDURE SetName
 
         PROCEDURE :: MultiplyAnalyticSignals
         PROCEDURE :: SubtractAnalyticSignals
@@ -96,6 +98,16 @@ CONTAINS
          signalSize = this%signalSize
      END FUNCTION GetSignalSize
 
+
+     SUBROUTINE SetName(this,signalName)
+
+            CLASS(analyticSignal_t), INTENT(INOUT)  :: this
+            CHARACTER(*),INTENT(IN)          :: signalName
+
+            this%signalName=signalName
+
+     END SUBROUTINE SetName
+
      FUNCTION MultiplyAnalyticSignals(xOp,yOp)
          CLASS(analyticSignal_t), INTENT(IN)  :: xOp
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
@@ -109,6 +121,8 @@ CONTAINS
             ! Хотя деструктор вызывается спокойно с нужными парамерами
             ! требуется расследование
             MultiplyAnalyticSignals%Signal=xOp%signal*yOp%signal
+            CALL MultiplyAnalyticSignals%Setname('промежут умножение')
+            MultiplyAnalyticSignals%isAllocated=.TRUE.
 
      END FUNCTION MultiplyAnalyticSignals
 
@@ -124,7 +138,9 @@ CONTAINS
             ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
             ! Хотя деструктор вызывается спокойно с нужными парамерами
             ! требуется расследование
+            CALL SubtractAnalyticSignals%Setname('промежут вычитание')
             SubtractAnalyticSignals%Signal=xOp%signal-yOp%signal
+            SubtractAnalyticSignals%isAllocated=.TRUE.
 
      END FUNCTION SubtractAnalyticSignals
 
@@ -140,7 +156,9 @@ CONTAINS
             ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
             ! Хотя деструктор вызывается спокойно с нужными парамерами
             ! требуется расследование
+            CALL AddAnalyticSignals%Setname('промежутсложение')
               AddAnalyticSignals%Signal=xOp%signal+yOp%signal
+              AddAnalyticSignals%isAllocated=.TRUE.
 
      END FUNCTION   AddAnalyticSignals
 
@@ -152,10 +170,18 @@ CONTAINS
 
         DEALLOCATE(this%signal, STAT=stat)
         IF (STAT==0) THEN
-            WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize
+            WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
             this%isAllocated=.FALSE.
         ELSE
-            WRITE(*,*) 'Не могу освободить память '
+            IF(  (.NOT. ALLOCATED(this%signal)).AND.(.NOT.( this%isAllocated)   )  ) THEN
+                    WRITE(*,*) 'уже освободили память ',this%signalName
+
+                ELSE
+
+                    WRITE(*,*) 'Не могу освободить память ',this%signalName
+            END IF
+
+
         END IF
 
 

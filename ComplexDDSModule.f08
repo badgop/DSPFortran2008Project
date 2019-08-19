@@ -13,7 +13,8 @@ MODULE ComplexDDSModule
         TYPE(DDS_t) ::ddsGeneratorI
         TYPE(DDS_t) ::ddsGeneratorQ
 
-        REAL(8)     :: phaseShift=PI/2.0
+        REAL(8)     :: phaseShiftI=PI/2.0
+        REAL(8)     :: phaseShiftQ=0.0
         LOGICAL     :: jSign=.FALSE.
 
 
@@ -29,14 +30,15 @@ MODULE ComplexDDSModule
 
 CONTAINS
 
-    SUBROUTINE Constructor(this,romLengthInBits, romLengthTruncedInBits, samplingFrequency, outputSignalSampleCapacity,phaseShift)
+    SUBROUTINE Constructor(this,romLengthInBits, romLengthTruncedInBits, samplingFrequency, outputSignalSampleCapacity,phaseShiftI,phaseShiftQ)
        CLASS(complexDDS_t), INTENT(INOUT) :: this
 
        INTEGER(1), INTENT(IN)    :: romLengthInBits
        INTEGER(1), INTENT(IN)    :: romLengthTruncedInBits
        INTEGER(4), INTENT(IN)    :: samplingFrequency
        INTEGER(1), INTENT(IN)    :: outputSignalSampleCapacity
-       REAL(8)   , INTENT(IN)    :: phaseShift
+       REAL(8)   , INTENT(IN),OPTIONAL    :: phaseShiftI
+       REAL(8)   , INTENT(IN),OPTIONAL    :: phaseShiftQ
 
        INTEGER(1) :: status
 
@@ -48,7 +50,8 @@ CONTAINS
                                              samplingFrequency,outputSignalSampleCapacity)
 
 
-       CALL  this%ddsGeneratorI%SetPhase(phaseShift)
+       CALL  this%ddsGeneratorI%SetPhase(PI*0.5)
+       CALL  this%ddsGeneratorQ%SetPhase(PI*0)
 
 
     END SUBROUTINE
@@ -63,7 +66,7 @@ CONTAINS
         type(analyticSignal_t)     :: out_q
 
         CALL this%ddsGeneratorI%ComputeOutput(inputSignal, out_i)
-        CALL this%ddsGeneratorI%ComputeOutput(inputSignal, out_q)
+        CALL this%ddsGeneratorQ%ComputeOutput(inputSignal, out_q)
 
         CALL outputSignalComplex%Constructor(out_i,out_q)
 

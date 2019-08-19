@@ -63,7 +63,7 @@ CONTAINS
 
 
         tmpSignalI = SHIFTA( tmpSignalI,this%shift)
-        tmpSignalQ = SHIFTA( tmpSignalI,this%shift)
+        tmpSignalQ = SHIFTA( tmpSignalQ,this%shift)
 
         CALL shiftedSignal%Constructor(tmpSignalI,tmpSignalQ)
         DEALLOCATE(tmpSignalI)
