@@ -336,7 +336,7 @@ PROGRAM main
            CALL frequencys%Constructor(freq)
 
            CALL ddsGeneratorComplex%Constructor(romLengthInBits,romLenthTruncedInBits,samplingFrequency,&
-                                                outputSignalSampleCapacity,phase)
+                                                outputSignalSampleCapacity)
 
 
            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)

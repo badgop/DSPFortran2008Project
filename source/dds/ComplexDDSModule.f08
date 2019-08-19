@@ -30,15 +30,14 @@ MODULE ComplexDDSModule
 
 CONTAINS
 
-    SUBROUTINE Constructor(this,romLengthInBits, romLengthTruncedInBits, samplingFrequency, outputSignalSampleCapacity,phaseShiftI,phaseShiftQ)
+    SUBROUTINE Constructor(this,romLengthInBits, romLengthTruncedInBits, samplingFrequency, outputSignalSampleCapacity)
        CLASS(complexDDS_t), INTENT(INOUT) :: this
 
        INTEGER(1), INTENT(IN)    :: romLengthInBits
        INTEGER(1), INTENT(IN)    :: romLengthTruncedInBits
        INTEGER(4), INTENT(IN)    :: samplingFrequency
        INTEGER(1), INTENT(IN)    :: outputSignalSampleCapacity
-       REAL(8)   , INTENT(IN),OPTIONAL    :: phaseShiftI
-       REAL(8)   , INTENT(IN),OPTIONAL    :: phaseShiftQ
+
 
        INTEGER(1) :: status
 
