@@ -29,10 +29,15 @@ INTERFACE ReadArrayFromFile
     !======================================================
     !                   Входные парметры:
     ! name_x - имя файла из которого происходит чтение данных
+    !
+    ! isBinary - логическая переменная - Является ли файл бинарным?
+    ! если Истинно - то пишется/читается бинарный файл
+    !
     !======================================================
     !                   Выходные парметры:
     ! x - динамический массив в  который будет записанна информация из файла
     !     Массив должен не иметь формы при передаче!
+    !    При чтении записи целых числе максимум разряднов 21 (64 битное целоы максимальное)
     !======================================================
     !
     !  МАКС размер файла  - ‭9 223 372 036 854 775 807‬ байт
@@ -73,7 +78,7 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-        CHARACTER(10) :: fmt="(I20.3)"
+        CHARACTER(10) :: fmt="(I21.3)"
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -137,7 +142,7 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-        CHARACTER(10) :: fmt="(I20.3)"
+        CHARACTER(10) :: fmt="(I21.3)"
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -201,7 +206,7 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-        CHARACTER(10) :: fmt="(I20.3)"
+        CHARACTER(10) :: fmt="(I21.3)"
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -263,7 +268,7 @@ CONTAINS
         INTEGER(INT_KIND), INTENT(IN) :: x(:)
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
-        CHARACTER(10) :: fmt="(I20.3)"
+        CHARACTER(10) :: fmt="(I21.3)"
 
         INTEGER(4):: iostat_Num=0
         IF (isBinary) THEN
@@ -306,7 +311,7 @@ CONTAINS
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
 
-        CHARACTER(10) :: fmt="(I20.3)"
+        CHARACTER(10) :: fmt="(I21.3)"
 
         INTEGER(4):: iostat_Num=0
 
@@ -348,7 +353,7 @@ CONTAINS
         INTEGER(INT_KIND), INTENT(IN) :: x(:)
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
-        CHARACTER(10) :: fmt="(I20.3)"
+        CHARACTER(10) :: fmt="(I21.3)"
 
         INTEGER(4):: iostat_Num=0
         IF (isBinary) THEN

@@ -111,7 +111,7 @@ module TestsModule
 
             outputSignal2byte=int(outputArray,2)
 
-            CALL WriteArrayToFile(outputSignal2byte,'dds_output_rest.txt', .False.)
+            CALL WriteArrayToFile(outputSignal2byte,'dds_output_rest.pcm', .True.)
 
 
 
