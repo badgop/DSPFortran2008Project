@@ -9,12 +9,13 @@ MODULE ShiftMultiplexorModule
         PRIVATE
         INTEGER(1) :: shift=0
 
-
     CONTAINS
 
         PROCEDURE :: Constructor
         PROCEDURE :: PerformAnalyticSignalShift
         PROCEDURE :: PerformComplexSignalShift
+
+        GENERIC   :: PerformShift =>  PerformAnalyticSignalShift,PerformComplexSignalShift
         FINAL     :: Destructor
 
     END TYPE shiftMultiplexor_t

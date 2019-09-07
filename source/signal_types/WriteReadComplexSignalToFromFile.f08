@@ -36,12 +36,13 @@ MODULE WriteReadComplexSignalToFromFile
 
    CONTAINS
 
-   SUBROUTINE ReadComplexSignalFromFile(readedSignal,intType,fileNameI,fileNameQ)
+   SUBROUTINE ReadComplexSignalFromFile(readedSignal,intType,fileNameI,fileNameQ,isBinary)
 
         CLASS(ComplexSignal_t), INTENT(INOUT)  :: readedSignal
-        INTEGER(1), INTENT(IN)               :: intType
-        CHARACTER(*), INTENT(IN)             :: fileNameI
-        CHARACTER(*), INTENT(IN)             :: fileNameQ
+        INTEGER(1), INTENT(IN)                 :: intType
+        CHARACTER(*), INTENT(IN)               :: fileNameI
+        CHARACTER(*), INTENT(IN)               :: fileNameQ
+        LOGICAL, INTENT(IN)                    :: isBinary
 
         INTEGER(2), ALLOCATABLE              :: arrayInt2I(:)
         INTEGER(2), ALLOCATABLE              :: arrayInt2Q(:)
@@ -53,22 +54,22 @@ MODULE WriteReadComplexSignalToFromFile
         SELECT CASE (intType)
 
             CASE(2)
-                CALL ReadArrayFromFile(arrayInt2I,fileNameI)
-                CALL ReadArrayFromFile(arrayInt2Q,fileNameQ)
+                CALL ReadArrayFromFile(arrayInt2I,fileNameI,isBinary)
+                CALL ReadArrayFromFile(arrayInt2Q,fileNameQ,isBinary)
                 CALL readedSignal%Constructor(  int(arrayInt2I,8),int(arrayInt2Q,8)  )
                 DEALLOCATE(arrayInt2I)
                 DEALLOCATE(arrayInt2Q)
 
             CASE(4)
-                CALL ReadArrayFromFile(arrayInt4I,fileNameI)
-                CALL ReadArrayFromFile(arrayInt4Q,fileNameQ)
+                CALL ReadArrayFromFile(arrayInt4I,fileNameI,isBinary)
+                CALL ReadArrayFromFile(arrayInt4Q,fileNameQ,isBinary)
                 CALL readedSignal%Constructor(  int(arrayInt4I,8),int(arrayInt4Q,8)  )
                 DEALLOCATE(arrayInt4I)
                 DEALLOCATE(arrayInt4Q)
 
             CASE(8)
-                CALL ReadArrayFromFile(arrayInt8I,fileNameI)
-                CALL ReadArrayFromFile(arrayInt8Q,fileNameQ)
+                CALL ReadArrayFromFile(arrayInt8I,fileNameI,isBinary)
+                CALL ReadArrayFromFile(arrayInt8Q,fileNameQ,isBinary)
                 CALL readedSignal%Constructor(arrayInt8I,arrayInt8Q)
                 DEALLOCATE(arrayInt8I)
                 DEALLOCATE(arrayInt8Q)
@@ -81,12 +82,13 @@ MODULE WriteReadComplexSignalToFromFile
 
    END SUBROUTINE ReadComplexSignalFromFile
 
-   SUBROUTINE WriteComplexSignalToFile(writedSignal,intType,fileNameI,fileNameQ)
+   SUBROUTINE WriteComplexSignalToFile(writedSignal,intType,fileNameI,fileNameQ,isBinary)
 
         CLASS(ComplexSignal_t), INTENT(IN)   :: writedSignal
         INTEGER(1), INTENT(IN)               :: intType
         CHARACTER(*), INTENT(IN)             :: fileNameI
         CHARACTER(*), INTENT(IN)             :: fileNameQ
+        LOGICAL, INTENT(IN)                  :: isBinary
 
 !        INTEGER(2), ALLOCATABLE              :: arrayInt2I(:)
 !        INTEGER(2), ALLOCATABLE              :: arrayInt2Q(:)
@@ -103,22 +105,22 @@ MODULE WriteReadComplexSignalToFromFile
             CASE(2)
 
 
-                CALL WriteArrayToFile(int(arrayInt8I,2),fileNameI)
-                CALL WriteArrayToFile(int(arrayInt8Q,2),fileNameQ)
+                CALL WriteArrayToFile(int(arrayInt8I,2),fileNameI,isBinary)
+                CALL WriteArrayToFile(int(arrayInt8Q,2),fileNameQ,isBinary)
 
                 DEALLOCATE(arrayInt8I)
                 DEALLOCATE(arrayInt8Q)
 
             CASE(4)
-                CALL WriteArrayToFile(int(arrayInt8I,4),fileNameI)
-                CALL WriteArrayToFile(int(arrayInt8Q,4),fileNameQ)
+                CALL WriteArrayToFile(int(arrayInt8I,4),fileNameI,isBinary)
+                CALL WriteArrayToFile(int(arrayInt8Q,4),fileNameQ,isBinary)
 
                 DEALLOCATE(arrayInt8I)
                 DEALLOCATE(arrayInt8Q)
 
             CASE(8)
-                CALL WriteArrayToFile(arrayInt8I,fileNameI)
-                CALL WriteArrayToFile(arrayInt8Q,fileNameQ)
+                CALL WriteArrayToFile(arrayInt8I,fileNameI,isBinary)
+                CALL WriteArrayToFile(arrayInt8Q,fileNameQ,isBinary)
 
                 DEALLOCATE(arrayInt8I)
                 DEALLOCATE(arrayInt8Q)

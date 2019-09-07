@@ -145,8 +145,8 @@ CONTAINS
             CHARACTER(*),INTENT(IN)          :: signalNameI
             CHARACTER(*),INTENT(IN)          :: signalNameQ
 
-            this%i%signalName=signalNameI
-            this%q%signalName=signalNameQ
+            CALL this%i%SetName(signalNameI)
+            CALL this%q%SetName(signalNameQ)
 
      END SUBROUTINE SetName
 

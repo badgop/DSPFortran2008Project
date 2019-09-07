@@ -36,11 +36,12 @@ MODULE WriteReadAnalyticSignalToFromFile
 
    CONTAINS
 
-   SUBROUTINE ReadAnalyticSignalFromFile(readedSignal,intType,fileName)
+   SUBROUTINE ReadAnalyticSignalFromFile(readedSignal,intType,fileName,isBinary)
 
         CLASS(analyticSignal_t), INTENT(INOUT)  :: readedSignal
-        INTEGER(1), INTENT(IN)               :: intType
-        CHARACTER(*), INTENT(IN)             :: fileName
+        INTEGER(1), INTENT(IN)                  :: intType
+        CHARACTER(*), INTENT(IN)                :: fileName
+        LOGICAL, INTENT(IN)                     :: isBinary
 
         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
@@ -49,17 +50,17 @@ MODULE WriteReadAnalyticSignalToFromFile
         SELECT CASE (intType)
 
             CASE(2)
-                CALL ReadArrayFromFile(arrayInt2,fileName)
+                CALL ReadArrayFromFile(arrayInt2,fileName,isBinary)
                 CALL readedSignal%Constructor(  int(arrayInt2,8))
                 DEALLOCATE(arrayInt2)
 
             CASE(4)
-                CALL ReadArrayFromFile(arrayInt4,fileName)
+                CALL ReadArrayFromFile(arrayInt4,fileName,isBinary)
                 CALL readedSignal%Constructor(  int(arrayInt4,8))
                 DEALLOCATE(arrayInt4)
 
             CASE(8)
-                CALL ReadArrayFromFile(arrayInt8,fileName)
+                CALL ReadArrayFromFile(arrayInt8,fileName,isBinary)
                 CALL readedSignal%Constructor(  arrayInt8)
                 DEALLOCATE(arrayInt8)
 
@@ -72,15 +73,16 @@ MODULE WriteReadAnalyticSignalToFromFile
 
    END SUBROUTINE ReadAnalyticSignalFromFile
 
-   SUBROUTINE WriteAnalyticSignalToFile(writedSignal,intType,fileName)
+   SUBROUTINE WriteAnalyticSignalToFile(writedSignal,intType,fileName,isBinary)
 
         CLASS(analyticSignal_t), INTENT(IN)  :: writedSignal
         INTEGER(1), INTENT(IN)               :: intType
         CHARACTER(*), INTENT(IN)             :: fileName
+        LOGICAL, INTENT(IN)                  :: isBinary
 
 !        INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
 !        INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
-        INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
 
         CALL writedSignal%ExtractSignalData(arrayInt8)
 
@@ -88,17 +90,17 @@ MODULE WriteReadAnalyticSignalToFromFile
 
             CASE(2)
 
-                CALL WriteArrayToFile(int(arrayInt8,2),fileName)
+                CALL WriteArrayToFile(int(arrayInt8,2),fileName,isBinary)
                 DEALLOCATE(arrayInt8)
 
             CASE(4)
 
-                CALL WriteArrayToFile(int(arrayInt8,4),fileName)
+                CALL WriteArrayToFile(int(arrayInt8,4),fileName,isBinary)
                 DEALLOCATE(arrayInt8)
 
             CASE(8)
 
-                CALL WriteArrayToFile(arrayInt8,fileName)
+                CALL WriteArrayToFile(arrayInt8,fileName,isBinary)
                 DEALLOCATE(arrayInt8)
 
             CASE DEFAULT

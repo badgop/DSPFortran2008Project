@@ -223,6 +223,7 @@ CONTAINS
 
         REAL(8)                  :: phase
         INTEGER(8)               :: phaseAccMax
+        LOGICAL                  :: isBinary = .True.
 
         WRITE(*,*) 'Тест DDS_t запущен'
          WRITE(*,*) 'проверка значений полученных конструктором'
@@ -262,8 +263,8 @@ CONTAINS
         CALL this%SetPhase(phase)
 
         WRITE(*,*) ''
-        WRITE(*,*) 'Пишем в фал усеченную таблицу ПЗУ'
-        CALL WriteArrayToFile(this%romSinusTable, romTableFileName)
+        WRITE(*,*) 'Пишем в файл усеченную таблицу ПЗУ'
+        CALL WriteArrayToFile(this%romSinusTable, romTableFileName,isBinary)
 
         ret=0
      END FUNCTION DebugOutput
