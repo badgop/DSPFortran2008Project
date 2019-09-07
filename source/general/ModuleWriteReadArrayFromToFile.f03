@@ -73,7 +73,7 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-
+        CHARACTER(10) :: fmt="(I20.3)"
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -106,7 +106,7 @@ CONTAINS
                 IF (isBinary) then
                     READ(10,IOSTAT=iostat_Num) x
                 ELSE
-                    READ(10,*,IOSTAT=iostat_Num) x
+                    READ(10,fmt,IOSTAT=iostat_Num) x
                 END IF
 
                 IF (iostat_Num.NE.0) then
@@ -127,7 +127,7 @@ CONTAINS
 
     SUBROUTINE ReadArrayFromFileTypeBinaryInt4 (x, name_x, isBinary)
 
-        IMPLICIT NONE
+         IMPLICIT NONE
 
         INTEGER(1), PARAMETER ::INT_KIND =4
 
@@ -137,7 +137,7 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-
+        CHARACTER(10) :: fmt="(I20.3)"
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -170,7 +170,7 @@ CONTAINS
                 IF (isBinary) then
                     READ(10,IOSTAT=iostat_Num) x
                 ELSE
-                    READ(10,*,IOSTAT=iostat_Num) x
+                    READ(10,fmt,IOSTAT=iostat_Num) x
                 END IF
 
                 IF (iostat_Num.NE.0) then
@@ -191,7 +191,7 @@ CONTAINS
 
      SUBROUTINE ReadArrayFromFileTypeBinaryInt8 (x, name_x, isBinary)
 
-        IMPLICIT NONE
+         IMPLICIT NONE
 
         INTEGER(1), PARAMETER ::INT_KIND =8
 
@@ -201,7 +201,7 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-
+        CHARACTER(10) :: fmt="(I20.3)"
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -234,7 +234,7 @@ CONTAINS
                 IF (isBinary) then
                     READ(10,IOSTAT=iostat_Num) x
                 ELSE
-                    READ(10,*,IOSTAT=iostat_Num) x
+                    READ(10,fmt,IOSTAT=iostat_Num) x
                 END IF
 
                 IF (iostat_Num.NE.0) then
@@ -263,6 +263,7 @@ CONTAINS
         INTEGER(INT_KIND), INTENT(IN) :: x(:)
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
+        CHARACTER(10) :: fmt="(I20.3)"
 
         INTEGER(4):: iostat_Num=0
         IF (isBinary) THEN
@@ -285,7 +286,7 @@ CONTAINS
              WRITE(10) x
         ELSE
 
-             WRITE(10,*) x
+             WRITE(10,fmt) x
         END IF
 
         CLOSE(10)
@@ -305,7 +306,11 @@ CONTAINS
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
 
+        CHARACTER(10) :: fmt="(I20.3)"
+
         INTEGER(4):: iostat_Num=0
+
+
         IF (isBinary) THEN
             OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE",ASYNCHRONOUS="YES", FORM="UNFORMATTED",IOSTAT=iostat_Num)
         ELSE
@@ -326,7 +331,7 @@ CONTAINS
              WRITE(10) x
         ELSE
 
-             WRITE(10,*) x
+             WRITE(10,fmt) x
         END IF
 
         CLOSE(10)
@@ -343,6 +348,7 @@ CONTAINS
         INTEGER(INT_KIND), INTENT(IN) :: x(:)
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
+        CHARACTER(10) :: fmt="(I20.3)"
 
         INTEGER(4):: iostat_Num=0
         IF (isBinary) THEN
@@ -365,7 +371,7 @@ CONTAINS
              WRITE(10) x
         ELSE
 
-             WRITE(10,*) x
+             WRITE(10,fmt) x
         END IF
 
         CLOSE(10)

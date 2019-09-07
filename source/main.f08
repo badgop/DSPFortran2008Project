@@ -3,8 +3,8 @@ PROGRAM main
     USE TestsModule
     IMPLICIT NONE
 
-    CALL InitDDSTest()
-!   CALL DDSOutputTest()
+!    CALL InitDDSTest()
+   CALL DDSOutputTest()
 !    CALL  AnalyticComplexSignalTestConstructors
 !    CALL AnalyticSignalTestWriteRead()
 !    CALL ComplexSignalTestWriteRead()
