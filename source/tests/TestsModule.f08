@@ -6,114 +6,102 @@ module TestsModule
 
     CONTAINS
 
-      ! процедура для тестирования функции конструктора класса DDS_t
-    SUBROUTINE InitDDSTest()
-
-            USE DDSModule
-            USE MathConstModule
-
-            TYPE(DDS_t) ::ddsGenerator
-            !разрядность аккамулятора фазы
-            INTEGER(1) :: romLengthInBits
-            !частота дискретизации
-            INTEGER(4) :: samplingFrequency
-            !число бит до которых усекатется таблица ПЗУ
-            INTEGER(1) :: romLenthTruncedInBits
-            !разрядность выходного сигнала
-            INTEGER(1) :: outputSignalSampleCapacity
-
-            INTEGER(1) :: status
-
-            romLengthInBits=32
-            romLenthTruncedInBits=8
-            outputSignalSampleCapacity=8
-            samplingFrequency= 20000000
-
-            status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
-                                             samplingFrequency,outputSignalSampleCapacity)
-
-            !Сравни заданные выше значения и значения что выводит ddsGenerator%DebugOutput
-            !проверь содержимое таблицы
-            status=ddsGenerator%DebugOutput('ddsromtable.pcm')
-
-
-    END SUBROUTINE InitDDSTest
-
-    SUBROUTINE DDSOutputTest()
+    ! тест модуля DDS.
+    ! Проверка работы генератора прямого цифроовго синтеза
+    SUBROUTINE DDSOutputTest(romLengthInBits,romLenthTruncedInBits,outputSignalSampleCapacity&
+                             ,samplingFrequency,centralFrequency,phase&
+                             ,periods)
 
             USE analyticSignalModule
             USE DDSModule
             USE MathConstModule
             USE PrefixModule
             USE ModuleWriteReadArrayFromToFile
+            USE WriteReadAnalyticSignalToFromFile
 
-            TYPE(DDS_t) ::ddsGenerator
             !разрядность аккамулятора фазы
-            INTEGER(1) :: romLengthInBits
-            !частота дискретизации
-            INTEGER(4) :: samplingFrequency
+            INTEGER(1), INTENT(IN) :: romLengthInBits
             !число бит до которых усекатется таблица ПЗУ
-            INTEGER(1) :: romLenthTruncedInBits
+            INTEGER(1), INTENT(IN) :: romLenthTruncedInBits
             !разрядность выходного сигнала
-            INTEGER(1) :: outputSignalSampleCapacity
+            INTEGER(1), INTENT(IN) :: outputSignalSampleCapacity
+
+            !частота дискретизации
+            INTEGER(4), INTENT(IN) :: samplingFrequency
+            !центральная частота
+            INTEGER(4), INTENT(IN) :: centralFrequency
+            !начальная фаза
+            REAL(8),    INTENT(IN)    :: phase
+            ! длина выходного сигнала в периодах гармонич колебания
+            INTEGER(4), INTENT(IN)    :: periods
+
+
+
+
             INTEGER(1) :: status
 
-            INTEGER(4) :: signalLengthInSamples
+            INTEGER(8) :: signalLengthInSamples
             INTEGER(4) :: oscillationPeriod
-            INTEGER(4) :: centralFrequency
+
 
             INTEGER(8), ALLOCATABLE :: frequencys(:)
 
-            INTEGER(2), ALLOCATABLE :: outputSignal2byte(:)
-
-            TYPE(analyticSignal_t) ::imputFreqSignal
-            TYPE(analyticSignal_t) ::outputSignal
             INTEGER(8), ALLOCATABLE :: outputArray(:)
 
-            REAL(8)                  :: phase
+            TYPE(DDS_t) ::ddsGenerator
+            TYPE(analyticSignal_t) ::imputFreqSignal
+            TYPE(analyticSignal_t) ::outputSignal
+            TYPE(analyticSignal_t) ::outputSignal2
 
-            LOGICAL       :: isBinary=.True.
 
 
-            romLengthInBits=32
-            romLenthTruncedInBits=14
-            outputSignalSampleCapacity=14
-            samplingFrequency= 40*MEGA
 
-            centralFrequency= 100*KILO
-            oscillationPeriod=samplingFrequency/ centralFrequency
 
+
+            ! инициаализируем генератор
             status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
                                              samplingFrequency,outputSignalSampleCapacity)
+
+
+
+
+
 
             WRITE(*,*) 'Тест DDS_t запущен - '
             WRITE(*,*) 'проверка значений полученных конструктором'
             WRITE(*,*) 'отсчетов на период', oscillationPeriod
 
-             phase=0
+            ! пишем таблицу ПЗУ
+            WRITE(*,*) 'ddsromtable.pcm - там таблица ПЗУ '
+            status=ddsGenerator%DebugOutput('ddsromtable.pcm')
+
+
              CALL ddsGenerator%SetPhase(phase)
 
-            signalLengthInSamples=2000  !oscillationPeriod*3000
+             oscillationPeriod=samplingFrequency/ centralFrequency
+             signalLengthInSamples=oscillationPeriod*periods
 
-            ALLOCATE(frequencys(1:signalLengthInSamples))
+             ! делаем массив со значениями частоты
+             ALLOCATE(frequencys(1:signalLengthInSamples))
+             frequencys=centralFrequency
 
+             ! делаем из массива аналитич сигнала
+             CALL imputFreqSignal%Constructor(frequencys)
 
-            frequencys=centralFrequency
-
-            CALL imputFreqSignal%Constructor(frequencys)
-
-
-            CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
-
-            CALL outputsignal%ExtractSignalData(outputArray)
-
-            ALLOCATE(outputSignal2byte(1:size(outputArray)))
-
-            outputSignal2byte=int(outputArray,2)
-
-            CALL WriteArrayToFile(outputSignal2byte,'dds_output_rest.pcm', .True.)
+             ! поулчаем гармонический сигнал
+             CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
 
 
+             !извлекаем массив из обьекта
+             CALL outputsignal%ExtractSignalData(outputArray)
+             ! пишем файл
+             ! оператор int (,kind) можно применять и к массивам!!!
+             CALL WriteArrayToFile(int(outputArray,2),'dds_output_test1.pcm', isBinary=.True.)
+
+             ! второй вариант получения выходного гармонического сигнала
+             CALL ddsGenerator%ComputeOutput(int(centralFrequency,8),signalLengthInSamples,outputsignal2)
+              ! оператор int (,kind) можно применять и к массивам!!!
+             CALL WriteAnalyticSignalToFile(outputsignal2,int(2,1),'dds_output_test2.pcm',isBinary=.True.)
 
     END SUBROUTINE DDSOutputTest
 
