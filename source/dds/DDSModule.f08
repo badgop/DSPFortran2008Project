@@ -52,14 +52,30 @@ MODULE DDSModule
 
 
     CONTAINS
-
+        ! оновная процедура - получение выходного гармонического сигнала типа (analyticSignal_t
+        ! на входе обьект того же типа, представляющей собой значения частоты  в Гц
         PROCEDURE          :: ComputeOutputFromArray
+        ! оновная процедура - получение выходного гармонического сигнала типа (analyticSignal_t
+        ! на входе значение частоты в Гц, и требуемая длительность выходного сигнала
+
         PROCEDURE          :: ComputeOutputFromScalar
-         generic           :: ComputeOutput =>  ComputeOutputFromArray,ComputeOutputFromScalar
+        ! Формируем обобщенный интерфейс, для удобства
+        GENERIC           :: ComputeOutput =>  ComputeOutputFromArray,ComputeOutputFromScalar
+
+        ! конструктор- для инициалзиаици параметро генератора
         PROCEDURE          :: Constructor => InitDDS
+        ! отладочная функция, выводит таблицу ПЗУ при заданных параметрах генератора, и
+        ! проверяет правильность пересчета фазы с вещественного в целый
         PROCEDURE          :: DebugOutput
-        PROCEDURE, PRIVATE :: GetAmplitudeSample
+        ! установить фазу сигнала
+        ! на входе значение типа REAL(8) - фаза в радианах
         PROCEDURE          :: SetPhase
+
+        ! функция выполняющая преобразование значения фазового аккумулятора
+        ! в адрес ПЗУ
+        ! использется толкьо внутри производного типа (класса)
+        PROCEDURE, PRIVATE :: GetAmplitudeSample
+
 
         FINAL :: destructor
 
@@ -67,7 +83,9 @@ MODULE DDSModule
 
 CONTAINS
 
-
+    ! Процедра вырабаывает выходной гармонический сигнал в соответствии
+    ! с входным сигналом, который содержит значения частоты для каждого
+    ! отсчета
     SUBROUTINE ComputeOutputFromArray(this, inputSignal, outputSignal)
         USE analyticSignalModule
 
@@ -117,6 +135,9 @@ CONTAINS
         DEALLOCATE(frequencyCodes)
     END SUBROUTINE ComputeOutputFromArray
     
+     ! Процедра вырабаывает выходной гармонический сигнал в соответствии
+    ! с скалярным значением частоты frequency
+    ! signalLength - длительность сигнала в отсчетах
 
      SUBROUTINE ComputeOutputFromScalar(this, frequency, signalLength, outputSignal)
         USE analyticSignalModule
@@ -289,13 +310,23 @@ CONTAINS
      END FUNCTION
 
      SUBROUTINE SetPhase(this,phaseInRadian)
-
+        USE MathConstModule
         IMPLICIT NONE
         CLASS(DDS_t), INTENT(INOUT) :: this
         REAL(8)   , INTENT(IN) :: phaseInRadian
         !https://habr.com/ru/company/xakep/blog/257897/
         !должно раьриаит
-        this%phaseAccState=int((phaseInRadian/this%phaseStep),8)
+
+
+        IF ((phaseInRadian>=0.0).AND.(phaseInRadian<=2*PI)) THEN
+             this%phaseAccState=int((phaseInRadian/this%phaseStep),8)
+
+        ELSE
+             WRITE(*,*) 'Фаза сигнала не принадлежит [0:2P*I] !=', phaseInRadian
+             WRITE(*,*) 'Фаза будет установлена в нуль'
+             this%phaseAccState=0
+        END IF
+
      END SUBROUTINE SetPhase
 
     ! деструкторы запускаются автоматически, после того как

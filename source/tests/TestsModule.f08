@@ -8,9 +8,14 @@ module TestsModule
 
     ! тест модуля DDS.
     ! Проверка работы генератора прямого цифроовго синтеза
+    ! в тесте так же используются конструкторы аналитического сигнала
+    ! и процедуры записи аналитического сигнала в файл
+    ! создает два файла dds_output_test1.pcm  и dds_output_test2.pcm
+    ! частота колебания в первом опредлеяется centralFrequency
+    ! во втором centralFrequency2
     SUBROUTINE DDSOutputTest(romLengthInBits,romLenthTruncedInBits,outputSignalSampleCapacity&
                              ,samplingFrequency,centralFrequency,phase&
-                             ,periods)
+                             ,periods, centralFrequency2)
 
             USE analyticSignalModule
             USE DDSModule
@@ -28,18 +33,15 @@ module TestsModule
 
             !частота дискретизации
             INTEGER(4), INTENT(IN) :: samplingFrequency
-            !центральная частота
+            !центральная частота 1 и 2 выходных сигналов
             INTEGER(4), INTENT(IN) :: centralFrequency
+            INTEGER(4), INTENT(IN) :: centralFrequency2
             !начальная фаза
             REAL(8),    INTENT(IN)    :: phase
             ! длина выходного сигнала в периодах гармонич колебания
             INTEGER(4), INTENT(IN)    :: periods
 
-
-
-
             INTEGER(1) :: status
-
             INTEGER(8) :: signalLengthInSamples
             INTEGER(4) :: oscillationPeriod
 
@@ -52,11 +54,6 @@ module TestsModule
             TYPE(analyticSignal_t) ::imputFreqSignal
             TYPE(analyticSignal_t) ::outputSignal
             TYPE(analyticSignal_t) ::outputSignal2
-
-
-
-
-
 
             ! инициаализируем генератор
             status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
@@ -99,19 +96,32 @@ module TestsModule
              CALL WriteArrayToFile(int(outputArray,2),'dds_output_test1.pcm', isBinary=.True.)
 
              ! второй вариант получения выходного гармонического сигнала
-             CALL ddsGenerator%ComputeOutput(int(centralFrequency,8),signalLengthInSamples,outputsignal2)
+             CALL ddsGenerator%ComputeOutput(int(centralFrequency2,8),signalLengthInSamples,outputsignal2)
               ! оператор int (,kind) можно применять и к массивам!!!
              CALL WriteAnalyticSignalToFile(outputsignal2,int(2,1),'dds_output_test2.pcm',isBinary=.True.)
-
+             WRITE(*,*) 'ТЕСТ DDS ЗАКОНЧЕН!!!!!'
     END SUBROUTINE DDSOutputTest
 
-     SUBROUTINE AnalyticComplexSignalTestConstructors()
+
+     ! Тест аналитического и комплексного присваивающего конструктора
+     ! inputSignalFileName - входной сигнал, БИНАРНЫЙ
+     ! outputSignalFileName - выходной сигнал,  БИНАРНЫЙ
+     ! должны совпадвть
+     ! из двух аналитичеких создатся констркутором один комплексный
+     ! компоненты пишуться в файлы
+     ! testSignalExtractQ.pcm
+     ! testSignalExtractI.pcm
+
+     SUBROUTINE AnalyticComplexSignalTestConstructors(inputSignalFileName,outputSignalFileName)
 
            USE analyticSignalModule
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
            USE WriteReadAnalyticSignalToFromFile
            IMPLICIT NONE
+
+           CHARACTER(*),INTENT(IN) :: inputSignalFileName
+           CHARACTER(*),INTENT(IN) :: outputSignalFileName
 
            TYPE(analyticSignal_t) ::signal_1
            TYPE(analyticSignal_t) ::signal_2
@@ -121,8 +131,7 @@ module TestsModule
            TYPE(complexSignal_t) ::signalComplex_2
            TYPE(complexSignal_t) ::signalComplex_3
 
-           CHARACTER(50) :: inputSignalFileName
-           CHARACTER(50) :: outputSignalFileName
+
            LOGICAL       :: state=.FALSE.
            LOGICAL       :: isBinary=.True.
 
@@ -133,10 +142,6 @@ module TestsModule
            INTEGER(8),ALLOCATABLE :: testSignalExtractI(:)
            INTEGER(8),ALLOCATABLE :: testSignalExtractQ(:)
 
-
-
-           inputSignalFileName  = 'dds_output_rest.pcm'
-           outputSignalFileName = 'dds_output_extracted.pcm'
 
            CALL ReadArrayFromFile(testSignal,inputSignalFileName,isBinary)
 
@@ -179,7 +184,10 @@ module TestsModule
 
      END SUBROUTINE  AnalyticComplexSignalTestConstructors
 
-     SUBROUTINE AnalyticSignalTestWriteRead()
+
+     ! тест для процедур чтения записи аналитического сигнала из файла в файл
+     ! сигнал БИНАРНЫЙ!!!
+     SUBROUTINE AnalyticSignalTestWriteRead(inputSignalFileName, outputSignalFileName)
            USE analyticSignalModule
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
@@ -188,20 +196,19 @@ module TestsModule
 
            TYPE(analyticSignal_t) ::signal_1
            INTEGER(1) :: intType
-           CHARACTER(50) :: inputSignalFileName
-           CHARACTER(50) :: outputSignalFileName
+           CHARACTER(*), INTENT(IN) :: inputSignalFileName
+           CHARACTER(*), INTENT(IN) :: outputSignalFileName
 
-           LOGICAL :: isBinary=.True.
-           inputSignalFileName  = 'dds_output_rest.pcm'
-           outputSignalFileName = 'dds_output_writed_analytic.pcm'
            intType=2
+           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName,.True.)
+           CALL WriteAnalyticSignalToFile(signal_1,intType,outputSignalFileName,.True.)
 
-
-           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName,isBinary)
-           CALL WriteAnalyticSignalToFile(signal_1,intType,outputSignalFileName,isBinary)
      END SUBROUTINE AnalyticSignalTestWriteRead
 
-     SUBROUTINE ComplexSignalTestWriteRead()
+     ! тест для процедур чтения записи Комплексного  сигнала из файла в файл
+     ! сигнал БИНАРНЫЙ!!!
+     SUBROUTINE ComplexSignalTestWriteRead(inputSignalFileNameI, inputSignalFileNameQ,&
+                                           outputSignalFileNameI,outputSignalFileNameQ)
 
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
@@ -211,17 +218,11 @@ module TestsModule
 
            TYPE(complexSignal_t) ::signal_1
            INTEGER(1) :: intType
-           CHARACTER(50) :: inputSignalFileNameI, inputSignalFileNameQ
-           CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
+           CHARACTER(*),INTENT(IN) :: inputSignalFileNameI, inputSignalFileNameQ
+           CHARACTER(*),INTENT(IN) :: outputSignalFileNameI,outputSignalFileNameQ
 
            LOGICAL          ::isBinary=.True.
-
-           inputSignalFileNameI  = 'sig_outi.pcm'
-           inputSignalFileNameQ  = 'sig_outq.pcm'
-           outputSignalFileNameI = 'sig_outi_outtest.pcm'
-           outputSignalFileNameQ = 'sig_outq_outtest.pcm'
-
-           intType=2
+!           intType=2
            CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ,isBinary)
            CALL WriteComplexSignalToFile(signal_1,intType,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
      END SUBROUTINE ComplexSignalTestWriteRead
