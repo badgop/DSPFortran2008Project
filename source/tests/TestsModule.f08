@@ -227,8 +227,14 @@ module TestsModule
            CALL WriteComplexSignalToFile(signal_1,intType,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
      END SUBROUTINE ComplexSignalTestWriteRead
 
-
-     SUBROUTINE AnalyticSignalMultiplyPlusShiftTest()
+     ! тест оператора умножения аналитического сигнала
+     ! и сдвигового мультиплексора
+     ! inputSignalFileName - входной файл 1
+     ! inputSignalFileName2 - входной файл 2
+     ! outputSignalFileName - выходной файл
+     ! shift - на сколько разрядов нужно сдвинуть отсчеты выходного сигнала влево
+     SUBROUTINE AnalyticSignalMultiplyPlusShiftTest(inputSignalFileName,inputSignalFileName2,&
+                                                    outputSignalFileName,shift)
            USE analyticSignalModule
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
@@ -241,17 +247,16 @@ module TestsModule
            TYPE(analyticSignal_t) ::signal_3
            TYPE(analyticSignal_t) ::signal_4
            TYPE(shiftMultiplexor_t) :: shiftPlexor1
-           INTEGER(1) :: shift,intType
-           CHARACTER(50) :: inputSignalFileName
-           CHARACTER(50) :: inputSignalFileName2
-           CHARACTER(50) :: outputSignalFileName
+           INTEGER(1), intent(in) :: shift
+           INTEGER(1) ::intType
+           CHARACTER(*), intent(in) :: inputSignalFileName
+           CHARACTER(*), intent(in) :: inputSignalFileName2
+           CHARACTER(*), intent(in) :: outputSignalFileName
            LOGICAL         :: isBinary=.True.
 
-           shift=2
+
            CALL shiftPlexor1%Constructor(shift)
-           inputSignalFileName  = 'dds_output_rest_4.pcm'
-           inputSignalFileName2  = 'dds_output_rest_1.pcm'
-           outputSignalFileName = 'dds_output_writed_multiplay.pcm'
+
            intType=2
            CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName,isBinary)
            CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileName2,isBinary)
@@ -392,7 +397,9 @@ module TestsModule
 
       END SUBROUTINE ComplexMultiplyTest
 
-         SUBROUTINE AnalyticSignalTestOperators()
+
+
+      SUBROUTINE AnalyticSignalTestOperators()
 
            USE analyticSignalModule
            USE complexSignalModule

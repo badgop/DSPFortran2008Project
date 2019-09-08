@@ -15,17 +15,13 @@ MODULE analyticSignalModule
     TYPE, PUBLIC :: analyticSignal_t
 
         PRIVATE
-
         ! отсчеты аналитического сингнала содержаться в динамеческом массиве
         INTEGER(8),ALLOCATABLE :: signal(:)
-
         ! поле типа данных - isAllocated определяет выделена ли память под сигнал т.е проведена ли
         ! инициализация экземпляра обьекта
         LOGICAL                :: isAllocated=.FALSE.
-
         ! поле определяет длительность аналитического сигнала в отсчетах
         INTEGER(8)             :: signalSize= 0
-
         ! Поле, определяющее имя сигнала
         ! ЖЕЛАТЕЛЬНО добавлять расширение к имени
         CHARACTER(50)         :: signalName=''
@@ -34,27 +30,19 @@ MODULE analyticSignalModule
         !== далее идет список членов функций класса - методов ,
         !  в термионологии Фортрана - привязанных к типу процедур (type bound procedures)
 
-
         ! член функция (метода) типа конструктор
         ! только эта функция может выделить память для signal(:)
         PROCEDURE Constructor
-
         ! извлчение отсчетов сигнала во внешений массив
         PROCEDURE ExtractSignalData
-
         ! Получить сведения о том выделена ли память под сигнал или нет
         PROCEDURE GetAllocationStatus
-
         ! Получить значение  длительность сигнла
         PROCEDURE GetSignalSize
-
         ! Установить значение поля signalName
         PROCEDURE SetName
-
-
         ! методы, описывающие такие операции как умножение, вычитание, сложение и присваивание
         ! соотвественно для типа данных analyticSignal_t
-
         ! Multiply - умножение
         PROCEDURE :: MultiplyAnalyticSignals
         ! Substruct - вычитание
@@ -68,17 +56,13 @@ MODULE analyticSignalModule
         ! умножения, вычитания, сложения и присваивания
         ! для типа данных analyticSignal_t
         ! перегрузка осуществляться через идентификатор generic :: operator
-
-
         generic :: operator   (*) =>  MultiplyAnalyticSignals
         generic :: operator   (-) =>  SubtractAnalyticSignals
         generic :: operator   (+) =>   AddAnalyticSignals
-
         ! перегрузка оператора присвания выполняется чуть иначе
         !https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
         !https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         generic :: assignment (=) =>  AssignDataFromAssignment
-
         ! Финализирующый метод класс (так же - деструктор)
         ! должен освободить память, занятую массивом  signal(:)
         FINAL :: destructor
@@ -132,21 +116,7 @@ CONTAINS
          signalSize = this%signalSize
      END FUNCTION GetSignalSize
 
-
-    SUBROUTINE AssignDataFromAssignment(leftOp,rightOp)
-        CLASS(analyticSignal_t), INTENT(INOUT)  :: leftOp
-        CLASS(analyticSignal_t), INTENT(IN)     :: rightOp
-
-        ! ЗАЩИТА
-
-        allocate (leftOp%signal,source=rightOp%signal)
-        leftOp%isAllocated=.TRUE.
-        leftOp%signalSize=size(rightOp%signal)
-
-    END SUBROUTINE AssignDataFromAssignment
-
-
-     SUBROUTINE SetName(this,signalName)
+    SUBROUTINE SetName(this,signalName)
 
             CLASS(analyticSignal_t), INTENT(INOUT)  :: this
             CHARACTER(*),INTENT(IN)          :: signalName
@@ -161,7 +131,7 @@ CONTAINS
          CLASS(analyticSignal_t), allocatable ::MultiplyAnalyticSignals
 
 
-            !r%signal=xOp%signal*yOp%signal
+
             allocate( MultiplyAnalyticSignals)
 
             ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
@@ -173,13 +143,13 @@ CONTAINS
 
      END FUNCTION MultiplyAnalyticSignals
 
-     FUNCTION SubtractAnalyticSignals(xOp,yOp)
+      FUNCTION SubtractAnalyticSignals(xOp,yOp)
          CLASS(analyticSignal_t), INTENT(IN)  :: xOp
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable ::SubtractAnalyticSignals
 
 
-            !r%signal=xOp%signal*yOp%signal
+
             allocate( SubtractAnalyticSignals)
 
             ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
@@ -191,7 +161,7 @@ CONTAINS
 
      END FUNCTION SubtractAnalyticSignals
 
-      FUNCTION   AddAnalyticSignals(xOp,yOp)
+     FUNCTION   AddAnalyticSignals(xOp,yOp)
          CLASS(analyticSignal_t), INTENT(IN)  :: xOp
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable :: AddAnalyticSignals
@@ -209,7 +179,16 @@ CONTAINS
 
      END FUNCTION   AddAnalyticSignals
 
+    SUBROUTINE AssignDataFromAssignment(leftOp,rightOp)
+        CLASS(analyticSignal_t), INTENT(INOUT)  :: leftOp
+        CLASS(analyticSignal_t), INTENT(IN)     :: rightOp
 
+        ! ЗАЩИТА
+        allocate (leftOp%signal,source=rightOp%signal)
+        leftOp%isAllocated=.TRUE.
+        leftOp%signalSize=size(rightOp%signal)
+
+    END SUBROUTINE AssignDataFromAssignment
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
@@ -222,17 +201,10 @@ CONTAINS
         ELSE
             IF(  (.NOT. ALLOCATED(this%signal)).AND.(.NOT.( this%isAllocated)   )  ) THEN
                     WRITE(*,*) 'уже освободили память ',this%signalName
-
                 ELSE
-
                     WRITE(*,*) 'Не могу освободить память ',this%signalName
             END IF
-
-
         END IF
-
-
-
 
     END SUBROUTINE
 
