@@ -10,12 +10,13 @@ module TestsModule
     ! Проверка работы генератора прямого цифроовго синтеза
     ! в тесте так же используются конструкторы аналитического сигнала
     ! и процедуры записи аналитического сигнала в файл
-    ! создает два файла dds_output_test1.pcm  и dds_output_test2.pcm
+    ! создает два файла c имиенами file1Name  и file2Name
     ! частота колебания в первом опредлеяется centralFrequency
     ! во втором centralFrequency2
+
     SUBROUTINE DDSOutputTest(romLengthInBits,romLenthTruncedInBits,outputSignalSampleCapacity&
-                             ,samplingFrequency,centralFrequency,phase&
-                             ,periods, centralFrequency2)
+                             ,samplingFrequency,phase&
+                             ,periods,centralFrequency, centralFrequency2,file1Name,file2Name)
 
             USE analyticSignalModule
             USE DDSModule
@@ -40,6 +41,11 @@ module TestsModule
             REAL(8),    INTENT(IN)    :: phase
             ! длина выходного сигнала в периодах гармонич колебания
             INTEGER(4), INTENT(IN)    :: periods
+
+
+            CHARACTER(*),INTENT(IN) :: file1Name
+            CHARACTER(*),INTENT(IN) :: file2Name
+
 
             INTEGER(1) :: status
             INTEGER(8) :: signalLengthInSamples
@@ -93,26 +99,27 @@ module TestsModule
              CALL outputsignal%ExtractSignalData(outputArray)
              ! пишем файл
              ! оператор int (,kind) можно применять и к массивам!!!
-             CALL WriteArrayToFile(int(outputArray,2),'dds_output_test1.pcm', isBinary=.True.)
+             CALL WriteArrayToFile(int(outputArray,2),file1Name, isBinary=.True.)
 
              ! второй вариант получения выходного гармонического сигнала
              CALL ddsGenerator%ComputeOutput(int(centralFrequency2,8),signalLengthInSamples,outputsignal2)
               ! оператор int (,kind) можно применять и к массивам!!!
-             CALL WriteAnalyticSignalToFile(outputsignal2,int(2,1),'dds_output_test2.pcm',isBinary=.True.)
+             CALL WriteAnalyticSignalToFile(outputsignal2,int(2,1),file2Name,isBinary=.True.)
+             WRITE(*,*) ''
              WRITE(*,*) 'ТЕСТ DDS ЗАКОНЧЕН!!!!!'
     END SUBROUTINE DDSOutputTest
 
 
      ! Тест аналитического и комплексного присваивающего конструктора
-     ! inputSignalFileName - входной сигнал, БИНАРНЫЙ
-     ! outputSignalFileName - выходной сигнал,  БИНАРНЫЙ
-     ! должны совпадвть
-     ! из двух аналитичеких создатся констркутором один комплексный
-     ! компоненты пишуться в файлы
-     ! testSignalExtractQ.pcm
-     ! testSignalExtractI.pcm
+     ! inputSignalFileNameI,inputSignalFileNameQ  - входные сигналы, БИНАРНЫЕ,
+     ! outputSignalFileNameAnaytic - выходной сигнал, содержимое объекта типа "аналитический сигнал",  БИНАРНЫЙ
+     ! outputSignalFileNameComplexI,outputSignalFileNameComplexQ -выходные сигналы,
+     !                                                             содержимое объекта типа "комплексный сигнал",  БИНАРНЫЙ
 
-     SUBROUTINE AnalyticComplexSignalTestConstructors(inputSignalFileName,outputSignalFileName)
+
+     SUBROUTINE AnalyticComplexSignalTestConstructors(inputSignalFileNameI,inputSignalFileNameQ&
+                                                      ,outputSignalFileNameAnaytic&
+                                                      ,outputSignalFileNameComplexI,outputSignalFileNameComplexQ)
 
            USE analyticSignalModule
            USE complexSignalModule
@@ -120,8 +127,14 @@ module TestsModule
            USE WriteReadAnalyticSignalToFromFile
            IMPLICIT NONE
 
-           CHARACTER(*),INTENT(IN) :: inputSignalFileName
-           CHARACTER(*),INTENT(IN) :: outputSignalFileName
+           CHARACTER(*),INTENT(IN) :: inputSignalFileNameI
+           CHARACTER(*),INTENT(IN) :: inputSignalFileNameQ
+
+           CHARACTER(*),INTENT(IN) :: outputSignalFileNameAnaytic
+           CHARACTER(*),INTENT(IN) :: outputSignalFileNameComplexI
+           CHARACTER(*),INTENT(IN) :: outputSignalFileNameComplexQ
+
+
 
            TYPE(analyticSignal_t) ::signal_1
            TYPE(analyticSignal_t) ::signal_2
@@ -129,58 +142,71 @@ module TestsModule
 
            TYPE(complexSignal_t) ::signalComplex_1
            TYPE(complexSignal_t) ::signalComplex_2
-           TYPE(complexSignal_t) ::signalComplex_3
-
 
            LOGICAL       :: state=.FALSE.
            LOGICAL       :: isBinary=.True.
 
 
-           INTEGER(2),ALLOCATABLE :: testSignal(:)
+           INTEGER(2),ALLOCATABLE :: testSignal1(:)
+           INTEGER(2),ALLOCATABLE :: testSignal2(:)
            INTEGER(8),ALLOCATABLE :: testSignalExtract(:)
 
            INTEGER(8),ALLOCATABLE :: testSignalExtractI(:)
            INTEGER(8),ALLOCATABLE :: testSignalExtractQ(:)
 
 
-           CALL ReadArrayFromFile(testSignal,inputSignalFileName,isBinary)
+           ! читаем два сигнала из бинарных файлов и положим в массив
+           CALL ReadArrayFromFile(testSignal1,inputSignalFileNameI,isBinary)
+           CALL ReadArrayFromFile(testSignal2,inputSignalFileNameQ,isBinary)
 
-           CALL signal_1%Constructor(  int(testSignal,8))
+           ! создаем один аналитический сигнал из массива
+           CALL signal_1%Constructor(  int(testSignal1,8))
 
+           !**********ВЫЗЫВАЕМ ОПЕРАТОР ПРИСВАИВАИЯ ДЛЯ АНАЛИТЧЕСКОГО СИГНАЛА*******
            signal_2=signal_1
 
+           ! вытаскиваем содержимое объекта в массив
            CALL signal_2% ExtractSignalData(testSignalExtract)
 
-           CALL WriteArrayToFile(int(testSignalExtract,2),outputSignalFileName,isBinary)
+           ! и пишем его в файл, что бы проверить ГЛАЗАМИ
+           CALL WriteArrayToFile(int(testSignalExtract,2),outputSignalFileNameAnaytic,isBinary)
 
 
+
+           ! проверяем выделана ли память для signalComplex_1
            state= signalComplex_1%GetAllocationStatus()
-
            WRITE(*,*) ' комплексный 1! - статус выделение памяти',  state
-           CALL signalComplex_1%Constructor(int(testSignal,8),int(testSignal,8))
 
-           WRITE(*,*) 'А теперь комплексный 1!', signalComplex_1%GetSignalSize(),&
+           ! вызываем конструктор класса комплексных сигналов
+           CALL signalComplex_1%Constructor(int(testSignal1,8),int(testSignal2,8))
+
+           WRITE(*,*) 'А теперь комплексный 1 после вызова конструктора!'&
+           , signalComplex_1%GetSignalSize(),&
            signalComplex_1%GetAllocationStatus()
 
 
+           ! проверяем выделана ли память для signalComplex_2
            state= signalComplex_2%GetAllocationStatus()
-            WRITE(*,*) ' комплексный 2! - статус выделение памяти',  state
+           WRITE(*,*) ' комплексный 2! - статус выделение памяти',  state
+
 
            CALL signalComplex_2%Constructor(signal_1,signal_2)
+
+           ! проверяем выделана ли память для signalComplex_2 после ВЫЗОВА конструктора
            state= signalComplex_2%GetAllocationStatus()
            WRITE(*,*) 'А теперь комплексный 2!', signalComplex_2%GetSignalSize(), state
 
 
+           !**********ВЫЗЫВАЕМ ОПЕРАТОР ПРИСВАИВАИЯ ДЛЯ КОМПЛЕКСНОГО СИГНАЛА*******
+           signalComplex_2=signalComplex_1
+           WRITE(*,*) 'А теперь комплексный 3!', signalComplex_2%GetSignalSize(),&
+           signalComplex_2%GetAllocationStatus()
 
-           signalComplex_3=signalComplex_2
-           WRITE(*,*) 'А теперь комплексный 3!', signalComplex_3%GetSignalSize(),&
-           signalComplex_3%GetAllocationStatus()
-
-           CALL signalComplex_3%ExtractSignalData(testSignalExtractI,testSignalExtractQ)
+           CALL signalComplex_2%ExtractSignalData(testSignalExtractI,testSignalExtractQ)
 
 
-           CALL WriteArrayToFile(int(testSignalExtractI,2),'testSignalExtractI.pcm',isBinary)
-           CALL WriteArrayToFile(int(testSignalExtractQ,2),'testSignalExtractQ.pcm',isBinary)
+           CALL WriteArrayToFile(int(testSignalExtractI,2),outputSignalFileNameComplexI,isBinary)
+           CALL WriteArrayToFile(int(testSignalExtractQ,2),outputSignalFileNameComplexQ,isBinary)
 
      END SUBROUTINE  AnalyticComplexSignalTestConstructors
 
@@ -334,7 +360,7 @@ module TestsModule
 
        END SUBROUTINE ComplexDDSTest
 
-      SUBROUTINE ComplexMultiplyTest(freq_in)
+      SUBROUTINE ComplexMultiplyTest(freq_in,inputSignalFileNameI,inputSignalFileNameQ)
 
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
@@ -350,11 +376,14 @@ module TestsModule
 
 
            INTEGER(4), INTENT(IN) :: freq_in
+           CHARACTER(*),INTENT(IN) :: inputSignalFileNameI
+           CHARACTER(*),INTENT(IN) :: inputSignalFileNameQ
+
            INTEGER(1) :: shift,intType
 
 
 
-           CHARACTER(50) :: inputSignalFileNameI, inputSignalFileNameQ
+           !CHARACTER(50) :: inputSignalFileNameI, inputSignalFileNameQ
            CHARACTER(50) :: inputDDSSignalFileNameI,inputDDSSignalFileNameQ
            CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
 
@@ -362,8 +391,8 @@ module TestsModule
 
            CALL ComplexDDSTest(freq_in,1624993)
 
-           inputSignalFileNameI  = 'gfsk_mux_i_cos.pcm'
-           inputSignalFileNameQ  = 'gfsk_mux_i_sin.pcm'
+           !inputSignalFileNameI  = 'gfsk_mux_i_cos.pcm'
+           !inputSignalFileNameQ  = 'gfsk_mux_i_sin.pcm'
            outputSignalFileNameI = 'sig_outi_mult_test.pcm'
            outputSignalFileNameQ = 'sig_outq_mult_test.pcm'
            inputDDSSignalFileNameI='complex_dds_test_i.pcm'
@@ -515,4 +544,15 @@ intType=2
 
      END SUBROUTINE  AnalyticSignalTestOperators
 
+     ! Тест оператора свертки
+     SUBROUTINE ConvolveTest()
+         USE analyticSignalModule
+         USE ShiftMultiplexorModule
+
+          TYPE(analyticSignal_t) ::input_sig
+          TYPE(analyticSignal_t) ::reference_sig
+
+
+
+     END SUBROUTINE ConvolveTest
 end module TestsModule

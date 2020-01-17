@@ -90,10 +90,6 @@ MODULE WriteReadComplexSignalToFromFile
         CHARACTER(*), INTENT(IN)             :: fileNameQ
         LOGICAL, INTENT(IN)                  :: isBinary
 
-!        INTEGER(2), ALLOCATABLE              :: arrayInt2I(:)
-!        INTEGER(2), ALLOCATABLE              :: arrayInt2Q(:)
-!        INTEGER(4), ALLOCATABLE              :: arrayInt4I(:)
-!        INTEGER(4), ALLOCATABLE              :: arrayInt4Q(:)
         INTEGER(8), ALLOCATABLE              :: arrayInt8I(:)
         INTEGER(8), ALLOCATABLE              :: arrayInt8Q(:)
 

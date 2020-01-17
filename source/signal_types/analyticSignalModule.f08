@@ -50,7 +50,13 @@ MODULE analyticSignalModule
         !ADD  - сложение
         PROCEDURE :: AddAnalyticSignals
         ! Assignment - присвание
-        PROCEDURE AssignDataFromAssignment
+        PROCEDURE :: AssignDataFromAssignment
+        ! Convolve -свертка сигналов analyticSignal_t
+        PROCEDURE :: Convolve
+        ! ConvolveRaw - свертка массивов int(8)
+        ! эта функция не принимает полиморфную переменную типа analyticSignal_t
+        PROCEDURE,NOPASS, PRIVATE :: CorrelationRaw
+
 
         ! далее выполняется перегрузка операторов
         ! умножения, вычитания, сложения и присваивания
@@ -63,6 +69,7 @@ MODULE analyticSignalModule
         !https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
         !https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         generic :: assignment (=) =>  AssignDataFromAssignment
+        generic :: operator   (.CONV.) =>  Convolve
         ! Финализирующый метод класс (так же - деструктор)
         ! должен освободить память, занятую массивом  signal(:)
         FINAL :: destructor
@@ -167,7 +174,7 @@ CONTAINS
          CLASS(analyticSignal_t), allocatable :: AddAnalyticSignals
 
 
-            !r%signal=xOp%signal*yOp%signal
+
             allocate(   AddAnalyticSignals)
 
             ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
@@ -189,6 +196,47 @@ CONTAINS
         leftOp%signalSize=size(rightOp%signal)
 
     END SUBROUTINE AssignDataFromAssignment
+
+    ! функция реализующая вычисление корреляционной (или свертки)
+    ! функции аналитических сигналов
+    ! input - входной сигнал
+    ! reference - опорный сигнал
+
+    FUNCTION Convolve(input,reference)
+
+         CLASS(analyticSignal_t), INTENT(IN)  :: input
+         CLASS(analyticSignal_t), INTENT(IN)  :: reference
+         CLASS(analyticSignal_t), allocatable :: convolve
+
+         allocate(Convolve)
+         ! ЗАщита
+         IF (input%signalSize>reference%signalSize) THEN
+              WRITE(*,*) 'Опорный сигнал преводсходит по длительности входящий'
+         ELSE
+              CALL convolve%Constructor(CorrelationRaw(input%signal,reference%signal))
+         END IF
+
+    END FUNCTION   Convolve
+
+    ! Вычисление корр. функции (Raw-  англ. сырая.)
+    PURE FUNCTION CorrelationRaw(input,reference)
+          INTEGER(8),INTENT(IN)   :: input(:),reference(:)
+          INTEGER(8),ALLOCATABLE  :: CorrelationRaw(:)
+          INTEGER(8)              :: i,j
+          INTEGER(8)              :: inputLen, referenceLEn
+          ! длительность выходного сигнала в отсчетах
+          inputLen=SIZE(input)
+          referenceLen=SIZE(input)
+          ALLOCATE (CorrelationRaw(1:inputLen))
+          ! что бы не было мусора в элементах массива
+          CorrelationRaw=0
+          DO i=1,inputLen
+                DO j=referenceLen,1
+                    CorrelationRaw(i)=CorrelationRaw(i)+input(i+j)*reference(j)
+                END DO
+          END DO
+    END FUNCTION   CorrelationRaw
+
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
