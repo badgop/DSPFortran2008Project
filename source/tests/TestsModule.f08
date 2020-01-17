@@ -142,6 +142,7 @@ module TestsModule
 
            TYPE(complexSignal_t) ::signalComplex_1
            TYPE(complexSignal_t) ::signalComplex_2
+           TYPE(complexSignal_t) ::signalComplex_3
 
            LOGICAL       :: state=.FALSE.
            LOGICAL       :: isBinary=.True.
@@ -185,16 +186,16 @@ module TestsModule
            signalComplex_1%GetAllocationStatus()
 
 
-           ! проверяем выделана ли память для signalComplex_2
-           state= signalComplex_2%GetAllocationStatus()
-           WRITE(*,*) ' комплексный 2! - статус выделение памяти',  state
-
-
-           CALL signalComplex_2%Constructor(signal_1,signal_2)
-
-           ! проверяем выделана ли память для signalComplex_2 после ВЫЗОВА конструктора
-           state= signalComplex_2%GetAllocationStatus()
-           WRITE(*,*) 'А теперь комплексный 2!', signalComplex_2%GetSignalSize(), state
+!           ! проверяем выделана ли память для signalComplex_2
+!           state= signalComplex_2%GetAllocationStatus()
+!           WRITE(*,*) ' комплексный 2! - статус выделение памяти',  state
+!
+!
+!           CALL signalComplex_2%Constructor(signal_1,signal_2)
+!
+!           ! проверяем выделана ли память для signalComplex_2 после ВЫЗОВА конструктора
+!           state= signalComplex_2%GetAllocationStatus()
+!           WRITE(*,*) 'А теперь комплексный 2!', signalComplex_2%GetSignalSize(), state
 
 
            !**********ВЫЗЫВАЕМ ОПЕРАТОР ПРИСВАИВАИЯ ДЛЯ КОМПЛЕКСНОГО СИГНАЛА*******
