@@ -84,7 +84,7 @@ CONTAINS
         LOGICAL(1):: existsFile=.FALSE.
         INTEGER(1):: iostat_Num=0
 
-        INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
+       INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
 
         IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
@@ -94,7 +94,8 @@ CONTAINS
                 IF (isBinary) then
                    OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="UNFORMATTED",IOSTAT=iostat_Num)
                 ELSE
-                   OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="FORMATTED",IOSTAT=iostat_Num)
+                   lengthFile = GetFormattedTxtFileSize(name_x)
+                   OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="FORMATTED", IOSTAT=iostat_Num)
                 END IF
 
                 IF (iostat_Num.NE.0) then
@@ -104,27 +105,39 @@ CONTAINS
                 IF (ALLOCATED(x)) THEN
                     DEALLOCATE(x)
                 END IF
-                !Платформозависимый код
-                !ВНИМАНИЕ
-                ALLOCATE(x(1:lengthFile/INT_KIND))
+
+                !*********Платформозависимый код**********
+                !*********ВНИМАНИЕ**************
+
+
+
 
                 IF (isBinary) then
+                    ALLOCATE(x(1:lengthFile/INT_KIND))
                     READ(10,IOSTAT=iostat_Num) x
+                    CLOSE(10)
                 ELSE
-                    READ(10,fmt,IOSTAT=iostat_Num) x
+
+                    ALLOCATE(x(1:lengthFile))
+                    READ(10,*,IOSTAT=iostat_Num) x
+                    CLOSE(10)
+
                 END IF
 
                 IF (iostat_Num.NE.0) then
-                    WRITE(*,*) 'Ошибка при чтении файла ', name_x
+                    WRITE(*,*) 'Ошибка при чтении файла ', name_x, ' IOSTAT =',iostat_Num
+                    CLOSE(10)
                     CALL   ExitFromProgramNormal()
                 END IF
                 WRITE(*,*) 'Успешно прочитан файл ', name_x
-                CLOSE(10)
+
+
            END IF
         ELSE
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
 
     END SUBROUTINE ReadArrayFromFileTypeBinaryInt2
 
@@ -158,7 +171,8 @@ CONTAINS
                 IF (isBinary) then
                    OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="UNFORMATTED",IOSTAT=iostat_Num)
                 ELSE
-                   OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="FORMATTED",IOSTAT=iostat_Num)
+                   lengthFile = GetFormattedTxtFileSize(name_x)
+                   OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="FORMATTED", IOSTAT=iostat_Num)
                 END IF
 
                 IF (iostat_Num.NE.0) then
@@ -168,22 +182,32 @@ CONTAINS
                 IF (ALLOCATED(x)) THEN
                     DEALLOCATE(x)
                 END IF
-                !Платформозависимый код
-                !ВНИМАНИЕ
-                ALLOCATE(x(1:lengthFile/INT_KIND))
+
+                !*********Платформозависимый код**********
+                !*********ВНИМАНИЕ**************
+
+
+
 
                 IF (isBinary) then
+                    ALLOCATE(x(1:lengthFile/INT_KIND))
                     READ(10,IOSTAT=iostat_Num) x
+                    CLOSE(10)
                 ELSE
-                    READ(10,fmt,IOSTAT=iostat_Num) x
+
+                    ALLOCATE(x(1:lengthFile))
+                    READ(10,*,IOSTAT=iostat_Num) x
+                    CLOSE(10)
+
                 END IF
 
                 IF (iostat_Num.NE.0) then
-                    WRITE(*,*) 'Ошибка при чтении файла ', name_x
+                    WRITE(*,*) 'Ошибка при чтении файла ', name_x, ' IOSTAT =',iostat_Num
                     CALL   ExitFromProgramNormal()
                 END IF
                 WRITE(*,*) 'Успешно прочитан файл ', name_x
-                CLOSE(10)
+
+
            END IF
         ELSE
             WRITE(*,*) 'Файл ', name_x, ' не существует'
@@ -212,7 +236,7 @@ CONTAINS
         LOGICAL(1):: existsFile=.FALSE.
         INTEGER(1):: iostat_Num=0
 
-        INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
+       INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
 
         IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
@@ -222,7 +246,8 @@ CONTAINS
                 IF (isBinary) then
                    OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="UNFORMATTED",IOSTAT=iostat_Num)
                 ELSE
-                   OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="FORMATTED",IOSTAT=iostat_Num)
+                   lengthFile = GetFormattedTxtFileSize(name_x)
+                   OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="FORMATTED", IOSTAT=iostat_Num)
                 END IF
 
                 IF (iostat_Num.NE.0) then
@@ -232,22 +257,33 @@ CONTAINS
                 IF (ALLOCATED(x)) THEN
                     DEALLOCATE(x)
                 END IF
-                !Платформозависимый код
-                !ВНИМАНИЕ
-                ALLOCATE(x(1:lengthFile/INT_KIND))
+
+                !*********Платформозависимый код**********
+                !*********ВНИМАНИЕ**************
+
+
+
 
                 IF (isBinary) then
+                    ALLOCATE(x(1:lengthFile/INT_KIND))
                     READ(10,IOSTAT=iostat_Num) x
+                    CLOSE(10)
                 ELSE
-                    READ(10,fmt,IOSTAT=iostat_Num) x
+
+                    ALLOCATE(x(1:lengthFile))
+                    READ(10,*,IOSTAT=iostat_Num) x
+                    CLOSE(10)
+
                 END IF
 
                 IF (iostat_Num.NE.0) then
-                    WRITE(*,*) 'Ошибка при чтении файла ', name_x
+                    WRITE(*,*) 'Ошибка при чтении файла ', name_x, ' IOSTAT =',iostat_Num
+                    CLOSE(10)
                     CALL   ExitFromProgramNormal()
                 END IF
                 WRITE(*,*) 'Успешно прочитан файл ', name_x
-                CLOSE(10)
+
+
            END IF
         ELSE
             WRITE(*,*) 'Файл ', name_x, ' не существует'
@@ -268,7 +304,7 @@ CONTAINS
         INTEGER(INT_KIND), INTENT(IN) :: x(:)
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
-        CHARACTER(10) :: fmt="(I21.3)"
+        CHARACTER(10) :: fmt="(I21.1)"
 
         INTEGER(4):: iostat_Num=0
         IF (isBinary) THEN
@@ -311,7 +347,7 @@ CONTAINS
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
 
-        CHARACTER(10) :: fmt="(I21.3)"
+        CHARACTER(10) :: fmt="(I21.1)"
 
         INTEGER(4):: iostat_Num=0
 
@@ -353,7 +389,7 @@ CONTAINS
         INTEGER(INT_KIND), INTENT(IN) :: x(:)
         CHARACTER(*), INTENT(IN):: name_x
         LOGICAL, INTENT(IN):: isBinary
-        CHARACTER(10) :: fmt="(I21.3)"
+        CHARACTER(10) :: fmt="(I21.1)"
 
         INTEGER(4):: iostat_Num=0
         IF (isBinary) THEN
@@ -382,6 +418,29 @@ CONTAINS
         CLOSE(10)
     END SUBROUTINE WriteArrayToFileBinaryTypeInt8
 
+    FUNCTION GetFormattedTxtFileSize(name_x)
 
+        CHARACTER(*), INTENT(IN):: name_x
+        INTEGER(8) :: GetFormattedTxtFileSize
+        INTEGER(8) :: i
+        INTEGER(8) :: x
+        INTEGER(8) ::iostat_Num
+        CHARACTER(10) :: fmt="(I21.1)"
+
+        OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="FORMATTED",IOSTAT=iostat_Num)
+        i=1
+
+  111   READ(10,fmt,IOSTAT=iostat_Num) x
+        IF(iostat_Num<0) goto 333
+        IF(iostat_Num==0)  i=i+1
+
+        goto 111
+  333   GetFormattedTxtFileSize=i
+
+        close(10)
+
+
+
+    END FUNCTION
 
 END MODULE ModuleWriteReadArrayFromToFile

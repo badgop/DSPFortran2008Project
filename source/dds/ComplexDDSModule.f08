@@ -74,7 +74,6 @@ CONTAINS
 
     SUBROUTINE destructor(this)
         TYPE(complexDDS_t), INTENT(INOUT) :: this
-
     END SUBROUTINE
 
 END MODULE ComplexDDSModule

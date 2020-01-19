@@ -1,7 +1,12 @@
 PROGRAM main
     USE PrefixModule
     USE TestsModule
+    USE ModuleWriteReadArrayFromToFile
+    USE  ReadWriteArrayToFromTxt
     IMPLICIT NONE
+
+    integer(4),allocatable :: array(:)
+    integer(8) :: x,iostat_Num
 
 
 !CALL DDSOutputTest(romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1),outputSignalSampleCapacity=int(12,1)&
@@ -37,7 +42,6 @@ PROGRAM main
 !     CALL ComplexDDSTest(centralFrequency= 1*KILO,samplingFrequency=192*KILO&
 !                         ,sig_len=16384,romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1)&
 !                        ,outputSignalSampleCapacity=int(12,1)&
-!                        ,phase=real(1.0,8)&
 !                        ,outputSignalFileNameI='test_signals\output\complexdds_outI.pcm'&
 !                        ,outputSignalFileNameQ='test_signals\output\complexdds_outQ.pcm')
 
@@ -53,7 +57,8 @@ PROGRAM main
 !*******************ТЕСТ комплексного умножителя*************
 !
 !
-!   Убедиться в наличии файлов... в inputsignals
+!   Убедиться в наличии файлов исходного сигнала в inputsignals
+!   через DDSOutputTest создать опорные колебания с нужной частотой и длительностью
 !  и запустить уже ComplexMultiplyTest
 
 !     CALL DDSOutputTest(romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1),outputSignalSampleCapacity=int(12,1)&
@@ -64,16 +69,26 @@ PROGRAM main
 !                             ,centralFrequency2=40*KILO&
 !                             ,file1Name='test_signals\input\dds_test_output1.pcm'&
 !                             ,file2Name='test_signals\input\dds_test_output2.pcm' )
+!
+!     CALL ComplexMultiplyTest(inputSignalFileNameI='test_signals\input\outi.pcm'&
+!                             ,inputSignalFileNameQ='test_signals\input\outq.pcm'&
+!                             ,inputRefI='test_signals\input\dds_test_output1.pcm'&
+!                             ,inputRefQ='test_signals\input\dds_test_output2.pcm'&
+!                             ,outputSignalFileNameI='test_signals\output\complex_mult_testI.pcm'&
+!                             ,outputSignalFileNameQ='test_signals\output\complex_mult_testQ.pcm'&
+!                             ,shift=int(9,1) )
 
-     CALL ComplexMultiplyTest(inputSignalFileNameI='test_signals\input\outi.pcm'&
-                             ,inputSignalFileNameQ='test_signals\input\outq.pcm'&
-                             ,inputRefI='test_signals\input\dds_test_output1.pcm'&
-                             ,inputRefQ='test_signals\input\dds_test_output2.pcm'&
-                             ,outputSignalFileNameI='test_signals\output\complex_mult_testI.pcm'&
-                             ,outputSignalFileNameQ='test_signals\output\complex_mult_testQ.pcm'&
-                             ,shift=int(10,1) )
 
-    WRITE(*,*) 'DONE!'
+
+    CALL ConvolveTest(inputSignalFileName  = 'test_signals\input\noise_163930.pcm'&
+                     ,inputRefFileName     = 'test_signals\input\new3.txt'&
+                     ,outputSignalFileName = 'test_signals\output\convolve_test.pcm'&
+                     ,shift = int(20,1))
+
+
+!    CALL ReadArrayFromFile(array,'test_signals\input\new3.txt',.FALSE.)
+    !CALL ReadArrayFromFileTxt(array,'ddsromtable.txt')
+
 
 
     CONTAINS

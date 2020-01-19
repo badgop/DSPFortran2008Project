@@ -106,6 +106,7 @@ module TestsModule
              CALL ddsGenerator%ComputeOutput(int(centralFrequency2,8),int(signalLengthInSamples,8),outputsignal2)
               ! оператор int (,kind) можно применять и к массивам!!!
              CALL WriteAnalyticSignalToFile(outputsignal2,int(2,1),file2Name,isBinary=.True.)
+
              WRITE(*,*) ''
              WRITE(*,*) 'ТЕСТ DDS ЗАКОНЧЕН!!!!!'
     END SUBROUTINE DDSOutputTest
@@ -299,7 +300,7 @@ module TestsModule
      END SUBROUTINE AnalyticSignalMultiplyPlusShiftTest
 
        SUBROUTINE ComplexDDSTest(centralFrequency,sig_len,romLengthInBits,samplingFrequency,&
-                                 romLenthTruncedInBits,outputSignalSampleCapacity,phase&
+                                 romLenthTruncedInBits,outputSignalSampleCapacity&
                                  ,outputSignalFileNameI,outputSignalFileNameQ)
 
            USE analyticSignalModule
@@ -327,7 +328,7 @@ module TestsModule
             INTEGER(1),INTENT(IN) :: outputSignalSampleCapacity
 
             INTEGER(4),INTENT(IN) :: centralFrequency
-            REAL(8),INTENT(IN)                  :: phase
+
             INTEGER(8),allocatable :: freq(:)
 
             CHARACTER(*), intent(in) :: outputSignalFileNameI,outputSignalFileNameQ
@@ -335,30 +336,21 @@ module TestsModule
 
             LOGICAL         :: isBinary=.True.
 
-!            outputSignalFileNameI = 'complex_dds_test_i.pcm'
-!            outputSignalFileNameQ = 'complex_dds_test_q.pcm'
-
-
-
 
             intType=2
-           WRITE(*,*) 'ПОМНИ ПРО ДЛИНУ!'
+            WRITE(*,*) 'ПОМНИ ПРО ДЛИНУ!'
            !sig_len=380001
 
-           ALLOCATE(freq(1:sig_len))
+            ALLOCATE(freq(1:sig_len))
+            freq=centralFrequency
+            CALL frequencys%Constructor(freq)
 
-           freq=centralFrequency
-
-           CALL frequencys%Constructor(freq)
-
-           CALL ddsGeneratorComplex%Constructor(romLengthInBits,romLenthTruncedInBits,samplingFrequency,&
+            CALL ddsGeneratorComplex%Constructor(romLengthInBits,romLenthTruncedInBits,samplingFrequency,&
                                                 outputSignalSampleCapacity)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
 
-
-           CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
-
-           intType=2
-           CALL WriteComplexSignalToFile(signal_out,intType,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
+            intType=2
+            CALL WriteComplexSignalToFile(signal_out,intType,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
 
        END SUBROUTINE ComplexDDSTest
 
@@ -449,10 +441,8 @@ module TestsModule
            CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ,isBinary)
 
            CALL ReadComplexSignalFromFile(signal_2,intType,inputRefI,inputRefQ,isBinary)
-        !
-           WRITE(*,*) 'до умно'
+
            signal_3=signal_2*signal_1
-           WRITE(*,*) 'После умно'
 
            CALL signal_3%RShift(shift)
            intType=2
@@ -462,14 +452,29 @@ module TestsModule
 
 
      ! Тест оператора свертки
-     SUBROUTINE ConvolveTest()
+     SUBROUTINE ConvolveTest(inputSignalFileName,inputRefFileName,outputSignalFileName,shift)
          USE analyticSignalModule
-         USE ShiftMultiplexorModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
 
-          TYPE(analyticSignal_t) ::input_sig
-          TYPE(analyticSignal_t) ::reference_sig
+
+         CHARACTER(*), INTENT(IN) :: inputSignalFileName
+         CHARACTER(*), INTENT(IN) :: inputRefFileName
+         CHARACTER(*), INTENT(IN) :: outputSignalFileName
+         INTEGER(1)  , INTENT(IN) :: shift
+
+         TYPE(analyticSignal_t) ::input_sig
+         TYPE(analyticSignal_t) ::reference_sig
+         TYPE(analyticSignal_t) ::conv_result
 
 
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(4,1),inputRefFileName,.False.)
+
+         conv_result= input_sig.CONV.reference_sig
+         CALL conv_result%Rshift(shift)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
 
      END SUBROUTINE ConvolveTest
 end module TestsModule

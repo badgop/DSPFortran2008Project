@@ -9,6 +9,7 @@
 
 
 MODULE analyticSignalModule
+    USE ModuleExitProg
     IMPLICIT NONE
     PRIVATE
 
@@ -214,8 +215,9 @@ CONTAINS
 
          allocate(Convolve)
          ! ЗАщита
-         IF (input%signalSize>reference%signalSize) THEN
-              WRITE(*,*) 'Опорный сигнал преводсходит по длительности входящий'
+         IF (input%signalSize<reference%signalSize) THEN
+              WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
+              CALL ExitFromProgramNormal()
          ELSE
               CALL convolve%Constructor(CorrelationRaw(input%signal,reference%signal))
          END IF
@@ -223,32 +225,34 @@ CONTAINS
     END FUNCTION   Convolve
 
     ! Вычисление корр. функции (Raw-  англ. сырая.)
-    PURE FUNCTION CorrelationRaw(input,reference)
+    FUNCTION CorrelationRaw(input,reference)
           INTEGER(8),INTENT(IN)   :: input(:),reference(:)
           INTEGER(8),ALLOCATABLE  :: CorrelationRaw(:)
           INTEGER(8)              :: i,j
           INTEGER(8)              :: inputLen, referenceLEn
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
-          referenceLen=SIZE(input)
+          referenceLen=SIZE(reference)
           ALLOCATE (CorrelationRaw(1:inputLen))
           ! что бы не было мусора в элементах массива
           CorrelationRaw=0
-          DO i=1,inputLen
-                DO j=referenceLen,1
+
+          DO i=1,inputLen-referenceLen
+                DO j=1,referenceLen
                     CorrelationRaw(i)=CorrelationRaw(i)+input(i+j)*reference(j)
+
                 END DO
+
           END DO
+
     END FUNCTION   CorrelationRaw
 
     ! ВЫполняет арифметический сдвиг вправо, для выбора старших разрядов сигнала
     SUBROUTINE RShift(this,shift)
-
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),INTENT(IN)                :: shift
 
         this%signal=SHIFTA( this%signal,shift)
-
 
     END SUBROUTINE RShift
 
