@@ -13,20 +13,35 @@ PROGRAM main
 !                             ,file1Name='test_signals\input\dds_test_output1.pcm'&
 !                             ,file2Name='test_signals\input\dds_test_output2.pcm' )
 
-    CALL  AnalyticComplexSignalTestConstructors(inputSignalFileNameI         ='test_signals\input\dds_test_output1.pcm'&
-                                               ,inputSignalFileNameQ         ='test_signals\input\dds_test_output2.pcm'&
-                                               ,outputSignalFileNameAnaytic  ='test_signals\output\analytic_constructor_test.pcm'&
-                                               ,outputSignalFileNameComplexI ='test_signals\output\complexExtractredI.pcm'&
-                                               ,outputSignalFileNameComplexQ ='test_signals\output\complexExtractredQ.pcm')
+!    CALL  AnalyticComplexSignalTestConstructors(inputSignalFileNameI         ='test_signals\input\dds_test_output1.pcm'&
+!                                               ,inputSignalFileNameQ         ='test_signals\input\dds_test_output2.pcm'&
+!                                               ,outputSignalFileNameAnaytic  ='test_signals\output\analytic_constructor_test.pcm'&
+!                                               ,outputSignalFileNameComplexI ='test_signals\output\complexExtractredI.pcm'&
+!                                               ,outputSignalFileNameComplexQ ='test_signals\output\complexExtractredQ.pcm')
 
 
 
-!    CALL AnalyticSignalTestWriteRead('dds_output_test1.pcm','analytic_test_write.pcm' )
-!    CALL ComplexSignalTestWriteRead('dds_output_test1.pcm','dds_output_test2.pcm',&
-!                                    'complex_write_testI.pcm','complex_write_testQ.pcm')
-!
-!   CALL AnalyticSignalMultiplyPlusShiftTest()
-!     CALL ComplexDDSTest(int((800*KILO),4),380001)
+!    CALL AnalyticSignalTestWriteRead(inputSignalFileName='test_signals\input\dds_test_output1.pcm'&
+!                                    ,outputSignalFileName='test_signals\output\test_read_write_analytic.pcm' )
+
+!    CALL ComplexSignalTestWriteRead(inputSignalFileNameI='test_signals\input\dds_test_output1.pcm'&
+!                                   ,inputSignalFileNameQ='test_signals\input\dds_test_output2.pcm'&
+!                                   ,outputSignalFileNameI='test_signals\output\test_read_write_complexI.pcm'&
+!                                   ,outputSignalFileNameQ='test_signals\output\test_read_write_complexQ.pcm'&
+!                                   ,capacity=INT(2,1))
+!!
+!   CALL AnalyticSignalMultiplyPlusShiftTest(inputSignalFileName='test_signals\input\dds_test_output1.pcm'&
+!                                           ,inputSignalFileName2='test_signals\input\dds_test_output2.pcm'&
+!                                           ,outputSignalFileName='test_signals\output\analytic_multiply.pcm'&
+!                                           ,shift=INT(8,1))
+     CALL ComplexDDSTest(centralFrequency= 1*KILO,samplingFrequency=192*KILO&
+                         ,sig_len=16384,romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1)&
+                        ,outputSignalSampleCapacity=int(12,1)&
+                        ,phase=real(1.0,8)&
+                        ,outputSignalFileNameI='test_signals\output\complexdds_outI.pcm'&
+                        ,outputSignalFileNameQ='test_signals\output\complexdds_outQ.pcm')
+
+
 !
 !
 !    CALL AnalyticSignalTestOperators()

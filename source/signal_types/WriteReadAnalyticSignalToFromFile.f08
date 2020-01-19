@@ -109,7 +109,50 @@ MODULE WriteReadAnalyticSignalToFromFile
 
    END SUBROUTINE WriteAnalyticSignalToFile
 
+   SUBROUTINE WriteTwoAnalyticSignalToStereoFile(writedSignalI,writedSignalQ,intType,fileName,isBinary)
 
+        CLASS(analyticSignal_t), INTENT(IN)  :: writedSignalI
+        CLASS(analyticSignal_t), INTENT(IN)  :: writedSignalQ
+        INTEGER(1), INTENT(IN)               :: intType
+        CHARACTER(*), INTENT(IN)             :: fileName
+        LOGICAL, INTENT(IN)                  :: isBinary
+
+!        INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
+!        INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
+         INTEGER(8), ALLOCATABLE              :: arrayInt8I(:)
+         INTEGER(8), ALLOCATABLE              :: arrayInt8Q(:)
+         INTEGER(8), ALLOCATABLE              :: arrayInt8Stereo(:)
+         INTEGER(8)                           :: arraySize
+
+        CALL writedSignalI%ExtractSignalData(arrayInt8I)
+        CALL writedSignalQ%ExtractSignalData(arrayInt8Q)
+
+        arraySize = size(arrayInt8I)
+        ALLOCATE (arrayInt8Stereo(1:arraySize*2))
+
+
+!        SELECT CASE (intType)
+!
+!            CASE(2)
+!
+!                CALL WriteArrayToFile(int(arrayInt8,2),fileName,isBinary)
+!                DEALLOCATE(arrayInt8)
+!
+!            CASE(4)
+!
+!                CALL WriteArrayToFile(int(arrayInt8,4),fileName,isBinary)
+!                DEALLOCATE(arrayInt8)
+!
+!            CASE(8)
+!
+!                CALL WriteArrayToFile(arrayInt8,fileName,isBinary)
+!                DEALLOCATE(arrayInt8)
+!
+!            CASE DEFAULT
+!                WRITE(*,*) 'Неправильно выбран тип целого для записи'
+!           END SELECT
+
+   END SUBROUTINE WriteTwoAnalyticSignalToStereoFile
 
 
 END MODULE WriteReadAnalyticSignalToFromFile

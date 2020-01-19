@@ -56,6 +56,9 @@ MODULE analyticSignalModule
         ! ConvolveRaw - свертка массивов int(8)
         ! эта функция не принимает полиморфную переменную типа analyticSignal_t
         PROCEDURE,NOPASS, PRIVATE :: CorrelationRaw
+        !Арифметический сдвиг отсчетов сигнала в ПРАВО
+        PROCEDURE :: RShift
+
 
 
         ! далее выполняется перегрузка операторов
@@ -69,6 +72,7 @@ MODULE analyticSignalModule
         !https://stackoverflow.com/questions/19064132/nested-derived-type-with-overloaded-assignment
         !https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         generic :: assignment (=) =>  AssignDataFromAssignment
+        !оператор СВЕРТКИ
         generic :: operator   (.CONV.) =>  Convolve
         ! Финализирующый метод класс (так же - деструктор)
         ! должен освободить память, занятую массивом  signal(:)
@@ -236,6 +240,17 @@ CONTAINS
                 END DO
           END DO
     END FUNCTION   CorrelationRaw
+
+    ! ВЫполняет арифметический сдвиг вправо, для выбора старших разрядов сигнала
+    SUBROUTINE RShift(this,shift)
+
+        CLASS(analyticSignal_t), INTENT(INOUT)  :: this
+        INTEGER(1),INTENT(IN)                :: shift
+
+        this%signal=SHIFTA( this%signal,shift)
+
+
+    END SUBROUTINE RShift
 
 
     SUBROUTINE destructor(this)

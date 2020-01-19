@@ -235,7 +235,7 @@ module TestsModule
      ! тест для процедур чтения записи Комплексного  сигнала из файла в файл
      ! сигнал БИНАРНЫЙ!!!
      SUBROUTINE ComplexSignalTestWriteRead(inputSignalFileNameI, inputSignalFileNameQ,&
-                                           outputSignalFileNameI,outputSignalFileNameQ)
+                                           outputSignalFileNameI,outputSignalFileNameQ, capacity)
 
            USE complexSignalModule
            USE ModuleWriteReadArrayFromToFile
@@ -244,14 +244,14 @@ module TestsModule
            IMPLICIT NONE
 
            TYPE(complexSignal_t) ::signal_1
-           INTEGER(1) :: intType
+           INTEGER(1),INTENT(IN) :: capacity
            CHARACTER(*),INTENT(IN) :: inputSignalFileNameI, inputSignalFileNameQ
            CHARACTER(*),INTENT(IN) :: outputSignalFileNameI,outputSignalFileNameQ
 
            LOGICAL          ::isBinary=.True.
-!           intType=2
-           CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ,isBinary)
-           CALL WriteComplexSignalToFile(signal_1,intType,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
+
+           CALL ReadComplexSignalFromFile(signal_1,capacity,inputSignalFileNameI,inputSignalFileNameQ,isBinary)
+           CALL WriteComplexSignalToFile(signal_1,capacity,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
      END SUBROUTINE ComplexSignalTestWriteRead
 
      ! тест оператора умножения аналитического сигнала
@@ -295,7 +295,9 @@ module TestsModule
 
      END SUBROUTINE AnalyticSignalMultiplyPlusShiftTest
 
-       SUBROUTINE ComplexDDSTest(freq_in,sig_len)
+       SUBROUTINE ComplexDDSTest(centralFrequency,sig_len,romLengthInBits,samplingFrequency,&
+                                 romLenthTruncedInBits,outputSignalSampleCapacity,phase&
+                                 ,outputSignalFileNameI,outputSignalFileNameQ)
 
            USE analyticSignalModule
            USE complexSignalModule
@@ -305,7 +307,7 @@ module TestsModule
            USE MathConstModule
            USE PrefixModule
 
-           INTEGER(4), INTENT(IN) :: freq_in
+
            INTEGER(4),INTENT(IN) :: sig_len
 
            TYPE(complexSignal_t)   ::signal_out
@@ -313,33 +315,29 @@ module TestsModule
            TYPE(complexDDS_t)     :: ddsGeneratorComplex
 
            !разрядность аккамулятора фазы
-            INTEGER(1) :: romLengthInBits
+            INTEGER(1),INTENT(IN) :: romLengthInBits
             !частота дискретизации
-            INTEGER(4) :: samplingFrequency
+            INTEGER(4),INTENT(IN) :: samplingFrequency
             !число бит до которых усекатется таблица ПЗУ
-            INTEGER(1) :: romLenthTruncedInBits
+            INTEGER(1),INTENT(IN) :: romLenthTruncedInBits
             !разрядность выходного сигнала
-            INTEGER(1) :: outputSignalSampleCapacity
+            INTEGER(1),INTENT(IN) :: outputSignalSampleCapacity
 
-            INTEGER(4) :: centralFrequency
-            REAL(8)                  :: phase
+            INTEGER(4),INTENT(IN) :: centralFrequency
+            REAL(8),INTENT(IN)                  :: phase
             INTEGER(8),allocatable :: freq(:)
 
-            CHARACTER(50) :: outputSignalFileNameI,outputSignalFileNameQ
+            CHARACTER(*), intent(in) :: outputSignalFileNameI,outputSignalFileNameQ
             INTEGER(1) :: intType
 
             LOGICAL         :: isBinary=.True.
 
-            outputSignalFileNameI = 'complex_dds_test_i.pcm'
-            outputSignalFileNameQ = 'complex_dds_test_q.pcm'
+!            outputSignalFileNameI = 'complex_dds_test_i.pcm'
+!            outputSignalFileNameQ = 'complex_dds_test_q.pcm'
 
-            romLengthInBits=32
-            romLenthTruncedInBits=14
-            outputSignalSampleCapacity=12
-            samplingFrequency= 2*MEGA
-            centralFrequency= freq_in
 
-            phase=0.0
+
+
             intType=2
            WRITE(*,*) 'ПОМНИ ПРО ДЛИНУ!'
            !sig_len=380001
@@ -390,7 +388,7 @@ module TestsModule
 
            LOGICAL :: isBinary=.True.
 
-           CALL ComplexDDSTest(freq_in,1624993)
+!           CALL ComplexDDSTest(freq_in,1624993)
 
            !inputSignalFileNameI  = 'gfsk_mux_i_cos.pcm'
            !inputSignalFileNameQ  = 'gfsk_mux_i_sin.pcm'
