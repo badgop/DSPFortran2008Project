@@ -28,6 +28,7 @@
         PROCEDURE GetAllocationStatus
         PROCEDURE GetSignalSize
         PROCEDURE SetName
+        PROCEDURE :: RShift
         FINAL :: destructor
 
     END TYPE complexSignal_t
@@ -151,6 +152,17 @@ CONTAINS
      END SUBROUTINE SetName
 
 
+    ! ВЫполняет арифметический сдвиг вправо, для выбора старших разрядов сигнала
+    SUBROUTINE RShift(this,shift)
+
+        CLASS(complexSignal_t), INTENT(INOUT)  :: this
+        INTEGER(1),INTENT(IN)                :: shift
+
+        CALL this%i%RShift(shift)
+        CALL this%q%RShift(shift)
+
+
+    END SUBROUTINE RShift
 
 
     SUBROUTINE destructor(this)
