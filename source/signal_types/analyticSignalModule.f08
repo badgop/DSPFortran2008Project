@@ -59,6 +59,8 @@ MODULE analyticSignalModule
         PROCEDURE,NOPASS, PRIVATE :: CorrelationRaw
         !Арифметический сдвиг отсчетов сигнала в ПРАВО
         PROCEDURE :: RShift
+        ! Вставка нулей в начало и конец сигнала (увеличивает его длину)
+        PROCEDURE :: ZeroesStuffing
 
 
 
@@ -225,10 +227,11 @@ CONTAINS
     END FUNCTION   Convolve
 
     ! Вычисление корр. функции (Raw-  англ. сырая.)
+    ! пределы [0 : длина входного сигнала- длина опорного сигнала]
     FUNCTION CorrelationRaw(input,reference)
           INTEGER(8),INTENT(IN)   :: input(:),reference(:)
           INTEGER(8),ALLOCATABLE  :: CorrelationRaw(:)
-          INTEGER(8)              :: i,j
+          INTEGER(8)              :: i,j,summ
           INTEGER(8)              :: inputLen, referenceLEn
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
@@ -237,17 +240,58 @@ CONTAINS
           ! что бы не было мусора в элементах массива
           CorrelationRaw=0
 
+          ! Выбрать пределы корреляции
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
                     CorrelationRaw(i)=CorrelationRaw(i)+input(i+j)*reference(j)
-
                 END DO
-
           END DO
 
     END FUNCTION   CorrelationRaw
 
+    ! Вставка нулей в начало и конец сигнала (увеличивает его длину)
+    ! before - число нулей до начала сигнала
+    ! after - после начала сигнала
+    SUBROUTINE ZeroesStuffing (this, beforeLen,afterLen)
+
+        CLASS(analyticSignal_t), INTENT(INOUT)  :: this
+        INTEGER(8),INTENT(IN)                   :: beforeLen
+        INTEGER(8),INTENT(IN)                   :: afterLen
+        !итоговая длина сигнала
+        INTEGER(8)                              :: summLen
+        INTEGER(8),ALLOCATABLE                  :: tempArray(:)
+        INTEGER(8)                              ::allocationStatus
+
+        !итоговая длина сигнала
+        summLen = beforeLen + afterLen + this%signalSize
+        ! проверка на максимальную длину массива
+        IF(summLen>HUGE(0)) THEN
+          WRITE(*,*) 'Превышение максимальной длины массива'
+          WRITE(*,*) '(при наполнении нулями)'
+          CALL ExitFromProgramNormal()
+        END IF
+
+        ALLOCATE(tempArray(1:summLen),stat=allocationStatus)
+        IF (allocationStatus>0) THEN
+          WRITE(*,*) 'не могу выделить память tmpArray'
+          CALL ExitFromProgramNormal()
+        END IF
+
+        tempArray=0
+        tempArray(beforeLen+1:beforeLen+1+this%signalSize)=this%signal
+        DEALLOCATE(this%signal)
+        ALLOCATE(this%signal,source=tempArray,stat=allocationStatus)
+        IF (allocationStatus>0) THEN
+          WRITE(*,*) 'не могу выделить память this%signal'
+          CALL ExitFromProgramNormal()
+        END IF
+        DEALLOCATE(tempArray)
+
+
+      END SUBROUTINE ZeroesStuffing
+
     ! ВЫполняет арифметический сдвиг вправо, для выбора старших разрядов сигнала
+    ! shift - величина сдвига в отсчетах
     SUBROUTINE RShift(this,shift)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),INTENT(IN)                :: shift

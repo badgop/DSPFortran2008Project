@@ -5,8 +5,7 @@ PROGRAM main
     USE  ReadWriteArrayToFromTxt
     IMPLICIT NONE
 
-    integer(4),allocatable :: array(:)
-    integer(8) :: x,iostat_Num
+
 
 
 !CALL DDSOutputTest(romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1),outputSignalSampleCapacity=int(12,1)&
@@ -80,14 +79,21 @@ PROGRAM main
 
 
 
-    CALL ConvolveTest(inputSignalFileName  = 'test_signals\input\noise_163930.pcm'&
-                     ,inputRefFileName     = 'test_signals\input\new3.txt'&
-                     ,outputSignalFileName = 'test_signals\output\convolve_test.pcm'&
-                     ,shift = int(20,1))
+!    CALL ConvolveTest(inputSignalFileName  = 'test_signals\input\noise_163930.pcm'&
+!                     ,inputRefFileName     = 'test_signals\input\new3.txt'&
+!                     ,outputSignalFileName = 'test_signals\output\convolve_test.pcm'&
+!                     ,shift = int(18,1))
 
 
-!    CALL ReadArrayFromFile(array,'test_signals\input\new3.txt',.FALSE.)
-    !CALL ReadArrayFromFileTxt(array,'ddsromtable.txt')
+!    CALL AutoConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+!                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+!                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
+!                     ,shift = int(22,1))
+
+    CALL AutoConvolveTest(inputSignalFileName  = 'test_signals\input\signal (2).pcm'&
+                     ,inputRefFileName     = 'test_signals\input\signal (2).pcm'&
+                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
+                     ,shift = int(30,1))
 
 
 

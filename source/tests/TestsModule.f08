@@ -451,7 +451,7 @@ module TestsModule
       END SUBROUTINE ComplexMultiplyTest
 
 
-     ! Тест оператора свертки
+     ! Тест оператора свертки (классический)
      SUBROUTINE ConvolveTest(inputSignalFileName,inputRefFileName,outputSignalFileName,shift)
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -477,4 +477,31 @@ module TestsModule
          CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
 
      END SUBROUTINE ConvolveTest
+
+          ! Тест оператора свертки (классический)
+     SUBROUTINE AutoConvolveTest(inputSignalFileName,inputRefFileName,outputSignalFileName,shift)
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+
+         CHARACTER(*), INTENT(IN) :: inputSignalFileName
+         CHARACTER(*), INTENT(IN) :: inputRefFileName
+         CHARACTER(*), INTENT(IN) :: outputSignalFileName
+         INTEGER(1)  , INTENT(IN) :: shift
+
+         TYPE(analyticSignal_t) ::input_sig
+         TYPE(analyticSignal_t) ::reference_sig
+         TYPE(analyticSignal_t) ::conv_result
+
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
+
+         CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
+         conv_result= input_sig.CONV.reference_sig
+         CALL conv_result%Rshift(shift)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+
+     END SUBROUTINE AutoConvolveTest
+
 end module TestsModule
