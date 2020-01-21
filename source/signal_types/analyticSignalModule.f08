@@ -94,13 +94,32 @@ CONTAINS
         INTEGER(8), INTENT(IN) :: loadedSignal(:)
 
         INTEGER(8) :: fileSize
+        INTEGER(4) :: stat
 
         !что если обьект уже проинициализирован - проверить!!!
-        fileSize=size(loadedSignal)
-        this%signalSize=fileSize
-        ALLOCATE( this%signal, source=loadedSignal)
-        this%isAllocated=.TRUE.
-        WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!'
+!        fileSize=size(loadedSignal)
+!        this%signalSize=fileSize
+!        ALLOCATE( this%signal, source=loadedSignal)
+!        this%isAllocated=.TRUE.
+!        WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
+
+
+        !        ! ЗАЩИТА
+        IF ((ALLOCATED(this%signal)).AND.(this%isAllocated)) THEN
+!           WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+           DEALLOCATE(this%signal, STAT=stat)
+!           IF (STAT==0) THEN
+!               WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+!           END IF
+           this%isAllocated=.FALSE.
+           this%signalName=''
+           this%signalSize= 0
+        END IF
+!           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
+           allocate (this%signal,source=loadedSignal)
+           this%isAllocated=.TRUE.
+           this%signalSize=size(loadedSignal)
+
 
     END SUBROUTINE Constructor
 
@@ -196,11 +215,22 @@ CONTAINS
     SUBROUTINE AssignDataFromAssignment(leftOp,rightOp)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: leftOp
         CLASS(analyticSignal_t), INTENT(IN)     :: rightOp
+        INTEGER(8),ALLOCATABLE :: extractedSignal(:)
 
-        ! ЗАЩИТА
-        allocate (leftOp%signal,source=rightOp%signal)
-        leftOp%isAllocated=.TRUE.
-        leftOp%signalSize=size(rightOp%signal)
+!        ! ЗАЩИТА
+!        IF ((ALLOCATED(leftOp%signal)).AND.(leftOp%isAllocated)) THEN
+!           WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+!           DEALLOCATE(leftOp%signal)
+!           leftOp%signalSize=0
+!           leftOp%isAllocated=.FALSE.
+!        ELSE
+!           allocate (leftOp%signal,source=rightOp%signal)
+!           leftOp%isAllocated=.TRUE.
+!           leftOp%signalSize=size(rightOp%signal)
+!        END IF
+         CALL rightOp%ExtractSignalData(extractedSignal)
+         CALL leftOp%Constructor(extractedSignal)
+         DEALLOCATE(extractedSignal)
 
     END SUBROUTINE AssignDataFromAssignment
 
@@ -216,6 +246,7 @@ CONTAINS
          CLASS(analyticSignal_t), allocatable :: convolve
 
          allocate(Convolve)
+         convolve%signalName='fun name'
          ! ЗАщита
          IF (input%signalSize<reference%signalSize) THEN
               WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
@@ -224,14 +255,16 @@ CONTAINS
               CALL convolve%Constructor(CorrelationRaw(input%signal,reference%signal))
          END IF
 
+
+
     END FUNCTION   Convolve
 
     ! Вычисление корр. функции (Raw-  англ. сырая.)
     ! пределы [0 : длина входного сигнала- длина опорного сигнала]
-    FUNCTION CorrelationRaw(input,reference)
+     PURE FUNCTION CorrelationRaw(input,reference)
           INTEGER(8),INTENT(IN)   :: input(:),reference(:)
           INTEGER(8),ALLOCATABLE  :: CorrelationRaw(:)
-          INTEGER(8)              :: i,j,summ
+          INTEGER(8)              :: i,j
           INTEGER(8)              :: inputLen, referenceLEn
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
@@ -241,11 +274,17 @@ CONTAINS
           CorrelationRaw=0
 
           ! Выбрать пределы корреляции
+          ! !$OMP PARALLEL DO PRIVATE(i)
           DO i=1,inputLen-referenceLen
+          !!$OMP PARALLEL DO PRIVATE(j)
                 DO j=1,referenceLen
+
                     CorrelationRaw(i)=CorrelationRaw(i)+input(i+j)*reference(j)
+
                 END DO
+
           END DO
+         ! !$OMP END PARALLEL DO
 
     END FUNCTION   CorrelationRaw
 
@@ -307,7 +346,7 @@ CONTAINS
 
         DEALLOCATE(this%signal, STAT=stat)
         IF (STAT==0) THEN
-            WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+!            WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
             this%isAllocated=.FALSE.
         ELSE
             IF(  (.NOT. ALLOCATED(this%signal)).AND.(.NOT.( this%isAllocated)   )  ) THEN

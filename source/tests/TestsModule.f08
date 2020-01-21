@@ -504,4 +504,57 @@ module TestsModule
 
      END SUBROUTINE AutoConvolveTest
 
+     SUBROUTINE OpenMPIConvolveTest(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,iterationCount)
+
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+
+         CHARACTER(*), INTENT(IN) :: inputSignalFileName
+         CHARACTER(*), INTENT(IN) :: inputRefFileName
+         CHARACTER(*), INTENT(IN) :: outputSignalFileName
+         INTEGER(1)  , INTENT(IN) :: shift
+         INTEGER(4)  , INTENT(IN) ::  iterationCount
+
+         TYPE(analyticSignal_t) ::input_sig
+         TYPE(analyticSignal_t) ::reference_sig
+         TYPE(analyticSignal_t) ::conv_result
+
+         REAL(4) :: start, finish, mean,percents
+
+         INTEGER(8) :: i
+
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
+
+         CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
+
+
+         mean=0
+         percents=0
+         CALL conv_result%SetName('свертка')
+
+         DO I=1,iterationCount
+            call cpu_time(start)
+
+            conv_result = input_sig.CONV.reference_sig
+
+            call cpu_time(finish)
+!             WRITE(*,*) 'count ', I
+
+           mean=finish-start
+!            WRITE(*,*) 'execution time ', mean
+         END DO
+
+         mean=mean/iterationCount
+
+         WRITE(*,*)  'MEAN TIME ', mean
+
+
+         CALL conv_result%Rshift(shift)
+!         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+
+     END SUBROUTINE
+
 end module TestsModule
