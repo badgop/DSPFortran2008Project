@@ -78,7 +78,7 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-        CHARACTER(10) :: fmt="(I21.3)"
+
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -155,7 +155,6 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-        CHARACTER(10) :: fmt="(I21.3)"
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -230,7 +229,6 @@ CONTAINS
         LOGICAL, INTENT(IN):: isBinary
 
 
-        CHARACTER(10) :: fmt="(I21.3)"
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.

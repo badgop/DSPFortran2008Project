@@ -522,39 +522,49 @@ module TestsModule
          TYPE(analyticSignal_t) ::conv_result
 
          REAL(4) :: start, finish, mean,percents
-
          INTEGER(8) :: i
 
          CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
          CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
-
          CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
-
 
          mean=0
          percents=0
-         CALL conv_result%SetName('свертка')
+
 
          DO I=1,iterationCount
             call cpu_time(start)
-
+            CALL conv_result%SetName('свертка')
             conv_result = input_sig.CONV.reference_sig
-
             call cpu_time(finish)
-!             WRITE(*,*) 'count ', I
+             WRITE(*,*) 'count ', I
 
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
-
          mean=mean/iterationCount
-
          WRITE(*,*)  'MEAN TIME ', mean
-
-
          CALL conv_result%Rshift(shift)
-!         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
 
-     END SUBROUTINE
+     END SUBROUTINE OpenMPIConvolveTest
+
+     SUBROUTINE SignumSignalConstructorTest()
+         USE signumSignalModule
+         USE analyticSignalModule
+
+         TYPE(signumSignal_t  ) :: signum_sig!
+         INTEGER(8)             ::  array_in(1:64)
+         INTEGER(8),ALLOCATABLE ::  array_out(:)
+         CHARACTER(10) :: fmt="(I20.1)"
+!!
+         array_in=1
+! !
+         CALL  signum_sig%Constructor( array_in)
+         CALL  signum_sig%ExtractSignalData( array_out)
+         IF(array_out(1)==-1) WRITE(*,*) 'signum constructor test works'
+         WRITE(*,fmt) array_out
+     END SUBROUTINE SignumSignalConstructorTest
+
 
 end module TestsModule

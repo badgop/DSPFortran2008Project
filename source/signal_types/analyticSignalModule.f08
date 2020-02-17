@@ -93,29 +93,27 @@ CONTAINS
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(8), INTENT(IN) :: loadedSignal(:)
 
-        INTEGER(8) :: fileSize
+
         INTEGER(4) :: stat
 
-        !что если обьект уже проинициализирован - проверить!!!
-!        fileSize=size(loadedSignal)
-!        this%signalSize=fileSize
-!        ALLOCATE( this%signal, source=loadedSignal)
-!        this%isAllocated=.TRUE.
-!        WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
 
-
-        !        ! ЗАЩИТА
+        !  Если память под объект уже выделена?
+        !  надо обнулить
         IF ((ALLOCATED(this%signal)).AND.(this%isAllocated)) THEN
-!           WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+           WRITE(*,*) 'ПАмять уже выделена, обнуляю'
            DEALLOCATE(this%signal, STAT=stat)
-!           IF (STAT==0) THEN
-!               WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
-!           END IF
+           IF (STAT==0) THEN
+               WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+           END IF
            this%isAllocated=.FALSE.
            this%signalName=''
            this%signalSize= 0
         END IF
-!           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
+
+        !и только потом выделять
+        ! выделять нужно обязательно
+
+           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
            allocate (this%signal,source=loadedSignal)
            this%isAllocated=.TRUE.
            this%signalSize=size(loadedSignal)
@@ -274,17 +272,12 @@ CONTAINS
           CorrelationRaw=0
 
           ! Выбрать пределы корреляции
-          ! !$OMP PARALLEL DO PRIVATE(i)
           DO i=1,inputLen-referenceLen
-          !!$OMP PARALLEL DO PRIVATE(j)
                 DO j=1,referenceLen
-
                     CorrelationRaw(i)=CorrelationRaw(i)+input(i+j)*reference(j)
-
                 END DO
-
           END DO
-         ! !$OMP END PARALLEL DO
+
 
     END FUNCTION   CorrelationRaw
 
