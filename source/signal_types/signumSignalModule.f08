@@ -138,7 +138,7 @@ CONTAINS
                result= NOT(XOR(window(i),reference%signal(i)))
                Correlate(cnt) = Correlate(cnt) + SumOnesInInt_8(result)
             END DO
-            result= NOT(XOR(window(reference%signalSize),reference%signal(reference%signalSize)))
+            result= NOT(IEOR(window(reference%signalSize),reference%signal(reference%signalSize)))
             result=AND(result,mask)
             Correlate(cnt) = Correlate(cnt) + SumOnesInInt_8(result)
          ELSE
