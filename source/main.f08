@@ -102,7 +102,9 @@ PROGRAM main
 !                     ,iterationCount=int(3,4))
 !
 
-    CALL SignumSignalConstructorTest()
+!    CALL SignumSignalConstructorTest()
+!    CALL RegisterPushPopAnsSummTest()
+     CALL RegisterArrayPushPopTest()
 
     WRITE(*,*) 'DONE!'
 

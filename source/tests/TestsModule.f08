@@ -549,22 +549,78 @@ module TestsModule
 
      END SUBROUTINE OpenMPIConvolveTest
 
+     ! тест конструкутора знакового сигнала
+     ! просто проверяем как загружаются нолики или единички
      SUBROUTINE SignumSignalConstructorTest()
          USE signumSignalModule
          USE analyticSignalModule
 
          TYPE(signumSignal_t  ) :: signum_sig!
-         INTEGER(8)             ::  array_in(1:64)
+         INTEGER(8)             ::  array_in(1:128)
          INTEGER(8),ALLOCATABLE ::  array_out(:)
          CHARACTER(10) :: fmt="(I20.1)"
 !!
-         array_in=1
+         array_in=-1
 ! !
          CALL  signum_sig%Constructor( array_in)
          CALL  signum_sig%ExtractSignalData( array_out)
-         IF(array_out(1)==-1) WRITE(*,*) 'signum constructor test works'
          WRITE(*,fmt) array_out
      END SUBROUTINE SignumSignalConstructorTest
+
+     ! ТЕст функции обработки регистра сдвига
+     ! + еще тест функции подсчета единиц в одном регистре (целом числе)
+     SUBROUTINE RegisterPushPopAnsSummTest()
+         USE signumSignalModule
+         USE BitOpsMod
+
+         INTEGER(8)             ::  register
+         INTEGER(1)             ::  pushBit,popBit
+         INTEGER(1)             ::  popPos
+         INTEGER(1)             ::  startPos
+
+         !вариант 1
+         register = -1
+         pushBit  = 0
+         popPos = 63
+         startPos=0
+         popBit   = PushPopInt_8(register,pushBit,popPos,startPos)
+         WRITE(*,*) 'register was -1 '
+         WRITE(*,*) 'pushBit ' , pushBit , ' popPos ' , popPos,' startPos ' , startPos
+         WRITE(*,*) 'regis ' , register
+         WRITE(*,*) 'summ '    , SumOnesInInt_8(register), ' popBit ',popBit
+
+     END SUBROUTINE RegisterPushPopAnsSummTest
+
+
+      ! ТЕст функции обработки знакоовго массива, в частности его сдвига
+     ! + еще тест функции подсчета единиц в одном регистре (целом числе)
+     SUBROUTINE RegisterArrayPushPopTest()
+         USE signumSignalModule
+         USE BitOpsMod
+
+         INTEGER(8)             ::  register(1:3)
+         INTEGER(1)             ::  pushBit,popBit
+         INTEGER(1)             ::  popPos
+         INTEGER(1)             ::  startPos
+         INTEGER(8)             :: i
+         CHARACTER(10) :: fmt="(I64.1)"
+
+         !вариант 1
+         register = -1
+         pushBit  = 0
+         popPos = 63
+         startPos=0
+         DO i=1,129
+
+             popBit   = PushPopBitSignumArrayInt_8(register,pushBit,startPos)
+
+         END DO
+         WRITE(*,*) 'register all elements was -1 '
+         WRITE(*,*) 'pushBit ' , pushBit , ' popPos ' , popPos,' startPos ' , startPos
+         WRITE(*,*) 'registr now'
+         WRITE(*,fmt)  register
+
+     END SUBROUTINE RegisterArrayPushPopTest
 
 
 end module TestsModule

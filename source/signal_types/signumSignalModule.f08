@@ -2,13 +2,13 @@ MODULE signumSignalModule
     USE analyticSignalModule
     USE SIGNUM_FUNC
     USE BitOpsMod
+    USE MathConstModule
     USE ModuleExitProg
     IMPLICIT NONE
     PRIVATE
 
     TYPE, PUBLIC :: signumSignal_t
         PRIVATE
-
         ! отсчеты аналитического сингнала содержаться в динамеческом массиве
         INTEGER(8),ALLOCATABLE :: signal(:)
         ! поле типа данных - isAllocated определяет выделена ли память под сигнал т.е проведена ли
@@ -23,20 +23,17 @@ MODULE signumSignalModule
         ! Поле, определяющее имя сигнала
         ! ЖЕЛАТЕЛЬНО добавлять расширение к имени
         CHARACTER(50)         :: signalName=''
-
-
     CONTAINS
         PROCEDURE                 :: Constructor
         PROCEDURE                 :: ExtractSignalData
         PROCEDURE                 :: Correlate
         FINAL                     :: destructor
-
+        !операторы
         generic :: operator   (.CORR.) =>  Correlate
-
     END TYPE signumSignal_t
 
 CONTAINS
-
+    ! ВНИМАНИЕ отсчеты ЗНАКОВОГО сигнала заносятя в старшие разряды!
     SUBROUTINE Constructor(this,loadedSignal)
         CLASS(signumSignal_t), INTENT(INOUT) :: this
         INTEGER(8), INTENT(IN) :: loadedSignal(:)
@@ -44,7 +41,7 @@ CONTAINS
         INTEGER(8) :: length_new
         INTEGER(8) :: i,j,k
         INTEGER(1) :: registerKind
-        INTEGER(1),PARAMETER :: bitsInByte=8
+
 
         IF ((ALLOCATED(this%signal)).AND.(this%isAllocated)) THEN
 !           WRITE(*,*) 'ПАмять уже выделена, обнуляю'
@@ -59,9 +56,9 @@ CONTAINS
 !           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
         ! число байт в типе данных
         registerKind=KIND(this%signal)
-        length_new= size(loadedSignal)/(registerKind*bitsInByte)
+        length_new= size(loadedSignal)/(registerKind*bitsInByte_const)
         !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
-        this%trailLen = MOD(size(loadedSignal),registerKind*bitsInByte)
+        this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
         IF (this%trailLen>0) length_new=length_new+1
 !        WRITE(*,*) 'trail length = ',this%trailLen
 !        WRITE(*,*) 'Новая длина = ',length_new
@@ -71,11 +68,11 @@ CONTAINS
         k=0
         j=1
         DO i=1, size(loadedSignal)
-           IF(k>((registerKind*bitsInByte)-1)) THEN
+           IF(k>((registerKind*bitsInByte_const)-1)) THEN
               k=0
               j=j+1
            END IF
-           IF(loadedSignal(i)>=0) this%signal(j)=IBSET(this%signal(j),(registerKind*bitsInByte-1)-k)
+           IF(loadedSignal(i)>=0) this%signal(j)=IBSET(this%signal(j),(registerKind*bitsInByte_const-1)-k)
            k=k+1
         END DO
         this%isAllocated=.TRUE.
@@ -89,67 +86,73 @@ CONTAINS
      END SUBROUTINE ExtractSignalData
 
       FUNCTION Correlate(input,reference)
-
          CLASS(signumSignal_t), INTENT(IN)  :: input
          CLASS(signumSignal_t), INTENT(IN)  :: reference
-         INTEGER(8), allocatable :: Correlate(:)
 
+         INTEGER(8), allocatable :: Correlate(:)
          INTEGER(8)              :: rezSignalLength
+         INTEGER(8)              :: referehceSignalLength
          INTEGER(8), allocatable :: window(:)
-         INTEGER(8)              :: i,cnt
+         INTEGER(8)              :: i,j,corrCnt
          INTEGER(8)              :: mask=0
-         INTEGER(1),PARAMETER    :: bitsInByte=8
          INTEGER(1)              :: registerKind
          INTEGER(8)              :: result
+         INTEGER(1)              :: bitPushPos = 0
 
-
-         rezSignalLength = input%signalSize*(KIND(input%signal))+input%trailLen
+         registerKind=KIND(input%signal)
+         ! длительность сигнала ВКФ = длительного входного сигнала
+         rezSignalLength = input%signalSize*(registerKind*bitsInByte_const)+input%trailLen
          ALLOCATE(Correlate(1:rezSignalLength))
          Correlate=0
          ALLOCATE(window(1:reference%signalSize))
 
-         registerKind=KIND(input%signal)
-
-
-           ! если длина опорного сигнала не кратна registerKind*bitsInByte
+         ! если длина опорного сигнала не кратна registerKind*bitsInByte_const
          ! и в последнем элементе массива содержиться битовый хвост
-         ! нужно обрезать лишние отсчеты сигнала, загржуенные вышеы
+         ! нужно обрезать лишние отсчеты сигнала, загруженные выше
          IF(reference%trailLen/=0) THEN
-         mask=0
+            mask=0
          ! подготовка маски
-            DO i=0,reference%trailLen-1
-               mask=IBSET(mask,i)
-            END DO
-            !mask=SHIFTL(mask,((registerKind*bitsInByte-1)-(reference%trailLen-1)))
-            mask=NOT(mask)
+         !  |63|62|61|60|...|2|1|0|
+         !  | 1| 1| 1| 0|...|0|0|0|
+         !  единицы должны быть в старших разрядах
+         !
+              DO i=0,reference%trailLen-1
+                 mask=IBSET(mask,(registerKind*bitsInByte_const-1)-i)
+              END DO
+         !номер разряда регистра куда нужно задвигать бит ,в слуаче наличия хвоста
+         ! например хвост - 3 бита, тогда задигать нужно в 8*8-1 -(3-1) = 63-2=61
+            bitPushPos = INT((RegisterKind*bitsInByte_const-1)-(reference%trailLen-1),1)
          END IF
-
-
          ! первая загрузка окна
-         cnt=1
          DO i=1,reference%signalSize
             window(i)=input%signal(i)
          END DO
+         ! номер отсчета ВКФ (взаимнокорреляционой функции)
+         corrCnt=1
+         !длительность опорного сигнала в отсчетах
+         referehceSignalLength =reference%signalSize+reference%trailLen
 
-         !!!ВСТАВИТЬ ЦИКЛ ДАЛЬШЕ
-         ! задвигать по одному отсчету
-         IF(reference%trailLen/=0) THEN
-            DO i=1,reference%signalSize-1
-               result= NOT(XOR(window(i),reference%signal(i)))
-               Correlate(cnt) = Correlate(cnt) + SumOnesInInt_8(result)
-            END DO
-            result= NOT(IEOR(window(reference%signalSize),reference%signal(reference%signalSize)))
-            result=AND(result,mask)
-            Correlate(cnt) = Correlate(cnt) + SumOnesInInt_8(result)
-         ELSE
-            DO i=1,reference%signalSize
-               result= NOT(XOR(window(i),reference%signal(i)))
-               Correlate(cnt) = Correlate(cnt) + SumOnesInInt_8(result)
-            END DO
-         END IF
-
-
-
+         ! i - индекс бита входного сигнала, так как окно уже загружен
+         ! в конце основного цикла надо загрузить следующих бит  - поэтому +1
+main_cycle:  DO i=referehceSignalLength+1, rezSignalLength
+                 ! Вычисление одного значения ВКФ
+                 IF(reference%trailLen/=0) THEN
+                    DO j=1,reference%signalSize-1
+                       result= NOT(XOR(window(j),reference%signal(j)))
+                       Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
+                    END DO
+                    ! последний элемент массива содержит хвост, его обработка ведется отдельно с маской
+                    result= NOT(IEOR(window(reference%signalSize),reference%signal(reference%signalSize)))
+                    result=AND(result,mask)
+                    Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
+                 ELSE
+                    DO j=1,reference%signalSize
+                       result= NOT(XOR(window(j),reference%signal(j)))
+                       Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
+                    END DO
+                 END IF
+                 result = PushPopBitSignumArrayInt_8(window,int(input%signal(i),1),bitPushPos)
+              END DO main_cycle
 
     END FUNCTION   Correlate
 
@@ -158,7 +161,6 @@ CONTAINS
     SUBROUTINE destructor(this)
         TYPE(signumSignal_t), INTENT(INOUT) :: this
         INTEGER(4) :: stat
-
         DEALLOCATE(this%signal, STAT=stat)
         IF (STAT==0) THEN
 !            WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
