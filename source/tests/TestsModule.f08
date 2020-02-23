@@ -556,11 +556,11 @@ module TestsModule
          USE analyticSignalModule
 
          TYPE(signumSignal_t  ) :: signum_sig!
-         INTEGER(8)             ::  array_in(1:128)
+         INTEGER(8)             ::  array_in(1:2)
          INTEGER(8),ALLOCATABLE ::  array_out(:)
          CHARACTER(10) :: fmt="(I20.1)"
 !!
-         array_in=-1
+         array_in=0
 ! !
          CALL  signum_sig%Constructor( array_in)
          CALL  signum_sig%ExtractSignalData( array_out)
@@ -621,6 +621,79 @@ module TestsModule
          WRITE(*,fmt)  register
 
      END SUBROUTINE RegisterArrayPushPopTest
+
+
+           ! ТЕст функции обработки знакоовго массива, в частности его сдвига
+     ! + еще тест функции подсчета единиц в одном регистре (целом числе)
+     SUBROUTINE SignumCorrTest()
+         USE signumSignalModule
+         USE BitOpsMod
+         USE analyticSignalModule
+
+         INTEGER(8)             ::  input(1:20)
+         INTEGER(8)             ::  ref(1:2)
+         INTEGER(8),ALLOCATABLE ::  res(:)
+         TYPE(signumSignal_t  ) :: input_sig!
+         TYPE(signumSignal_t  ) :: ref_sig!
+         INTEGER(8)             :: i
+         CHARACTER(10) :: fmt="(I64.1)"
+
+         !вариант 1
+         input=1
+         ref=1
+         CALL  input_sig%Constructor( input)
+         CALL  ref_sig%Constructor( ref)
+         write(*,*) 'len = ',size(res)
+         res=input_sig.CORR.ref_sig
+         write(*,*) 'len = ',size(res)
+         WRITE(*,fmt)  res
+
+     END SUBROUTINE SignumCorrTest
+
+         SUBROUTINE SignumConvolveTest(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,iterationCount)
+
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+
+         CHARACTER(*), INTENT(IN) :: inputSignalFileName
+         CHARACTER(*), INTENT(IN) :: inputRefFileName
+         CHARACTER(*), INTENT(IN) :: outputSignalFileName
+         INTEGER(1)  , INTENT(IN) :: shift
+         INTEGER(4)  , INTENT(IN) ::  iterationCount
+
+         TYPE(analyticSignal_t) ::input_sig
+         TYPE(analyticSignal_t) ::reference_sig
+         TYPE(analyticSignal_t) ::conv_result
+
+         REAL(4) :: start, finish, mean,percents
+         INTEGER(8) :: i
+
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
+         CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
+
+         mean=0
+         percents=0
+
+
+         DO I=1,iterationCount
+            call cpu_time(start)
+            CALL conv_result%SetName('свертка')
+            conv_result = input_sig.CONV.reference_sig
+            call cpu_time(finish)
+             WRITE(*,*) 'count ', I
+
+           mean=finish-start
+!            WRITE(*,*) 'execution time ', mean
+         END DO
+         mean=mean/iterationCount
+         WRITE(*,*)  'MEAN TIME ', mean
+         CALL conv_result%Rshift(shift)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+
+     END SUBROUTINE SignumConvolveTest
 
 
 end module TestsModule

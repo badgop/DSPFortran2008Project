@@ -104,7 +104,8 @@ PROGRAM main
 
 !    CALL SignumSignalConstructorTest()
 !    CALL RegisterPushPopAnsSummTest()
-     CALL RegisterArrayPushPopTest()
+!     CALL RegisterArrayPushPopTest()
+     CALL SignumCorrTest()
 
     WRITE(*,*) 'DONE!'
 

@@ -60,8 +60,8 @@ CONTAINS
         !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
         this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
         IF (this%trailLen>0) length_new=length_new+1
-!        WRITE(*,*) 'trail length = ',this%trailLen
-!        WRITE(*,*) 'Новая длина = ',length_new
+        WRITE(*,*) 'trail length = ',this%trailLen
+        WRITE(*,*) 'Новая длина = ',length_new
         allocate (this%signal(1:length_new))
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
@@ -77,7 +77,7 @@ CONTAINS
         END DO
         this%isAllocated=.TRUE.
         this%signalSize=length_new
-    END SUBROUTINE Constructor
+   END SUBROUTINE Constructor
     
     SUBROUTINE ExtractSignalData(this,extractedSignal)
         INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedSignal(:)
@@ -98,12 +98,20 @@ CONTAINS
          INTEGER(1)              :: registerKind
          INTEGER(8)              :: result
          INTEGER(1)              :: bitPushPos = 0
+         CHARACTER(10) :: fmt="(I64.1)"
 
          registerKind=KIND(input%signal)
          ! длительность сигнала ВКФ = длительного входного сигнала
-         rezSignalLength = input%signalSize*(registerKind*bitsInByte_const)+input%trailLen
+         IF (input%signalSize==1) THEN
+             rezSignalLength = input%trailLen
+         ELSE
+             rezSignalLength = input%signalSize*(registerKind*bitsInByte_const)+input%trailLen
+         END IF
+
+         WRITE(*,*) 'корр  длина = ',rezSignalLength
          ALLOCATE(Correlate(1:rezSignalLength))
          Correlate=0
+
          ALLOCATE(window(1:reference%signalSize))
 
          ! если длина опорного сигнала не кратна registerKind*bitsInByte_const
@@ -119,18 +127,29 @@ CONTAINS
               DO i=0,reference%trailLen-1
                  mask=IBSET(mask,(registerKind*bitsInByte_const-1)-i)
               END DO
+         WRITE(*,*) 'mask ', mask
          !номер разряда регистра куда нужно задвигать бит ,в слуаче наличия хвоста
          ! например хвост - 3 бита, тогда задигать нужно в 8*8-1 -(3-1) = 63-2=61
             bitPushPos = INT((RegisterKind*bitsInByte_const-1)-(reference%trailLen-1),1)
+            WRITE(*,*) 'bitPushPos ', bitPushPos
          END IF
          ! первая загрузка окна
          DO i=1,reference%signalSize
             window(i)=input%signal(i)
+            write(*,*) ' i ,input%signal(i)  ', i, input%signal(i)
          END DO
          ! номер отсчета ВКФ (взаимнокорреляционой функции)
          corrCnt=1
          !длительность опорного сигнала в отсчетах
-         referehceSignalLength =reference%signalSize+reference%trailLen
+         IF (input%signalSize==1) THEN
+             referehceSignalLength =reference%trailLen
+         ELSE
+             referehceSignalLength =reference%signalSize+reference%trailLen
+         END IF
+
+         WRITE(*,*) 'windoow '
+         WRITE(*,fmt) (window)
+
 
          ! i - индекс бита входного сигнала, так как окно уже загружен
          ! в конце основного цикла надо загрузить следующих бит  - поэтому +1
@@ -139,11 +158,13 @@ main_cycle:  DO i=referehceSignalLength+1, rezSignalLength
                  IF(reference%trailLen/=0) THEN
                     DO j=1,reference%signalSize-1
                        result= NOT(XOR(window(j),reference%signal(j)))
+
                        Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
                     END DO
                     ! последний элемент массива содержит хвост, его обработка ведется отдельно с маской
                     result= NOT(IEOR(window(reference%signalSize),reference%signal(reference%signalSize)))
                     result=AND(result,mask)
+                    WRITE(*,*) 'result ',result
                     Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
                  ELSE
                     DO j=1,reference%signalSize
@@ -152,6 +173,9 @@ main_cycle:  DO i=referehceSignalLength+1, rezSignalLength
                     END DO
                  END IF
                  result = PushPopBitSignumArrayInt_8(window,int(input%signal(i),1),bitPushPos)
+
+                 corrCnt=corrCnt+1
+                 WRITE(*,*) 'corrCnt ',corrCnt
               END DO main_cycle
 
     END FUNCTION   Correlate
