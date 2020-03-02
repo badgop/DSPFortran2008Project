@@ -536,6 +536,7 @@ module TestsModule
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
             conv_result = input_sig.CONV.reference_sig
+
             call cpu_time(finish)
              WRITE(*,*) 'count ', I
 
@@ -556,7 +557,7 @@ module TestsModule
          USE analyticSignalModule
 
          TYPE(signumSignal_t  ) :: signum_sig!
-         INTEGER(8)             ::  array_in(1:2)
+         INTEGER(8)             ::  array_in(1:193)
          INTEGER(8),ALLOCATABLE ::  array_out(:)
          CHARACTER(10) :: fmt="(I20.1)"
 !!
@@ -630,12 +631,12 @@ module TestsModule
          USE BitOpsMod
          USE analyticSignalModule
 
-         INTEGER(8)             ::  input(1:20)
+         INTEGER(8)             ::  input(1:200)
          INTEGER(8)             ::  ref(1:2)
          INTEGER(8),ALLOCATABLE ::  res(:)
          TYPE(signumSignal_t  ) :: input_sig!
          TYPE(signumSignal_t  ) :: ref_sig!
-         INTEGER(8)             :: i
+
          CHARACTER(10) :: fmt="(I64.1)"
 
          !вариант 1
@@ -643,9 +644,12 @@ module TestsModule
          ref=1
          CALL  input_sig%Constructor( input)
          CALL  ref_sig%Constructor( ref)
-         write(*,*) 'len = ',size(res)
+!         write(*,*) 'len = ',size(res)
          res=input_sig.CORR.ref_sig
-         write(*,*) 'len = ',size(res)
+         WRITE(*,fmt)  res
+!         write(*,*) 'len = ',size(res)
+         DEALLOCATE(res)
+         res=input_sig.CORR.ref_sig
          WRITE(*,fmt)  res
 
      END SUBROUTINE SignumCorrTest
@@ -670,6 +674,8 @@ module TestsModule
          REAL(4) :: start, finish, mean,percents
          INTEGER(8) :: i
 
+         CHARACTER(10) :: fmt="(I64.1)"
+
          CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
          CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
          CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
@@ -679,11 +685,12 @@ module TestsModule
 
 
          DO I=1,iterationCount
+             WRITE(*,*) 'Cycle ', i
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
-            conv_result = input_sig.CONV.reference_sig
+            conv_result = input_sig.CONVSIGN.reference_sig
             call cpu_time(finish)
-             WRITE(*,*) 'count ', I
+
 
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean

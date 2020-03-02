@@ -10,6 +10,7 @@
 
 MODULE analyticSignalModule
     USE ModuleExitProg
+    USE signumSignalModule
     IMPLICIT NONE
     PRIVATE
 
@@ -61,7 +62,7 @@ MODULE analyticSignalModule
         PROCEDURE :: RShift
         ! Вставка нулей в начало и конец сигнала (увеличивает его длину)
         PROCEDURE :: ZeroesStuffing
-
+        PROCEDURE :: ConvolveSignum
 
 
         ! далее выполняется перегрузка операторов
@@ -77,6 +78,7 @@ MODULE analyticSignalModule
         generic :: assignment (=) =>  AssignDataFromAssignment
         !оператор СВЕРТКИ
         generic :: operator   (.CONV.) =>  Convolve
+        generic :: operator   (.CONVSIGN.) =>  ConvolveSignum
         ! Финализирующый метод класс (так же - деструктор)
         ! должен освободить память, занятую массивом  signal(:)
         FINAL :: destructor
@@ -89,36 +91,31 @@ CONTAINS
     ! конструктор класса (типа analyticSignal_t)
     ! конструктор принимает ПОЛИМОРФНУЮ Переменную (идентификатор CLASS) типа analyticSignal_t
     SUBROUTINE Constructor(this,loadedSignal)
-
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(8), INTENT(IN) :: loadedSignal(:)
-
-
         INTEGER(4) :: stat
-
-
         !  Если память под объект уже выделена?
         !  надо обнулить
         IF ((ALLOCATED(this%signal)).AND.(this%isAllocated)) THEN
-           WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+           !WRITE(*,*) 'ПАмять уже выделена, обнуляю'
            DEALLOCATE(this%signal, STAT=stat)
            IF (STAT==0) THEN
-               WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+               !WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
            END IF
            this%isAllocated=.FALSE.
            this%signalName=''
            this%signalSize= 0
-        END IF
 
+        ELSE
+           !WRITE(*,*) 'КАКОЙ_ТА БАЛАГАН!'
+        END IF
         !и только потом выделять
         ! выделять нужно обязательно
-
-           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
-           allocate (this%signal,source=loadedSignal)
+           !WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
+           allocate (this%signal,source=loadedSignal,STAT=stat)
+!            IF (STAT/=0) !WRITE (*,*) 'Аналитич конструктор не смог выделить память'
            this%isAllocated=.TRUE.
            this%signalSize=size(loadedSignal)
-
-
     END SUBROUTINE Constructor
 
      SUBROUTINE ExtractSignalData(this,extractedSignal)
@@ -127,8 +124,11 @@ CONTAINS
         CLASS(analyticSignal_t), INTENT(IN)  :: this
 
         !ЗАЩИТА
-        ALLOCATE(extractedSignal,source=this%signal)
-
+        IF (this%isAllocated) THEN
+            ALLOCATE(extractedSignal,source=this%signal)
+        ELSE
+           !WRITE (*,*) 'НЕ МОГУ ИЗВЛЕЧЬ ДАННЫЕ иЗ', this%signalName
+        END IF
 
      END SUBROUTINE ExtractSignalData
 
@@ -215,9 +215,9 @@ CONTAINS
         CLASS(analyticSignal_t), INTENT(IN)     :: rightOp
         INTEGER(8),ALLOCATABLE :: extractedSignal(:)
 
-!        ! ЗАЩИТА
+        ! ЗАЩИТА
 !        IF ((ALLOCATED(leftOp%signal)).AND.(leftOp%isAllocated)) THEN
-!           WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+!           !WRITE(*,*) 'ПАмять уже выделена, обнуляю'
 !           DEALLOCATE(leftOp%signal)
 !           leftOp%signalSize=0
 !           leftOp%isAllocated=.FALSE.
@@ -247,13 +247,11 @@ CONTAINS
          convolve%signalName='fun name'
          ! ЗАщита
          IF (input%signalSize<reference%signalSize) THEN
-              WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
+              !WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
               CALL ExitFromProgramNormal()
          ELSE
               CALL convolve%Constructor(CorrelationRaw(input%signal,reference%signal))
          END IF
-
-
 
     END FUNCTION   Convolve
 
@@ -298,14 +296,14 @@ CONTAINS
         summLen = beforeLen + afterLen + this%signalSize
         ! проверка на максимальную длину массива
         IF(summLen>HUGE(0)) THEN
-          WRITE(*,*) 'Превышение максимальной длины массива'
-          WRITE(*,*) '(при наполнении нулями)'
+          !WRITE(*,*) 'Превышение максимальной длины массива'
+          !WRITE(*,*) '(при наполнении нулями)'
           CALL ExitFromProgramNormal()
         END IF
 
         ALLOCATE(tempArray(1:summLen),stat=allocationStatus)
         IF (allocationStatus>0) THEN
-          WRITE(*,*) 'не могу выделить память tmpArray'
+          !WRITE(*,*) 'не могу выделить память tmpArray'
           CALL ExitFromProgramNormal()
         END IF
 
@@ -314,7 +312,7 @@ CONTAINS
         DEALLOCATE(this%signal)
         ALLOCATE(this%signal,source=tempArray,stat=allocationStatus)
         IF (allocationStatus>0) THEN
-          WRITE(*,*) 'не могу выделить память this%signal'
+          !WRITE(*,*) 'не могу выделить память this%signal'
           CALL ExitFromProgramNormal()
         END IF
         DEALLOCATE(tempArray)
@@ -333,19 +331,50 @@ CONTAINS
     END SUBROUTINE RShift
 
 
+     FUNCTION ConvolveSignum(input,reference)
+         CLASS(analyticSignal_t), INTENT(IN)  :: input
+         CLASS(analyticSignal_t), INTENT(IN)  :: reference
+         CLASS(analyticSignal_t), ALLOCATABLE :: ConvolveSignum
+         TYPE(signumSignal_t  )               :: inputSig
+         TYPE(signumSignal_t  )               :: referenceSig
+         INTEGER(8)                           :: status
+         INTEGER(8), ALLOCATABLE              :: rez(:)
+
+
+         allocate(ConvolveSignum,stat=status)
+         ConvolveSignum%signalName='fun name ConvolveSignum'
+         !WRITE (*,*)  'NAme = ', ConvolveSignum%signalName
+         !WRITE (*,*)  'alloc status = ', status
+
+         IF (input%signalSize<reference%signalSize) THEN
+              !WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
+              CALL ExitFromProgramNormal()
+         END IF
+
+         CALL inputSig%Constructor(input%signal)
+         CALL referenceSig%Constructor(reference%signal)
+         !WRITE(*,*) 'Вычисляю знак корреляцию'
+         rez = inputSig.CORR.referenceSig
+         !WRITE(*,*) 'ВЫЗЫВАЮ Аналитич КОНТРСРКУТР'
+         CALL ConvolveSignum%Constructor(rez)
+         DEALLOCATE(rez)
+
+    END FUNCTION ConvolveSignum
+
+
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
         INTEGER(4) :: stat
 
         DEALLOCATE(this%signal, STAT=stat)
         IF (STAT==0) THEN
-!            WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+!            !WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
             this%isAllocated=.FALSE.
         ELSE
             IF(  (.NOT. ALLOCATED(this%signal)).AND.(.NOT.( this%isAllocated)   )  ) THEN
-                    WRITE(*,*) 'уже освободили память ',this%signalName
+                    !WRITE(*,*) 'уже освободили память ',this%signalName
                 ELSE
-                    WRITE(*,*) 'Не могу освободить память ',this%signalName
+                    !WRITE(*,*) 'Не могу освободить память ',this%signalName
             END IF
         END IF
 

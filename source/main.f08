@@ -94,18 +94,24 @@ PROGRAM main
 !                     ,inputRefFileName     = 'test_signals\input\signal (2).pcm'&
 !                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
 !                     ,shift = int(30,1))
-
-!    CALL OpenMPIConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-!                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
-!                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
-!                     ,shift = int(22,1)&
-!                     ,iterationCount=int(3,4))
+!
+    CALL OpenMPIConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
+                     ,shift = int(22,1)&
+                     ,iterationCount=int(1000,4))
 !
 
-!    CALL SignumSignalConstructorTest()
-!    CALL RegisterPushPopAnsSummTest()
+!     CALL SignumSignalConstructorTest()
+!     CALL RegisterPushPopAnsSummTest()
 !     CALL RegisterArrayPushPopTest()
-     CALL SignumCorrTest()
+!     CALL SignumCorrTest()
+!
+     CALL SignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
+                     ,shift = int(0,1)&
+                     ,iterationCount=int(1000,4))
 
     WRITE(*,*) 'DONE!'
 

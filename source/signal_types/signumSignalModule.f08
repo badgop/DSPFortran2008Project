@@ -1,5 +1,5 @@
 MODULE signumSignalModule
-    USE analyticSignalModule
+
     USE SIGNUM_FUNC
     USE BitOpsMod
     USE MathConstModule
@@ -44,24 +44,24 @@ CONTAINS
 
 
         IF ((ALLOCATED(this%signal)).AND.(this%isAllocated)) THEN
-!           WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+           !!WRITE(*,*) 'ПАмять уже выделена, обнуляю'
            DEALLOCATE(this%signal, STAT=stat)
-!           IF (STAT==0) THEN
-!               WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
-!           END IF
+           IF (STAT==0) THEN
+               !WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+           END IF
            this%isAllocated=.FALSE.
            this%signalName=''
            this%signalSize= 0
         END IF
-!           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
+           !WRITE(*,*) 'SIGNUM CONSTRUCTOR WORKS!', this%signalName
         ! число байт в типе данных
         registerKind=KIND(this%signal)
         length_new= size(loadedSignal)/(registerKind*bitsInByte_const)
         !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
         this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
         IF (this%trailLen>0) length_new=length_new+1
-        WRITE(*,*) 'trail length = ',this%trailLen
-        WRITE(*,*) 'Новая длина = ',length_new
+        !WRITE(*,*) 'trail length = ',this%trailLen
+        !WRITE(*,*) 'Новая длина = ',length_new
         allocate (this%signal(1:length_new))
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
@@ -91,29 +91,30 @@ CONTAINS
 
          INTEGER(8), allocatable :: Correlate(:)
          INTEGER(8)              :: rezSignalLength
-         INTEGER(8)              :: referehceSignalLength
+         INTEGER(8)              :: referenceSignalLength
          INTEGER(8), allocatable :: window(:)
          INTEGER(8)              :: i,j,corrCnt
-         INTEGER(8)              :: mask=0
+         INTEGER(8)              :: mask       = 0
          INTEGER(1)              :: registerKind
          INTEGER(8)              :: result
          INTEGER(1)              :: bitPushPos = 0
-         CHARACTER(10) :: fmt="(I64.1)"
+         INTEGER(8)              :: arrayPtr   = 0
+         INTEGER(8)              :: regPtr     = 0
+         INTEGER(1)              :: extractedBit = 0
+         CHARACTER(10)           :: fmt="(I64.1)"
 
          registerKind=KIND(input%signal)
          ! длительность сигнала ВКФ = длительного входного сигнала
          IF (input%signalSize==1) THEN
              rezSignalLength = input%trailLen
          ELSE
-             rezSignalLength = input%signalSize*(registerKind*bitsInByte_const)+input%trailLen
+             rezSignalLength = (input%signalSize-1)*(registerKind*bitsInByte_const)+input%trailLen
          END IF
 
-         WRITE(*,*) 'корр  длина = ',rezSignalLength
+         !!WRITE(*,*) 'корр  длина = ',rezSignalLength
          ALLOCATE(Correlate(1:rezSignalLength))
          Correlate=0
-
          ALLOCATE(window(1:reference%signalSize))
-
          ! если длина опорного сигнала не кратна registerKind*bitsInByte_const
          ! и в последнем элементе массива содержиться битовый хвост
          ! нужно обрезать лишние отсчеты сигнала, загруженные выше
@@ -124,60 +125,100 @@ CONTAINS
          !  | 1| 1| 1| 0|...|0|0|0|
          !  единицы должны быть в старших разрядах
          !
-              DO i=0,reference%trailLen-1
-                 mask=IBSET(mask,(registerKind*bitsInByte_const-1)-i)
-              END DO
-         WRITE(*,*) 'mask ', mask
+             DO i=0,reference%trailLen-1
+                mask=IBSET(mask,(registerKind*bitsInByte_const-1)-i)
+             END DO
+!         !WRITE(*,*) 'mask ', mask
          !номер разряда регистра куда нужно задвигать бит ,в слуаче наличия хвоста
          ! например хвост - 3 бита, тогда задигать нужно в 8*8-1 -(3-1) = 63-2=61
             bitPushPos = INT((RegisterKind*bitsInByte_const-1)-(reference%trailLen-1),1)
-            WRITE(*,*) 'bitPushPos ', bitPushPos
+!            !WRITE(*,*) 'bitPushPos ', bitPushPos
          END IF
          ! первая загрузка окна
          DO i=1,reference%signalSize
             window(i)=input%signal(i)
-            write(*,*) ' i ,input%signal(i)  ', i, input%signal(i)
+!            !WRITE(*,*) ' i ,input%signal(i)  ', i, input%signal(i)
          END DO
          ! номер отсчета ВКФ (взаимнокорреляционой функции)
          corrCnt=1
          !длительность опорного сигнала в отсчетах
          IF (input%signalSize==1) THEN
-             referehceSignalLength =reference%trailLen
+             referenceSignalLength =reference%trailLen
          ELSE
-             referehceSignalLength =reference%signalSize+reference%trailLen
+             referenceSignalLength =(reference%signalSize-1)*(registerKind*bitsInByte_const)+reference%trailLen
          END IF
 
-         WRITE(*,*) 'windoow '
-         WRITE(*,fmt) (window)
+!         !WRITE(*,*) 'windoow '
+!         !WRITE(*,fmt) (window)
+
+          ! обработка индекса элемента знакового массива с хвостом и без
+          ! установка начального значения индекса знакового массива со входным сигналом
+          IF (reference%trailLen==0) THEN
+               ! длительность опорного сигнала кратна RegisterKind*bitsInByte_const
+               ! ergo в знаковом представлении он укладывается в целое число
+               ! элементов массива
+               ! указатель ПОСЛЕДНЕГО задвинутого бита (или ИЗВЛЕЧЕННОГО из ВХОДНОГО сигнала)
+               ! regPtr =
+               arrayPtr =  reference%signalSize
+               ! последний задвинутый - НУЛЕВОЙ бит!
+               regPtr   =  0
+          ELSE
+               ! trailLen [1:62]
+               arrayPtr =  reference%signalSize
+               ! старший - самый левый, иеет индекс 63
+               regPtr   =  registerKind*bitsInByte_const -  reference%trailLen
+          END IF
 
 
+
+
+          !!WRITE(*,*) 'reference%signalSize = ',reference%signalSize
          ! i - индекс бита входного сигнала, так как окно уже загружен
          ! в конце основного цикла надо загрузить следующих бит  - поэтому +1
-main_cycle:  DO i=referehceSignalLength+1, rezSignalLength
+MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                  ! Вычисление одного значения ВКФ
+                 !!WRITE(*,*) 'i ',i
                  IF(reference%trailLen/=0) THEN
                     DO j=1,reference%signalSize-1
+                       !!WRITE(*,*) j
                        result= NOT(XOR(window(j),reference%signal(j)))
-
                        Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
                     END DO
                     ! последний элемент массива содержит хвост, его обработка ведется отдельно с маской
-                    result= NOT(IEOR(window(reference%signalSize),reference%signal(reference%signalSize)))
-                    result=AND(result,mask)
-                    WRITE(*,*) 'result ',result
+                    !!WRITE(*,*) 'И ПОСЛЕДНЕЕ'
+                    !!WRITE(*,*) 'WINDOW ', window(reference%signalSize)
+                    result = NOT(XOR(window(reference%signalSize),reference%signal(reference%signalSize)))
+                    result = AND(result,mask)
+                    !!WRITE(*,*) 'result ',result
                     Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
+                     !!WRITE(*,*) 'DEBUG '
                  ELSE
                     DO j=1,reference%signalSize
                        result= NOT(XOR(window(j),reference%signal(j)))
                        Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
                     END DO
                  END IF
-                 result = PushPopBitSignumArrayInt_8(window,int(input%signal(i),1),bitPushPos)
 
+                 !!WRITE(*,*) 'AND NOW '
+                 !
+                 ! вычисляем индекс массива входного сигнала
+                 regPtr = regPtr - 1
+                 IF (regPtr  < 0) THEN
+                     regPtr   = 63
+                     arrayPtr = arrayPtr + 1
+                 END IF
+
+                 IF (BTEST (input%signal(arrayPtr),regPtr)) THEN
+                    extractedBit = 1
+                 ELSE
+                    extractedBit = 0
+                 END IF
+                 result = PushPopBitSignumArrayInt_8(window,extractedBit,bitPushPos)
+                 !!WRITE(*,*) 'AND THEN '
                  corrCnt=corrCnt+1
-                 WRITE(*,*) 'corrCnt ',corrCnt
-              END DO main_cycle
-
+                 !!WRITE(*,*) 'corrCnt ',corrCnt
+              END DO MAIN_CYCLE
+              DEALLOCATE(window)
     END FUNCTION   Correlate
 
 
@@ -187,13 +228,13 @@ main_cycle:  DO i=referehceSignalLength+1, rezSignalLength
         INTEGER(4) :: stat
         DEALLOCATE(this%signal, STAT=stat)
         IF (STAT==0) THEN
-!            WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+            !WRITE(*,*) ' SIGNUM DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
             this%isAllocated=.FALSE.
         ELSE
             IF(  (.NOT. ALLOCATED(this%signal)).AND.(.NOT.( this%isAllocated)   )  ) THEN
-                    WRITE(*,*) 'уже освободили память ',this%signalName
+                    !WRITE(*,*) 'уже освободили память ',this%signalName
                 ELSE
-                    WRITE(*,*) 'Не могу освободить память ',this%signalName
+                    !WRITE(*,*) 'Не могу освободить память ',this%signalName
             END IF
         END IF
     END SUBROUTINE

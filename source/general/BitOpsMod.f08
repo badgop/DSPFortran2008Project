@@ -2,6 +2,7 @@
 
 module BitOpsMod
     USE MathConstModule
+    USE ModuleExitProg
     implicit none
     CONTAINS
      ! 64 разрядный регистр сдвига 63
@@ -60,6 +61,35 @@ module BitOpsMod
     END  FUNCTION PushPopBitSignumArrayInt_8
 
 
+
+! **************** НУЖНО ИЛИ НЕТ?????*******************
+!
+!
+!    ! Выполнить тест бит для произвольного отсчета в
+!    ! массиве со знаковым сигналом
+!    FUNCTION TestBitSignumArrayInt_8(reg,elementIndex)
+!        INTEGER(1), PARAMETER           ::INT_KIND = 8
+!        INTEGER(INT_KIND),INTENT(IN)    :: reg(:)
+!        INTEGER(8)       ,INTENT(IN)    :: elementIndex
+!        INTEGER(1)                      :: TestBitSignumArrayInt_8
+!        INTEGER(8)                      :: arrayInd
+!        INTEGER(8)                      :: bitPos
+!
+!        !проверка
+!        IF (elementIndex>=(size(reg)*INT_KIND*bitsInByte_const))  THEN
+!            WRITE(*,*)'Element index large than array size, index=',elementIndex
+!            CALL ExitFromProgramNormal()
+!        END IF
+!
+!        bitPos = MOD(elementIndex,INT_KIND*bitsInByte_const)
+!
+!        IF (bitPos>0) arrayInd=arrayInd+1
+!
+!        arrayInd = elementIndex/INT_KIND*bitsInByte_const
+!
+!    END  FUNCTION TestBitSignumArrayInt_8
+! **************** ******************
+!
     ! вычисляет число единиц в 64 разрядном числе
     PURE FUNCTION SumOnesInInt_8(x)
          INTEGER(1), PARAMETER ::INT_KIND = 8
