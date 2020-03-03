@@ -179,11 +179,13 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                  ! Вычисление одного значения ВКФ
                  !!WRITE(*,*) 'i ',i
                  IF(reference%trailLen/=0) THEN
+
                     DO j=1,reference%signalSize-1
                        !!WRITE(*,*) j
                        result= NOT(XOR(window(j),reference%signal(j)))
                        Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
                     END DO
+
                     ! последний элемент массива содержит хвост, его обработка ведется отдельно с маской
                     !!WRITE(*,*) 'И ПОСЛЕДНЕЕ'
                     !!WRITE(*,*) 'WINDOW ', window(reference%signalSize)

@@ -531,7 +531,7 @@ module TestsModule
          mean=0
          percents=0
 
-
+!$OMP PARALLEL DO
          DO I=1,iterationCount
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
@@ -543,6 +543,7 @@ module TestsModule
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
+         !$OMP END PARALLEL DO
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
@@ -682,19 +683,23 @@ module TestsModule
 
          mean=0
          percents=0
+!         call omp_set_num_threads( 4 )
 
-
+         !$OMP PARALLEL DO
          DO I=1,iterationCount
              WRITE(*,*) 'Cycle ', i
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
+
             conv_result = input_sig.CONVSIGN.reference_sig
+
             call cpu_time(finish)
 
 
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
+               !$OMP END PARALLEL DO
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
