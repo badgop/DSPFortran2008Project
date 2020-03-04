@@ -107,11 +107,13 @@ PROGRAM main
 !     CALL RegisterArrayPushPopTest()
 !     CALL SignumCorrTest()
 !
-     CALL SignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
-                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
-                     ,shift = int(0,1)&
-                     ,iterationCount=int(1000,4))
+!     CALL SignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+!                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+!                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
+!                     ,shift = int(0,1)&
+!                     ,iterationCount=int(1000,4))
+
+      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
 
     WRITE(*,*) 'DONE!'
 

@@ -683,7 +683,7 @@ module TestsModule
 
          mean=0
          percents=0
-!         call omp_set_num_threads( 4 )
+         call omp_set_num_threads( 4 )
 
          !$OMP PARALLEL DO
          DO I=1,iterationCount
@@ -695,17 +695,46 @@ module TestsModule
 
             call cpu_time(finish)
 
-
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
-               !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
          CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
 
      END SUBROUTINE SignumConvolveTest
+
+
+      SUBROUTINE ImpulseGeneratorTest(pspFileName, outPutFileName,osr)
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE impulseGeneratorModule
+
+         INTEGER(8), intent(in)               :: osr
+         CHARACTER(*), intent(in)             :: pspFileName, outPutFileName
+         INTEGER(8),ALLOCATABLE               :: prbs(:)
+         INTEGER(8),ALLOCATABLE               :: prbsSignal(:)
+         TYPE(analyticSignal_t)               :: sig
+
+
+
+         CALL ReadArrayFromFile (prbs,pspFileName,.FALSE. )
+
+         prbsSignal = GenerateImpluseSequence (tau = osr, prbs = prbs)
+
+         prbsSignal = prbsSignal*10240
+
+         CALL sig%Constructor(prbsSignal)
+
+        CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
+
+
+
+      END SUBROUTINE ImpulseGeneratorTest
 
 
 end module TestsModule
