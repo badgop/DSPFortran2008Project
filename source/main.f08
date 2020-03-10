@@ -123,7 +123,10 @@ PROGRAM main
                                    ,outPutFileName    =  'test_signals\output\BPSKTest1.pcm'&
                                    ,filterFileName    = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
                                    ,baudRateInSamples = int(10240,8), chipRateInSamples = int(10,8) &
-                                   ,sampleRate = int(20*MEGA,8),centralFrequency = int (0*MEGA,8), outPutSampleCapacity= int(14,1))
+                                   ,sampleRate = int(20*MEGA,8)&
+                                   ,centralFrequency = int (0*MEGA,8)&
+                                   , outPutSampleCapacity= int(14,1)&
+                                   , outPutShift= int(17,1))
 
     WRITE(*,*) 'DONE!'
 

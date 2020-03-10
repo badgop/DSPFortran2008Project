@@ -16,6 +16,7 @@ MODULE BPSKmod
         INTEGER(8)                   :: chipRateInSamples
         INTEGER(8)                   :: centralFrequency
         INTEGER(1)                   :: outPutSampleCapacity
+        INTEGER(1)                   :: outputShift
         TYPE(analyticSignal_t)       :: impluseResponse
         TYPE(DiffCodeGenerator_t)    :: coder
         TYPE(PSNSimple_t)            :: psnGnerator
@@ -30,7 +31,7 @@ MODULE BPSKmod
 CONTAINS
 
     SUBROUTINE Constructor(this,baudRate,SampleRate,centralFrequency,outPutSampleCapacity,psn,chipRateInSamples&
-                          , impulseResponseArray)
+                          , impulseResponseArray,outputShift)
         class(BPSKmodulator_t), intent(inout) :: this
         INTEGER(8)  , intent(in)           :: baudRate
         INTEGER(8)  , intent(in)           :: SampleRate
@@ -39,10 +40,12 @@ CONTAINS
         INTEGER(8)  , intent(in)           :: psn(:)
         INTEGER(8)  , intent(in)           :: chipRateInSamples
         INTEGER(8)  , intent(in)           :: impulseResponseArray(:)
+        INTEGER(1)  , intent(in)           :: outputShift
         this%baudRateInSamples              = baudRate
         this%centralFrequency               = centralFrequency
         this%SampleRate                     = SampleRate
         this%outPutSampleCapacity           = outPutSampleCapacity
+        this%outputShift                    = outputShift
         CALL this%coder%Constructor(int(1,8))
         CALL this%psnGnerator%Constructor (psn, chipRateInSamples)
         CALL this%impluseResponse%Constructor(impulseResponseArray)
@@ -71,7 +74,7 @@ CONTAINS
         Generate =  (OutPutPsn * OutPutModulationSig)
         CALL Generate%ZeroesStuffing(this%baudRateInSamples/10,this%baudRateInSamples/10)
         Generate=Generate.CONV.this%impluseResponse
-        CALL Generate%RShift(int(2,1))
+
 
         stat = this%mixer%Constructor (romLengthInBits = int(32,1)&
                                      , romLengthTruncedInBits =int(14,1) &
@@ -82,7 +85,7 @@ CONTAINS
         CALL this%mixer%ComputeOutput(int(this%centralFrequency,8),(Generate%GetSignalSize()),heterodyneSignal)
 
         Generate = Generate*heterodyneSignal
-        CALL Generate%RShift(int(17,1))
+        CALL Generate%RShift(this%outputShift)
 
 
 

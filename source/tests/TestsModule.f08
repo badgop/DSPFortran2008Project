@@ -761,7 +761,7 @@ module TestsModule
 
       SUBROUTINE BPSKGeneratorTest(pspFileName,  dataFileName, outPutFileName,filterFileName&
                                    ,baudRateInSamples, chipRateInSamples&
-                                   ,sampleRate,centralFrequency,outPutSampleCapacity)
+                                   ,sampleRate,centralFrequency,outPutSampleCapacity,outPutShift)
 
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -777,6 +777,7 @@ module TestsModule
          INTEGER(8)  , intent(in)           :: chipRateInSamples
          INTEGER(8), ALLOCATABLE                         :: data(:)
          INTEGER(8), ALLOCATABLE                         :: impulseResponse(:)
+         INTEGER(1)  , intent(in)           :: outPutShift
 
          TYPE(BPSKmodulator_t)               :: modulatorBPSK
          TYPE(analyticSignal_t)  :: sig
@@ -787,7 +788,7 @@ module TestsModule
 
          WRITE(*,*) 'Constructor bpskmod start'
          CALL modulatorBPSK%Constructor(baudRateInSamples, SampleRate, centralFrequency, outPutSampleCapacity&
-                                      , psn, chipRateInSamples,impulseResponse)
+                                      , psn, chipRateInSamples,impulseResponse,outPutShift)
 
          sig = modulatorBPSK%Generate(data)
 
