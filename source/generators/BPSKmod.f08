@@ -5,6 +5,7 @@ MODULE BPSKmod
     USE DiffDataModulatorMod
     USE analyticSignalModule
     USE DDSModule
+    USE MathConstModule
     IMPLICIT NONE
     PRIVATE
 
@@ -75,9 +76,13 @@ CONTAINS
         stat = this%mixer%Constructor (romLengthInBits = int(32,1)&
                                      , romLengthTruncedInBits =int(14,1) &
                                      , samplingFrequency =int(this%SampleRate,4) &
-                                     , outputSignalSampleCapacity=int(8,1))
+                                     , outputSignalSampleCapacity=int(16,1))
 
-        CALL this%mixer%ComputeOutput(int(this%centralFrequency,8),Generate%GetSignalSize,heterodyneSignal)
+        CALL this%mixer%SetPhase(PI/2)
+        CALL this%mixer%ComputeOutput(int(this%centralFrequency,8),(Generate%GetSignalSize()),heterodyneSignal)
+
+        Generate = Generate*heterodyneSignal
+        CALL Generate%RShift(int(17,1))
 
 
 
