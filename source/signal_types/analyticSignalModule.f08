@@ -111,9 +111,9 @@ CONTAINS
         END IF
         !и только потом выделять
         ! выделять нужно обязательно
-           !WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
+           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
            allocate (this%signal,source=loadedSignal,STAT=stat)
-!            IF (STAT/=0) !WRITE (*,*) 'Аналитич конструктор не смог выделить память'
+            IF (STAT/=0) WRITE (*,*) 'Аналитич конструктор не смог выделить память'
            this%isAllocated=.TRUE.
            this%signalSize=size(loadedSignal)
     END SUBROUTINE Constructor

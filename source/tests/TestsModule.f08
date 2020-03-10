@@ -736,5 +736,63 @@ module TestsModule
 
       END SUBROUTINE ImpulseGeneratorTest
 
+       SUBROUTINE SimplePSNGeneratorTest(pspFileName, outPutFileName,osr, lenInblocks)
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE impulseGeneratorModule
+         USE PSNSimpleMod
+         INTEGER(8), intent(in)               :: osr
+         INTEGER(8), intent(in)               :: lenInblocks
+         CHARACTER(*), intent(in)             :: pspFileName, outPutFileName
+         INTEGER(8),ALLOCATABLE               :: prbs(:)
+         INTEGER(8),ALLOCATABLE               :: prbsSignal(:)
+         TYPE(analyticSignal_t)               :: sig
+         TYPE(PSNSimple_t)                    :: gen1
+
+         CALL ReadArrayFromFile (prbs,pspFileName,.FALSE. )
+         CALL gen1%Constructor(int(prbs,8),osr)
+         sig = gen1%OutPutPsn(lenInblocks)
+         CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
+
+      END SUBROUTINE SimplePSNGeneratorTest
+
+
+      SUBROUTINE BPSKGeneratorTest(pspFileName,  dataFileName, outPutFileName,filterFileName&
+                                   ,baudRateInSamples, chipRateInSamples&
+                                   ,sampleRate,centralFrequency,outPutSampleCapacity)
+
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE BPSKmod
+         CHARACTER(*), intent(in)           :: pspFileName,dataFileName, outPutFileName,filterFileName
+         INTEGER(8)  , intent(in)           :: baudRateInSamples
+         INTEGER(8)  , intent(in)           :: SampleRate
+         INTEGER(8)  , intent(in)           :: centralFrequency
+         INTEGER(1)  , intent(in)           :: outPutSampleCapacity
+         INTEGER(8)  , ALLOCATABLE          :: psn(:)
+         INTEGER(8)  , intent(in)           :: chipRateInSamples
+         INTEGER(8), ALLOCATABLE                         :: data(:)
+         INTEGER(8), ALLOCATABLE                         :: impulseResponse(:)
+
+         TYPE(BPSKmodulator_t)               :: modulatorBPSK
+         TYPE(analyticSignal_t)  :: sig
+
+         CALL ReadArrayFromFile (psn,pspFileName,.FALSE. )
+         CALL ReadArrayFromFile (data,dataFileName,.FALSE. )
+         CALL ReadArrayFromFile (impulseResponse,filterFileName,.FALSE. )
+
+         WRITE(*,*) 'Constructor bpskmod start'
+         CALL modulatorBPSK%Constructor(baudRateInSamples, SampleRate, centralFrequency, outPutSampleCapacity&
+                                      , psn, chipRateInSamples,impulseResponse)
+
+         sig = modulatorBPSK%Generate(data)
+
+         CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
+
+      END SUBROUTINE BPSKGeneratorTest
 
 end module TestsModule

@@ -334,9 +334,8 @@ CONTAINS
     ! созданный обьект выйдет из области видимости.
     SUBROUTINE destructor(this)
         TYPE(DDS_t), INTENT(INOUT) :: this
-
-        DEALLOCATE(this%romSinusTable)
-        WRITE(*,*) 'DDS_t destructor завершил работу!'
+           IF (ALLOCATED(this%romSinusTable) )  DEALLOCATE(this%romSinusTable)
+           WRITE(*,*) 'DDS_t destructor завершил работу!'
     END SUBROUTINE
 
 END MODULE DDSModule

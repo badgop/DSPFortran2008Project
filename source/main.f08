@@ -113,7 +113,17 @@ PROGRAM main
 !                     ,shift = int(0,1)&
 !                     ,iterationCount=int(1000,4))
 
-      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
+!      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
+
+
+!      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
+!                                      ,lenInblocks = int(10,8))
+       CALL BPSKGeneratorTest(      pspFileName       = 'test_signals\input\psp_valera.txt'&
+                                   ,dataFileName      =  'test_signals\input\data.txt'&
+                                   ,outPutFileName    =  'test_signals\output\BPSKTest1.pcm'&
+                                   ,filterFileName    = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+                                   ,baudRateInSamples = int(10240,8), chipRateInSamples = int(10,8) &
+                                   ,sampleRate = int(20*MEGA,8),centralFrequency = int (0,8), outPutSampleCapacity= int(14,1))
 
     WRITE(*,*) 'DONE!'
 
