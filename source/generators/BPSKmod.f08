@@ -83,11 +83,11 @@ CONTAINS
 
         CALL this%mixer%SetPhase(PI/2)
         CALL this%mixer%ComputeOutput(int(this%centralFrequency,8),(Generate%GetSignalSize()),heterodyneSignal)
-
         Generate = Generate*heterodyneSignal
         CALL Generate%RShift(this%outputShift)
-
-
+        DEALLOCATE(OutPutPsn)
+        DeALLOCATE(OutPutModulationSig)
+        DEALLOCATE(heterodyneSignal)
 
     END FUNCTION
 

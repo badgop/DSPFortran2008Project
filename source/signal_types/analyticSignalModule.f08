@@ -1,4 +1,4 @@
-!======================================================
+    !======================================================
     !===== Модуль содержащий прозводный тип данных (КЛАСС) analyticSignal_t
     !          тип воплощает в себе аналитический сигнал
     !======================================================
@@ -55,6 +55,7 @@ MODULE analyticSignalModule
         PROCEDURE :: AssignDataFromAssignment
         ! Convolve -свертка сигналов analyticSignal_t
         PROCEDURE :: Convolve
+
         ! ConvolveRaw - свертка массивов int(8)
         ! эта функция не принимает полиморфную переменную типа analyticSignal_t
         PROCEDURE,NOPASS, PRIVATE :: CorrelationRaw
@@ -63,8 +64,8 @@ MODULE analyticSignalModule
         ! Вставка нулей в начало и конец сигнала (увеличивает его длину)
         PROCEDURE :: ZeroesStuffing
         PROCEDURE :: ConvolveSignum
-
-
+         ! Convolve -свертка сигналов analyticSignal_t и signumSignalModule
+        PROCEDURE :: ConvolveAnalyticSignalSignumSignal
         ! далее выполняется перегрузка операторов
         ! умножения, вычитания, сложения и присваивания
         ! для типа данных analyticSignal_t
@@ -79,6 +80,8 @@ MODULE analyticSignalModule
         !оператор СВЕРТКИ
         generic :: operator   (.CONV.) =>  Convolve
         generic :: operator   (.CONVSIGN.) =>  ConvolveSignum
+        ! оператор свертки Аналитического и Знакового сигнала
+        generic :: operator   (.CONVANALYTICSIGNUM.) =>  ConvolveAnalyticSignalSignumSignal
         ! Финализирующый метод класс (так же - деструктор)
         ! должен освободить память, занятую массивом  signal(:)
         FINAL :: destructor
@@ -360,6 +363,34 @@ CONTAINS
          DEALLOCATE(rez)
 
     END FUNCTION ConvolveSignum
+
+     FUNCTION ConvolveAnalyticSignalSignumSignal(input,reference)
+         CLASS(analyticSignal_t), INTENT(IN)   :: input
+         CLASS(signumSignal_t)  , INTENT(IN)   :: reference
+         CLASS(analyticSignal_t), ALLOCATABLE  :: ConvolveAnalyticSignalSignumSignal
+         TYPE(signumSignal_t  )                :: inputSig
+         INTEGER(8)                            :: status
+         INTEGER(8), ALLOCATABLE               :: rez(:)
+
+         allocate(ConvolveAnalyticSignalSignumSignal,stat=status)
+         ConvolveAnalyticSignalSignumSignal%signalName='fun name ConvolveSignum'
+         !WRITE (*,*)  'NAme = ', ConvolveSignum%signalName
+         !WRITE (*,*)  'alloc status = ', status
+
+         CALL inputSig%Constructor(input%signal)
+
+!          IF (inputSig%signalSize<reference%signalSize) THEN
+!              !WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
+!              CALL ExitFromProgramNormal()
+!         END IF
+
+         !WRITE(*,*) 'Вычисляю знак корреляцию'
+         rez = inputSig.CORR.reference
+         !WRITE(*,*) 'ВЫЗЫВАЮ Аналитич КОНТРСРКУТР'
+         CALL ConvolveAnalyticSignalSignumSignal%Constructor(rez)
+         DEALLOCATE(rez)
+
+    END FUNCTION ConvolveAnalyticSignalSignumSignal
 
 
     SUBROUTINE destructor(this)
