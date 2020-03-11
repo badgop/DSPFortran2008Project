@@ -126,11 +126,11 @@ PROGRAM main
 !                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
 !                     ,shift = int(30,1))
 !
-!    CALL OpenMPIConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-!                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
-!                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
-!                     ,shift = int(22,1)&
-!                     ,iterationCount=int(1000,4))
+    CALL OpenMPIConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
+                     ,shift = int(22,1)&
+                     ,iterationCount=int(10000,4))
 !
 
 !     CALL SignumSignalConstructorTest()
@@ -158,15 +158,21 @@ PROGRAM main
 !                                   ,centralFrequency = int (3*MEGA,8)&
 !                                   , outPutSampleCapacity= int(14,1)&
 !                                   , outPutShift= int(17,1))
-        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\BPSKTest1.pcm ' &
-                              , outPutFileNameI = 'test_signals\output\phaseDemodTestI.pcm'&
-                              ,outPutFileNameQ  = 'test_signals\output\phaseDemodTestQ.pcm'&
-                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
-                              ,sampleRate       = int(20*MEGA,8)&
-                              ,centralFrequency = int (3*MEGA,8)&
-                              ,initialPhase     = 0.0*PI&
-                              ,outputShift      = int(22,8))
-    WRITE(*,*) 'DONE!'
+!        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\BPSKTest1.pcm ' &
+!                              , outPutFileNameI = 'test_signals\output\phaseDemodTestI.pcm'&
+!                              ,outPutFileNameQ  = 'test_signals\output\phaseDemodTestQ.pcm'&
+!                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
+!                              ,sampleRate       = int(20*MEGA,8)&
+!                              ,centralFrequency = int (3*MEGA,8)&
+!                              ,initialPhase     = 0.0*PI&
+!                              ,outputShift      = int(22,8))
+
+         WRITE(*,*) 'аналитич со знаковым'
+         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+                                         ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
+                                         ,shift = int(22,1)&
+                                         ,iterationCount=int(10000,4))
 
     CONTAINS
 

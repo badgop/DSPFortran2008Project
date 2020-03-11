@@ -97,9 +97,11 @@ CONTAINS
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(8), INTENT(IN) :: loadedSignal(:)
         INTEGER(4) :: stat
+        CHARACTER(len=60) ::errorCode
         !  Если память под объект уже выделена?
         !  надо обнулить
-        IF ((ALLOCATED(this%signal)).AND.(this%isAllocated)) THEN
+!        IF ((ALLOCATED(this%signal)).AND.(this%isAllocated)) THEN
+        IF ((ALLOCATED(this%signal))) THEN
            !WRITE(*,*) 'ПАмять уже выделена, обнуляю'
            DEALLOCATE(this%signal, STAT=stat)
            IF (STAT==0) THEN
@@ -114,9 +116,15 @@ CONTAINS
         END IF
         !и только потом выделять
         ! выделять нужно обязательно
-           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
-           allocate (this%signal,source=loadedSignal,STAT=stat)
-            IF (STAT/=0) WRITE (*,*) 'Аналитич конструктор не смог выделить память'
+!           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS!', this%signalName
+          allocate (this%signal,source=loadedSignal,STAT=stat,ERRMSG = errorCode )
+           IF (STAT/=0) THEN
+
+               WRITE (*,*) 'Аналитич конструктор не смог выделить память,ERRMSG = ',errorCode
+
+               CALL ExitFromProgramNormal()
+           END IF
+
            this%isAllocated=.TRUE.
            this%signalSize=size(loadedSignal)
     END SUBROUTINE Constructor
@@ -130,7 +138,7 @@ CONTAINS
         IF (this%isAllocated) THEN
             ALLOCATE(extractedSignal,source=this%signal)
         ELSE
-           !WRITE (*,*) 'НЕ МОГУ ИЗВЛЕЧЬ ДАННЫЕ иЗ', this%signalName
+           WRITE (*,*) 'НЕ МОГУ ИЗВЛЕЧЬ ДАННЫЕ иЗ', this%signalName
         END IF
 
      END SUBROUTINE ExtractSignalData
@@ -396,8 +404,9 @@ CONTAINS
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
         INTEGER(4) :: stat
+         CHARACTER(len=60) ::errorCode
 
-        DEALLOCATE(this%signal, STAT=stat)
+        DEALLOCATE(this%signal, STAT=stat, ERRMSG = errorCode)
         IF (STAT==0) THEN
 !            !WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
             this%isAllocated=.FALSE.
@@ -405,7 +414,7 @@ CONTAINS
             IF(  (.NOT. ALLOCATED(this%signal)).AND.(.NOT.( this%isAllocated)   )  ) THEN
                     !WRITE(*,*) 'уже освободили память ',this%signalName
                 ELSE
-                    !WRITE(*,*) 'Не могу освободить память ',this%signalName
+                    WRITE(*,*) 'Не могу освободить память ',errorCode
             END IF
         END IF
 

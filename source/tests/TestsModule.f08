@@ -551,14 +551,14 @@ module TestsModule
          mean=0
          percents=0
 
-!$OMP PARALLEL DO
+!$OMP PARALLEL DO SHARED (input_sig,reference_sig)
          DO I=1,iterationCount
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
             conv_result = input_sig.CONV.reference_sig
 
             call cpu_time(finish)
-             WRITE(*,*) 'count ', I
+             !WRITE(*,*) 'count ', I
 
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
@@ -681,6 +681,7 @@ module TestsModule
          USE ModuleWriteReadArrayFromToFile
          USE WriteReadAnalyticSignalToFromFile
          USE ReadWriteArrayToFromTxt
+         USE signumSignalModule
 
          CHARACTER(*), INTENT(IN) :: inputSignalFileName
          CHARACTER(*), INTENT(IN) :: inputRefFileName
@@ -691,6 +692,7 @@ module TestsModule
          TYPE(analyticSignal_t) ::input_sig
          TYPE(analyticSignal_t) ::reference_sig
          TYPE(analyticSignal_t) ::conv_result
+         TYPE(signumSignal_t  ) :: ref_sig!
 
          REAL(4) :: start, finish, mean,percents
          INTEGER(8) :: i
@@ -841,5 +843,65 @@ module TestsModule
          outSignal = phaseDemodulator%Downconvert(input_sig)
          CALL WriteComplexSignalToFile(outSignal,int(2,1),outPutFileNameI,outPutFileNameQ,.TRUE.)
       END SUBROUTINE PhaseDetectorTest
+
+
+       SUBROUTINE AnalyticSignumConvolveTest(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,iterationCount)
+
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE signumSignalModule
+
+         CHARACTER(*), INTENT(IN) :: inputSignalFileName
+         CHARACTER(*), INTENT(IN) :: inputRefFileName
+         CHARACTER(*), INTENT(IN) :: outputSignalFileName
+         INTEGER(1)  , INTENT(IN) :: shift
+         INTEGER(4)  , INTENT(IN) ::  iterationCount
+
+         TYPE(analyticSignal_t) ::input_sig
+         TYPE(analyticSignal_t) ::reference_sig
+         TYPE(analyticSignal_t) ::conv_result
+         TYPE(signumSignal_t  ) :: ref_sig!
+
+         REAL(4) :: start, finish, mean,percents
+         INTEGER(8) :: i
+         INTEGER(8),ALLOCATABLE :: extractedSignal(:)
+
+         CHARACTER(10) :: fmt="(I64.1)"
+
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
+         CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
+
+         CALL reference_sig%ExtractSignalData(extractedSignal)
+
+         CALL ref_sig%Constructor(extractedSignal)
+         DEALLOCATE(extractedSignal)
+
+         mean=0
+         percents=0
+         call omp_set_num_threads( 4 )
+
+         !$OMP PARALLEL DO SHARED (input_sig,ref_sig)
+         DO I=1,iterationCount
+!             WRITE(*,*) 'Cycle ', i
+            call cpu_time(start)
+            CALL conv_result%SetName('свертка')
+
+            conv_result = input_sig.CONVANALYTICSIGNUM.ref_sig
+
+            call cpu_time(finish)
+
+           mean=finish-start
+!            WRITE(*,*) 'execution time ', mean
+         END DO
+      !$OMP END PARALLEL DO
+         mean=mean/iterationCount
+         WRITE(*,*)  'MEAN TIME ', mean
+         CALL conv_result%Rshift(shift)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+
+     END SUBROUTINE AnalyticSignumConvolveTest
 
 end module TestsModule
