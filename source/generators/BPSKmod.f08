@@ -77,7 +77,7 @@ CONTAINS
 
 
         stat = this%mixer%Constructor (romLengthInBits = int(32,1)&
-                                     , romLengthTruncedInBits =int(14,1) &
+                                     , romLengthTruncedInBits =int(16,1) &
                                      , samplingFrequency =int(this%SampleRate,4) &
                                      , outputSignalSampleCapacity=int(16,1))
 

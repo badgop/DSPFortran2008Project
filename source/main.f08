@@ -1,8 +1,39 @@
+
+
+
+!1. //
+!2. //                       _oo0oo_
+!3. //                      o8888888o
+!4. //                      88" . "88
+!5. //                      (| -_- |)
+!6. //                      0\  =  /0
+!7. //                    ___/`---'\___
+!8. //                  .' \\|     |// '.
+!9. //                 / \\|||  :  |||// \
+!10.   //             / _||||| -:- |||||- \
+!11.   //            |   | \\\  -  /// |   |
+!12.   //            | \_|  ''\---/''  |_/ |
+!13.   //            \  .-\__  '-'  ___/-. /
+!14.   //          ___'. .'  /--.--\  `. .'___
+!15.   //       ."" '<  `.___\_<|>_/___.' >' "".
+!16.   //      | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+!17.   //      \  \ `_.   \_ __\ /__ _/   .-` /  /
+!18.   //  =====`-.____`.___ \_____/___.-`___.-'=====
+!19.   //                       `=---='
+!19.   //
+!20.   //
+!21.   //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!22.  //
+!23.  //            Buddha Bless         No Bugs
+!24.  //
+
+
 PROGRAM main
     USE PrefixModule
     USE TestsModule
     USE ModuleWriteReadArrayFromToFile
     USE  ReadWriteArrayToFromTxt
+    USE MathConstModule
     IMPLICIT NONE
 
 
@@ -118,16 +149,23 @@ PROGRAM main
 
 !      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
 !                                      ,lenInblocks = int(10,8))
-       CALL BPSKGeneratorTest(      pspFileName       = 'test_signals\input\psp_valera.txt'&
-                                   ,dataFileName      =  'test_signals\input\data.txt'&
-                                   ,outPutFileName    =  'test_signals\output\BPSKTest1.pcm'&
-                                   ,filterFileName    = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
-                                   ,baudRateInSamples = int(10240,8), chipRateInSamples = int(10,8) &
-                                   ,sampleRate = int(20*MEGA,8)&
-                                   ,centralFrequency = int (0*MEGA,8)&
-                                   , outPutSampleCapacity= int(14,1)&
-                                   , outPutShift= int(17,1))
-
+!       CALL BPSKGeneratorTest(      pspFileName       = 'test_signals\input\psp_valera.txt'&
+!                                   ,dataFileName      =  'test_signals\input\data.txt'&
+!                                   ,outPutFileName    =  'test_signals\output\BPSKTest1.pcm'&
+!                                   ,filterFileName    = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+!                                   ,baudRateInSamples = int(10240,8), chipRateInSamples = int(10,8) &
+!                                   ,sampleRate = int(20*MEGA,8)&
+!                                   ,centralFrequency = int (3*MEGA,8)&
+!                                   , outPutSampleCapacity= int(14,1)&
+!                                   , outPutShift= int(17,1))
+        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\BPSKTest1.pcm ' &
+                              , outPutFileNameI = 'test_signals\output\phaseDemodTestI.pcm'&
+                              ,outPutFileNameQ  = 'test_signals\output\phaseDemodTestQ.pcm'&
+                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
+                              ,sampleRate       = int(20*MEGA,8)&
+                              ,centralFrequency = int (3*MEGA,8)&
+                              ,initialPhase     = 0.0*PI&
+                              ,outputShift      = int(22,8))
     WRITE(*,*) 'DONE!'
 
     CONTAINS

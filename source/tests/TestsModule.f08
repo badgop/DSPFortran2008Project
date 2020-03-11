@@ -1,3 +1,23 @@
+
+!***********Свинка тестирует код!!!! НЕ МЕШАТЬ!
+!1. .
+!2.                         _
+!3. _._ _..._ .-',     _.._(`))
+!4.'-. `     '  /-._.-'    ',/
+!5.   )         \            '.
+!6.  / _    _    |             \
+!7. |  a    a    /              |
+!8. \   .-.                     ;
+!9.  '-('' ).-'       ,'       ;
+!10.     '-;           |      .'
+!11.        \           \    /
+!12.        | 7  .__  _.-\   \
+!13.        | |  |  ``/  /`  /
+!14.       /,_|  |   /,_/   /
+!15.          /,_/      '`-'
+
+
+
 module TestsModule
 
     USE PrefixModule
@@ -747,7 +767,6 @@ module TestsModule
          INTEGER(8), intent(in)               :: lenInblocks
          CHARACTER(*), intent(in)             :: pspFileName, outPutFileName
          INTEGER(8),ALLOCATABLE               :: prbs(:)
-         INTEGER(8),ALLOCATABLE               :: prbsSignal(:)
          TYPE(analyticSignal_t)               :: sig
          TYPE(PSNSimple_t)                    :: gen1
 
@@ -795,5 +814,32 @@ module TestsModule
          CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
 
       END SUBROUTINE BPSKGeneratorTest
+
+      SUBROUTINE PhaseDetectorTest(inputFileName, outPutFileNameI,outPutFileNameQ,filterFileName&
+                                   ,sampleRate,centralFrequency,initialPhase,outputShift)
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE complexSignalModule
+         USE PhaseDetectorModule
+         USE WriteReadComplexSignalToFromFile
+
+         CHARACTER(*), intent(in)           :: inputFileName, outPutFileNameI,outPutFileNameQ,filterFileName
+         INTEGER(8)  , intent(in)           :: sampleRate
+         INTEGER(8)  , intent(in)           :: centralFrequency
+         REAL(8)     , intent(in)           :: initialPhase
+         INTEGER(8)  , intent(in)           :: outputShift
+         INTEGER(8)  , ALLOCATABLE          :: impulseResponse(:)
+         TYPE(PhaseDetector_t)              :: phaseDemodulator
+         TYPE(complexSignal_t)              :: outSignal
+         TYPE(analyticSignal_t)             :: input_sig!
+
+         CALL ReadArrayFromFile (impulseResponse,filterFileName,.FALSE. )
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputFileName,.True.)
+         CALL phaseDemodulator%Constructor(centralFrequency,initialPhase,sampleRate,impulseResponse,outputShift)
+         outSignal = phaseDemodulator%Downconvert(input_sig)
+         CALL WriteComplexSignalToFile(outSignal,int(2,1),outPutFileNameI,outPutFileNameQ,.TRUE.)
+      END SUBROUTINE PhaseDetectorTest
 
 end module TestsModule
