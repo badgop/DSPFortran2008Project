@@ -43,7 +43,7 @@ CONTAINS
         INTEGER(1) :: registerKind
 
 
-        IF ((ALLOCATED(this%signal)).AND.(this%isAllocated)) THEN
+        IF (ALLOCATED(this%signal)) THEN
            !!WRITE(*,*) 'ПАмять уже выделена, обнуляю'
            DEALLOCATE(this%signal, STAT=stat)
            IF (STAT==0) THEN

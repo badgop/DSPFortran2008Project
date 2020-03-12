@@ -66,6 +66,8 @@ MODULE analyticSignalModule
         PROCEDURE :: ConvolveSignum
          ! Convolve -свертка сигналов analyticSignal_t и signumSignalModule
         PROCEDURE :: ConvolveAnalyticSignalSignumSignal
+        !Ивертирует сигнал (умножает на минус 1)
+        PROCEDURE :: Invert
         ! далее выполняется перегрузка операторов
         ! умножения, вычитания, сложения и присваивания
         ! для типа данных analyticSignal_t
@@ -400,13 +402,17 @@ CONTAINS
 
     END FUNCTION ConvolveAnalyticSignalSignumSignal
 
+    SUBROUTINE INVERT(this)
+         CLASS(analyticSignal_t), INTENT(INOUT)   :: this
+         this%signal =  - this%signal
+    END  SUBROUTINE
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this
         INTEGER(4) :: stat
          CHARACTER(len=60) ::errorCode
 
-        DEALLOCATE(this%signal, STAT=stat, ERRMSG = errorCode)
+        DEALLOCATE(this%signal, STAT=stat)
         IF (STAT==0) THEN
 !            !WRITE(*,*) ' ANALYTIC DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
             this%isAllocated=.FALSE.

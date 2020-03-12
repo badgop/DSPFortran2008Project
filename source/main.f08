@@ -1,33 +1,5 @@
 
 
-
-!1. //
-!2. //                       _oo0oo_
-!3. //                      o8888888o
-!4. //                      88" . "88
-!5. //                      (| -_- |)
-!6. //                      0\  =  /0
-!7. //                    ___/`---'\___
-!8. //                  .' \\|     |// '.
-!9. //                 / \\|||  :  |||// \
-!10.   //             / _||||| -:- |||||- \
-!11.   //            |   | \\\  -  /// |   |
-!12.   //            | \_|  ''\---/''  |_/ |
-!13.   //            \  .-\__  '-'  ___/-. /
-!14.   //          ___'. .'  /--.--\  `. .'___
-!15.   //       ."" '<  `.___\_<|>_/___.' >' "".
-!16.   //      | | :  `- \`.;`\ _ /`;.`/ - ` : | |
-!17.   //      \  \ `_.   \_ __\ /__ _/   .-` /  /
-!18.   //  =====`-.____`.___ \_____/___.-`___.-'=====
-!19.   //                       `=---='
-!19.   //
-!20.   //
-!21.   //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!22.  //
-!23.  //            Buddha Bless         No Bugs
-!24.  //
-
-
 PROGRAM main
     USE PrefixModule
     USE TestsModule
@@ -126,11 +98,11 @@ PROGRAM main
 !                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
 !                     ,shift = int(30,1))
 !
-    CALL OpenMPIConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
-                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
-                     ,shift = int(22,1)&
-                     ,iterationCount=int(10000,4))
+!    CALL OpenMPIConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+!                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+!                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
+!                     ,shift = int(22,1)&
+!                     ,iterationCount=int(100,4))
 !
 
 !     CALL SignumSignalConstructorTest()
@@ -164,15 +136,15 @@ PROGRAM main
 !                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
 !                              ,sampleRate       = int(20*MEGA,8)&
 !                              ,centralFrequency = int (3*MEGA,8)&
-!                              ,initialPhase     = 0.0*PI&
+!                              ,initialPhase     = 0.25*PI&
 !                              ,outputShift      = int(22,8))
 
-         WRITE(*,*) 'аналитич со знаковым'
-         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-                                         ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
-                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
-                                         ,shift = int(22,1)&
-                                         ,iterationCount=int(10000,4))
+!         WRITE(*,*) 'аналитич со знаковым'
+!         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+!                                         ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+!                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
+!                                         ,shift = int(22,1)&
+!                                         ,iterationCount=int(100,4))
 
     CONTAINS
 

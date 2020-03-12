@@ -558,7 +558,7 @@ module TestsModule
             conv_result = input_sig.CONV.reference_sig
 
             call cpu_time(finish)
-             !WRITE(*,*) 'count ', I
+            WRITE(*,*) 'count ', I
 
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
@@ -692,7 +692,7 @@ module TestsModule
          TYPE(analyticSignal_t) ::input_sig
          TYPE(analyticSignal_t) ::reference_sig
          TYPE(analyticSignal_t) ::conv_result
-         TYPE(signumSignal_t  ) :: ref_sig!
+
 
          REAL(4) :: start, finish, mean,percents
          INTEGER(8) :: i
@@ -883,9 +883,9 @@ module TestsModule
          percents=0
          call omp_set_num_threads( 4 )
 
-         !$OMP PARALLEL DO SHARED (input_sig,ref_sig)
+       !  !$OMP PARALLEL DO
          DO I=1,iterationCount
-!             WRITE(*,*) 'Cycle ', i
+             WRITE(*,*) 'Cycle ', i
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
 
@@ -896,7 +896,7 @@ module TestsModule
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
-      !$OMP END PARALLEL DO
+     ! !$OMP END PARALLEL DO
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
