@@ -66,13 +66,18 @@ MODULE analyticSignalModule
         PROCEDURE :: ConvolveSignum
          ! Convolve -свертка сигналов analyticSignal_t и signumSignalModule
         PROCEDURE :: ConvolveAnalyticSignalSignumSignal
-        !Ивертирует сигнал (умножает на минус 1)
-        PROCEDURE :: Invert
+        ! умножить Аналтич сигнал на ИНТ8
+        PROCEDURE :: MultiplyAnalyticSignalsAndConstant8
+        ! Здесь надо указать в качестве какого аргумента передается полиморфная переменная
+        ! т.к по умолчанию она передается первым аргументом
+        ! умножить  ИНТ8  на Аналтич сигнал на
+        PROCEDURE,PASS(yOp) :: Multiplydonstant8AndAnalyticSignals
         ! далее выполняется перегрузка операторов
         ! умножения, вычитания, сложения и присваивания
         ! для типа данных analyticSignal_t
         ! перегрузка осуществляться через идентификатор generic :: operator
-        generic :: operator   (*) =>  MultiplyAnalyticSignals
+        generic :: operator   (*) =>  MultiplyAnalyticSignals,MultiplyAnalyticSignalsAndConstant8&
+                                     ,Multiplydonstant8AndAnalyticSignals
         generic :: operator   (-) =>  SubtractAnalyticSignals
         generic :: operator   (+) =>   AddAnalyticSignals
         ! перегрузка оператора присвания выполняется чуть иначе
@@ -80,10 +85,12 @@ MODULE analyticSignalModule
         !https://stackoverflow.com/questions/19111471/fortran-derived-type-assignment
         generic :: assignment (=) =>  AssignDataFromAssignment
         !оператор СВЕРТКИ
+        ! signal = INPUT.CONV.REFERENCE
         generic :: operator   (.CONV.) =>  Convolve
-        generic :: operator   (.CONVSIGN.) =>  ConvolveSignum
-        ! оператор свертки Аналитического и Знакового сигнала
-        generic :: operator   (.CONVANALYTICSIGNUM.) =>  ConvolveAnalyticSignalSignumSignal
+        ! оператор знаковой СВЕРТКИ
+        ! signal = INPUT.CONV.REFERENCE  где REFERENCE - analyticSignal :: ConvolveSignum
+        ! signal = INPUT.CONV.REFERENCE  где REFERENCE - signumSignal :: ConvolveAnalyticSignalSignumSignal
+        generic :: operator   (.CONVSIGN.) =>  ConvolveSignum,ConvolveAnalyticSignalSignumSignal
         ! Финализирующый метод класс (так же - деструктор)
         ! должен освободить память, занятую массивом  signal(:)
         FINAL :: destructor
@@ -173,11 +180,7 @@ CONTAINS
          CLASS(analyticSignal_t), INTENT(IN)  :: xOp
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable ::MultiplyAnalyticSignals
-
-
-
             allocate( MultiplyAnalyticSignals)
-
             ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
             ! Хотя деструктор вызывается спокойно с нужными парамерами
             ! требуется расследование
@@ -191,11 +194,7 @@ CONTAINS
          CLASS(analyticSignal_t), INTENT(IN)  :: xOp
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable ::SubtractAnalyticSignals
-
-
-
             allocate( SubtractAnalyticSignals)
-
             ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
             ! Хотя деструктор вызывается спокойно с нужными парамерами
             ! требуется расследование
@@ -367,7 +366,7 @@ CONTAINS
          CALL inputSig%Constructor(input%signal)
          CALL referenceSig%Constructor(reference%signal)
          !WRITE(*,*) 'Вычисляю знак корреляцию'
-         rez = inputSig.CORR.referenceSig
+         rez = inputSig.CONV.referenceSig
          !WRITE(*,*) 'ВЫЗЫВАЮ Аналитич КОНТРСРКУТР'
          CALL ConvolveSignum%Constructor(rez)
          DEALLOCATE(rez)
@@ -395,17 +394,40 @@ CONTAINS
 !         END IF
 
          !WRITE(*,*) 'Вычисляю знак корреляцию'
-         rez = inputSig.CORR.reference
+         rez = inputSig.CONV.reference
          !WRITE(*,*) 'ВЫЗЫВАЮ Аналитич КОНТРСРКУТР'
          CALL ConvolveAnalyticSignalSignumSignal%Constructor(rez)
          DEALLOCATE(rez)
 
     END FUNCTION ConvolveAnalyticSignalSignumSignal
 
-    SUBROUTINE INVERT(this)
-         CLASS(analyticSignal_t), INTENT(INOUT)   :: this
-         this%signal =  - this%signal
-    END  SUBROUTINE
+    ! умножить аналитич сигнал на константу (СИГНАЛ*КОНСТАНТА)
+    FUNCTION MultiplyAnalyticSignalsAndConstant8(xOp,yOp)
+         CLASS(analyticSignal_t), INTENT(IN)  :: xOp
+         INTEGER(8),              INTENT(IN)  :: yOp
+         CLASS(analyticSignal_t), allocatable ::MultiplyAnalyticSignalsAndConstant8
+            allocate( MultiplyAnalyticSignalsAndConstant8)
+            ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
+            ! Хотя деструктор вызывается спокойно с нужными парамерами
+            ! требуется расследование
+            MultiplyAnalyticSignalsAndConstant8%Signal=xOp%signal*yOp
+            CALL MultiplyAnalyticSignalsAndConstant8%Setname('промежут умножение')
+            MultiplyAnalyticSignalsAndConstant8%isAllocated=.TRUE.
+     END FUNCTION MultiplyAnalyticSignalsAndConstant8
+
+         ! умножить аналитич сигнал на константу (КОНСТАНТА*СИГНАЛ)
+    FUNCTION Multiplydonstant8AndAnalyticSignals(xOp,yOp)
+         INTEGER(8),              INTENT(IN)  :: xOp
+         CLASS(analyticSignal_t), INTENT(IN)  :: yOp
+         CLASS(analyticSignal_t), allocatable ::Multiplydonstant8AndAnalyticSignals
+            allocate( Multiplydonstant8AndAnalyticSignals)
+            ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
+            ! Хотя деструктор вызывается спокойно с нужными парамерами
+            ! требуется расследование
+            Multiplydonstant8AndAnalyticSignals%Signal=yOp%signal*xOp
+            CALL Multiplydonstant8AndAnalyticSignals%Setname('промежут умножение')
+            Multiplydonstant8AndAnalyticSignals%isAllocated=.TRUE.
+     END FUNCTION Multiplydonstant8AndAnalyticSignals
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this

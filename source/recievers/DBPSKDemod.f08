@@ -16,57 +16,64 @@ MODULE DBPSKDemod
         INTEGER(8)                   :: SampleRate
         INTEGER(8)                   :: chipRateInSamples
         INTEGER(8)                   :: centralFrequency
+        REAL(8)                      :: initialPhase
         INTEGER(1)                   :: outPutSampleCapacity
-        INTEGER(1)                   :: outputShift
-        TYPE(analyticSignal_t)       :: impluseResponse
-
+        INTEGER(8)                   :: outputShift
         TYPE(PSNSimple_t)            :: psnGnerator
-
+        TYPE(PhaseDetector_t)        :: phaseDemodulator
     CONTAINS
         PROCEDURE :: Constructor
         PROCEDURE :: Demodulate
-
         FINAL     :: destructor
     END TYPE BPSKDemodulator_t
 
 CONTAINS
 
-    SUBROUTINE Constructor(this,baudRate,SampleRate,centralFrequency,outPutSampleCapacity,psn,chipRateInSamples&
-                          , impulseResponseArray,outputShift)
+    SUBROUTINE Constructor(this,baudRate,sampleRate,centralFrequency,initialPhase&
+                               ,outPutSampleCapacity,psn,chipRateInSamples&
+                               ,impulseResponseArray,outputShift)
         class(BPSKDemodulator_t), intent(inout) :: this
         INTEGER(8)  , intent(in)           :: baudRate
         INTEGER(8)  , intent(in)           :: SampleRate
         INTEGER(8)  , intent(in)           :: centralFrequency
+        REAL(8)     , INTENT(IN)           :: initialPhase
         INTEGER(1)  , intent(in)           :: outPutSampleCapacity
         INTEGER(8)  , intent(in)           :: psn(:)
         INTEGER(8)  , intent(in)           :: chipRateInSamples
         INTEGER(8)  , intent(in)           :: impulseResponseArray(:)
-        INTEGER(1)  , intent(in)           :: outputShift
+        INTEGER(8)  , intent(in)           :: outputShift
+
+
         this%baudRateInSamples              = baudRate
         this%centralFrequency               = centralFrequency
+        this%initialPhase                   = initialPhase
         this%SampleRate                     = SampleRate
         this%outPutSampleCapacity           = outPutSampleCapacity
         this%outputShift                    = outputShift
 
         CALL this%psnGnerator%Constructor (psn, chipRateInSamples)
-        CALL this%impluseResponse%Constructor(impulseResponseArray)
-    END SUBROUTINE
+
+        CALL this%phaseDemodulator%Constructor(this%centralFrequency&
+                                        ,this%initialPhase&
+                                        ,this%sampleRate&
+                                        ,impulseResponseArray&
+                                        ,int(8,8))
+
+     END SUBROUTINE
     
-    FUNCTION Demodulate (this, data)
+    FUNCTION Demodulate (this, inputSig)
         CLASS(BPSKDemodulator_t), intent(inout) :: this
-        INTEGER(8)  , intent(in)              :: data(:)
-        INTEGER(8)  , allocatable             :: Diffdata(:)
-        CLASS(analyticSignal_t),  allocatable              :: OutPutPsn
-        CLASS(analyticSignal_t) , allocatable              :: OutPutModulationSig
-        INTEGER(8)              , allocatable              :: outputDataSig(:)
-        INTEGER(8)                            :: stat
-        CLASS(analyticSignal_t), allocatable  :: Demodulate
+        CLASS(analyticSignal_t) , allocatable   :: inputSig
+        CLASS(complexSignal_t)  , allocatable   :: Demodulate
 
         ALLOCATE (Demodulate)
 
 
+        Demodulate = this%phaseDemodulator%Downconvert(inputSig)
 
-    END FUNCTION Demodulate
+
+
+     END FUNCTION Demodulate
 
 
 

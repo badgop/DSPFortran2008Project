@@ -1,5 +1,3 @@
-
-
 PROGRAM main
     USE PrefixModule
     USE TestsModule
@@ -140,11 +138,11 @@ PROGRAM main
 !                              ,outputShift      = int(22,8))
 
 !         WRITE(*,*) 'аналитич со знаковым'
-!         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-!                                         ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
-!                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
-!                                         ,shift = int(22,1)&
-!                                         ,iterationCount=int(100,4))
+         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+                                         ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
+                                         ,shift = int(0,1)&
+                                         ,iterationCount=int(10,4))
 
     CONTAINS
 

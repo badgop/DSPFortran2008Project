@@ -666,11 +666,11 @@ module TestsModule
          CALL  input_sig%Constructor( input)
          CALL  ref_sig%Constructor( ref)
 !         write(*,*) 'len = ',size(res)
-         res=input_sig.CORR.ref_sig
+         res=input_sig.CONV.ref_sig
          WRITE(*,fmt)  res
 !         write(*,*) 'len = ',size(res)
          DEALLOCATE(res)
-         res=input_sig.CORR.ref_sig
+         res=input_sig.CONV.ref_sig
          WRITE(*,fmt)  res
 
      END SUBROUTINE SignumCorrTest
@@ -889,7 +889,7 @@ module TestsModule
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
 
-            conv_result = input_sig.CONVANALYTICSIGNUM.ref_sig
+            conv_result = input_sig.CONVSIGN.ref_sig
 
             call cpu_time(finish)
 

@@ -75,7 +75,7 @@ CONTAINS
         ! формирование квадратурных каналов
         iSignal = inputSignal*iHeterodyne
         !  -sin(wt)
-        CALL qHeterodyne%Invert()
+        qHeterodyne=qHeterodyne*(int(-1,8))
         qSignal = inputSignal*qHeterodyne
         iSignal = iSignal.CONV.this%lpf
         qSignal = qSignal.CONV.this%lpf
