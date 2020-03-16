@@ -69,7 +69,7 @@ CONTAINS
         diffData = this%coder%GenerateDBPSKData(data)
         outputDataSig = GenerateImpluseSequence(this%baudRateInSamples,diffData)
         CALL OutPutModulationSig%Constructor(outputDataSig)
-        OutPutPsn = this%psnGnerator%OutPutPsn (int(size(diffData),8))
+        OutPutPsn = this%psnGnerator%OutPutPsnAs (int(size(diffData),8))
         Generate =  OutPutPsn * OutPutModulationSig
         CALL Generate%ZeroesStuffing(this%baudRateInSamples/10,this%baudRateInSamples/10)
         Generate=Generate.CONV.this%impluseResponse

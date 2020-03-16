@@ -774,7 +774,7 @@ module TestsModule
 
          CALL ReadArrayFromFile (prbs,pspFileName,.FALSE. )
          CALL gen1%Constructor(int(prbs,8),osr)
-         sig = gen1%OutPutPsn(lenInblocks)
+         sig = gen1%OutPutPsnAs(lenInblocks)
          CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
 
       END SUBROUTINE SimplePSNGeneratorTest

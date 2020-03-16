@@ -10,7 +10,9 @@ MODULE PSNSimpleMod
         INTEGER(8)              :: osr
     CONTAINS
         PROCEDURE :: Constructor
-        PROCEDURE :: OutPutPsn
+
+        PROCEDURE :: OutPutPsnArray
+        PROCEDURE :: OutPutPsnAs
 
         FINAL     :: destructor
     END TYPE PSNSimple_t
@@ -23,30 +25,44 @@ CONTAINS
         INTEGER(8)        , intent(in)    :: osr
         ALLOCATE (this%psn, source = input_psn )
         this%osr = osr
-
         this%psn =  GenerateImpluseSequence(osr,input_psn)
         WRITE (*,*) 'psn lrn ',size(this%psn)
-
-
     END SUBROUTINE
     
-    FUNCTION OutPutPsn(this, lengthInBlocks)
+    FUNCTION OutPutPsnAs(this, lengthInBlocks)
         class(PSNSimple_t)     , intent(inOUT)     :: this
         INTEGER (8)            , intent(in)        :: lengthInBlocks
-        CLASS(analyticSignal_t), allocatable       :: OutPutPsn
+        CLASS(analyticSignal_t), allocatable       :: OutPutPsnAs
         INTEGER(8)             , ALLOCATABLE       :: psnTmp(:)
         INTEGER(8)                                 :: i
         INTEGER(8)                                 :: psnLen
-        ALLOCATE(OutPutPsn)
+        ALLOCATE(OutPutPsnAs)
         psnLen = size(this%psn)
         ALLOCATE (psnTmp(1:(lengthInBlocks*(psnLen))))
         WRITE (*,*) 'size ', size(psnTmp)
         DO i=1,lengthInBlocks
            psnTmp((psnLen*(i-1)+1):(psnLen*i))= this%psn(1:psnLen)
         END DO
-        CALL OutPutPsn%Constructor(psnTmp)
+        CALL OutPutPsnAs%Constructor(psnTmp)
         DEALLOCATE(psnTmp)
-    END FUNCTION
+    END FUNCTION OutPutPsnAs
+
+      FUNCTION OutPutPsnArray(this, lengthInBlocks)
+        class(PSNSimple_t)     , intent(inOUT)     :: this
+        INTEGER (8)            , intent(in)        :: lengthInBlocks
+
+        INTEGER(8)             , ALLOCATABLE       :: OutPutPsnArray(:)
+        INTEGER(8)                                 :: i
+        INTEGER(8)                                 :: psnLen
+
+        psnLen = size(this%psn)
+        ALLOCATE (OutPutPsnArray(1:(lengthInBlocks*(psnLen))))
+        WRITE (*,*) 'size ', size(OutPutPsnArray)
+        DO i=1,lengthInBlocks
+           OutPutPsnArray((psnLen*(i-1)+1):(psnLen*i))= this%psn(1:psnLen)
+        END DO
+
+    END FUNCTION OutPutPsnArray
 
     SUBROUTINE destructor(this)
         type(PSNSimple_t), intent(inout) :: this
