@@ -859,9 +859,9 @@ module TestsModule
          INTEGER(1)  , INTENT(IN) :: shift
          INTEGER(4)  , INTENT(IN) ::  iterationCount
 
-         TYPE(analyticSignal_t) ::input_sig
-         TYPE(analyticSignal_t) ::reference_sig
-         TYPE(analyticSignal_t) ::conv_result
+         TYPE(analyticSignal_t) :: input_sig
+         TYPE(analyticSignal_t) :: reference_sig
+         TYPE(analyticSignal_t) :: conv_result
          TYPE(signumSignal_t  ) :: ref_sig!
 
          REAL(4) :: start, finish, mean,percents

@@ -1,5 +1,6 @@
  MODULE complexSignalModule
     USE analyticSignalModule
+    USE signumSignalModule
     IMPLICIT NONE
     PRIVATE
 
@@ -29,6 +30,8 @@
         PROCEDURE GetSignalSize
         PROCEDURE SetName
         PROCEDURE :: RShift
+        PROCEDURE :: ConvolveComplexSignum
+        generic :: operator   (.CONVSIGN.) =>  ConvolveComplexSignum
         FINAL :: destructor
 
     END TYPE complexSignal_t
@@ -95,10 +98,8 @@ CONTAINS
          CLASS(complexSignal_t), INTENT(IN)  :: yOp
          CLASS(complexSignal_t), allocatable ::MultiplyComplexSignals
 
-
             !r%signal=xOp%signal*yOp%signal
             allocate( MultiplyComplexSignals)
-
             ! Вот тут конструктор копирования(=) не отрабаывает - не может взять размер и посавить статус выделения - почему??
             ! Хотя деструктор вызывается спокойно с нужными парамерами
             ! требуется расследование
@@ -106,24 +107,17 @@ CONTAINS
             CALL  MultiplyComplexSignals%SetName('комплпекс умн И','комплпекс умн Ку')
             MultiplyComplexSignals%i=(xOp%i*yOp%i)-(xOp%q*yOp%q)
             MultiplyComplexSignals%q=(xOp%i*yOp%q)+(yOp%i*xOp%q)
-
             MultiplyComplexSignals%isAllocated=.TRUE.
-
-
-
      END FUNCTION MultiplyComplexSignals
 
 
     SUBROUTINE ExtractSignalData(this,extractedI,extractedq)
-
         INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedI(:)
         INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedQ(:)
         CLASS(complexSignal_t), INTENT(IN)  :: this
 
-
         CALL this%i%ExtractSignalData(extractedI)
         CALL this%q%ExtractSignalData(extractedQ)
-
      END SUBROUTINE ExtractSignalData
 
      FUNCTION GetAllocationStatus(this) RESULT(stat)
@@ -163,6 +157,16 @@ CONTAINS
 
 
     END SUBROUTINE RShift
+
+    FUNCTION ConvolveComplexSignum(input,reference)
+       CLASS(complexSignal_t), INTENT(IN)    :: input
+       CLASS(signumSignal_t) , INTENT(IN)    :: reference
+       CLASS(complexSignal_t), ALLOCATABLE   :: ConvolveComplexSignum
+       ALLOCATE(ConvolveComplexSignum)
+
+       ConvolveComplexSignum%i= input%i.CONVSIGN.reference
+       ConvolveComplexSignum%q= input%q.CONVSIGN.reference
+    END FUNCTION ConvolveComplexSignum
 
 
     SUBROUTINE destructor(this)

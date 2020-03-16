@@ -24,7 +24,6 @@ MODULE BPSKmod
     CONTAINS
         PROCEDURE :: Constructor
         PROCEDURE :: Generate
-
         FINAL     :: destructor
     END TYPE BPSKmodulator_t
 
@@ -55,9 +54,9 @@ CONTAINS
         CLASS(BPSKmodulator_t), intent(inout) :: this
         INTEGER(8)  , intent(in)              :: data(:)
         INTEGER(8)  , allocatable             :: Diffdata(:)
-        CLASS(analyticSignal_t),  allocatable              :: OutPutPsn
-        CLASS(analyticSignal_t) , allocatable              :: OutPutModulationSig
-        INTEGER(8)              , allocatable              :: outputDataSig(:)
+        CLASS(analyticSignal_t),  allocatable :: OutPutPsn
+        CLASS(analyticSignal_t) , allocatable :: OutPutModulationSig
+        INTEGER(8)              , allocatable :: outputDataSig(:)
         INTEGER(8)                            :: stat
         CLASS(analyticSignal_t), allocatable  :: Generate
         CLASS(analyticSignal_t), allocatable  :: heterodyneSignal
@@ -71,11 +70,9 @@ CONTAINS
         outputDataSig = GenerateImpluseSequence(this%baudRateInSamples,diffData)
         CALL OutPutModulationSig%Constructor(outputDataSig)
         OutPutPsn = this%psnGnerator%OutPutPsn (int(size(diffData),8))
-        Generate =  (OutPutPsn * OutPutModulationSig)
+        Generate =  OutPutPsn * OutPutModulationSig
         CALL Generate%ZeroesStuffing(this%baudRateInSamples/10,this%baudRateInSamples/10)
         Generate=Generate.CONV.this%impluseResponse
-
-
         stat = this%mixer%Constructor (romLengthInBits = int(32,1)&
                                      , romLengthTruncedInBits =int(16,1) &
                                      , samplingFrequency =int(this%SampleRate,4) &

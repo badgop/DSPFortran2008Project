@@ -68,19 +68,21 @@ CONTAINS
                                      , outputSignalSampleCapacity=int(8,1))
         CALL this%qMixer%SetPhase(0+this%initialPhase)
         ! формирование сигналов гетеродинов
-        WRITE(*,*) 'Формируем сигналы гетеродинов!'
+
         CALL this%iMixer%ComputeOutput(int(this%centralFrequency,8),(inputSignal%GetSignalSize()),iHeterodyne)
         CALL this%qMixer%ComputeOutput(int(this%centralFrequency,8),(inputSignal%GetSignalSize()),qHeterodyne)
-        WRITE(*,*) 'Закончили!'
         ! формирование квадратурных каналов
         iSignal = inputSignal*iHeterodyne
         !  -sin(wt)
         qHeterodyne=qHeterodyne*(int(-1,8))
         qSignal = inputSignal*qHeterodyne
+        ! Фильтрация каналов
         iSignal = iSignal.CONV.this%lpf
         qSignal = qSignal.CONV.this%lpf
+        ! Берем старшие разряды
         CALL iSignal%Rshift(int(this%outputShift,1))
         CALL qSignal%Rshift(int(this%outputShift,1))
+        ! формируеым выходной комплексный сигнал
         CALL Downconvert%Constructor(iSignal,qSignal)
         DEALLOCATE(iSignal)
         DEALLOCATE(qSignal)

@@ -138,11 +138,12 @@ PROGRAM main
 !                              ,outputShift      = int(22,8))
 
 !         WRITE(*,*) 'аналитич со знаковым'
+!'test_signals\input\noise_7897.pcm'
          CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
                                          ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
                                          ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
                                          ,shift = int(0,1)&
-                                         ,iterationCount=int(10,4))
+                                         ,iterationCount=int(1,4))
 
     CONTAINS
 

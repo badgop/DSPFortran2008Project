@@ -4,6 +4,7 @@ MODULE DBPSKDemod
     USE complexSignalModule
     USE DiffDataModulatorMod
     USE analyticSignalModule
+    USE signumSignalModule
     USE DDSModule
     USE MathConstModule
     USE PhaseDetectorModule
@@ -19,11 +20,14 @@ MODULE DBPSKDemod
         REAL(8)                      :: initialPhase
         INTEGER(1)                   :: outPutSampleCapacity
         INTEGER(8)                   :: outputShift
+        INTEGER(8)                   :: threshold
         TYPE(PSNSimple_t)            :: psnGnerator
         TYPE(PhaseDetector_t)        :: phaseDemodulator
+        TYPE(signumSignal_t)         :: currentPRSSignal
     CONTAINS
         PROCEDURE :: Constructor
         PROCEDURE :: Demodulate
+        PROCEDURE :: SetTreshold
         FINAL     :: destructor
     END TYPE BPSKDemodulator_t
 
@@ -32,17 +36,16 @@ CONTAINS
     SUBROUTINE Constructor(this,baudRate,sampleRate,centralFrequency,initialPhase&
                                ,outPutSampleCapacity,psn,chipRateInSamples&
                                ,impulseResponseArray,outputShift)
-        class(BPSKDemodulator_t), intent(inout) :: this
-        INTEGER(8)  , intent(in)           :: baudRate
-        INTEGER(8)  , intent(in)           :: SampleRate
-        INTEGER(8)  , intent(in)           :: centralFrequency
+        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        INTEGER(8)  , INTENT(IN)           :: baudRate
+        INTEGER(8)  , INTENT(IN)           :: SampleRate
+        INTEGER(8)  , INTENT(IN)           :: centralFrequency
         REAL(8)     , INTENT(IN)           :: initialPhase
-        INTEGER(1)  , intent(in)           :: outPutSampleCapacity
-        INTEGER(8)  , intent(in)           :: psn(:)
-        INTEGER(8)  , intent(in)           :: chipRateInSamples
-        INTEGER(8)  , intent(in)           :: impulseResponseArray(:)
-        INTEGER(8)  , intent(in)           :: outputShift
-
+        INTEGER(1)  , INTENT(IN)           :: outPutSampleCapacity
+        INTEGER(8)  , INTENT(IN)           :: psn(:)
+        INTEGER(8)  , INTENT(IN)           :: chipRateInSamples
+        INTEGER(8)  , INTENT(IN)           :: impulseResponseArray(:)
+        INTEGER(8)  , INTENT(IN)           :: outputShift
 
         this%baudRateInSamples              = baudRate
         this%centralFrequency               = centralFrequency
@@ -50,7 +53,6 @@ CONTAINS
         this%SampleRate                     = SampleRate
         this%outPutSampleCapacity           = outPutSampleCapacity
         this%outputShift                    = outputShift
-
         CALL this%psnGnerator%Constructor (psn, chipRateInSamples)
 
         CALL this%phaseDemodulator%Constructor(this%centralFrequency&
@@ -59,17 +61,34 @@ CONTAINS
                                         ,impulseResponseArray&
                                         ,int(8,8))
 
+       !ТО ЧТО СДЕЛАТЬ С ГЕНЕРАТОРОМ ПСП!!!!
+
+
+
+     END SUBROUTINE
+
+     ! установка порогового значения решающего устройства
+     SUBROUTINE SetTreshold(this,threshold)
+        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        INTEGER(8)  , INTENT(IN)                :: threshold
+
+        this%threshold   = threshold
      END SUBROUTINE
     
+
     FUNCTION Demodulate (this, inputSig)
-        CLASS(BPSKDemodulator_t), intent(inout) :: this
-        CLASS(analyticSignal_t) , allocatable   :: inputSig
-        CLASS(complexSignal_t)  , allocatable   :: Demodulate
+        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
+        INTEGER(8)              , ALLOCATABLE   :: Demodulate(:)
 
-        ALLOCATE (Demodulate)
+        CLASS(complexSignal_t)  , ALLOCATABLE   :: matchedFilterOut
+        CLASS(complexSignal_t)  , ALLOCATABLE   :: Demodulated
 
 
-        Demodulate = this%phaseDemodulator%Downconvert(inputSig)
+        ALLOCATE (matchedFilterOut)
+        ALLOCATE (Demodulated)
+
+        Demodulated = this%phaseDemodulator%Downconvert(inputSig)
 
 
 
@@ -78,7 +97,7 @@ CONTAINS
 
 
     SUBROUTINE destructor(this)
-        type(BPSKDemodulator_t), intent(in) :: this
+        type(BPSKDemodulator_t), INTENT(IN) :: this
     END SUBROUTINE
 
 END MODULE DBPSKDemod
