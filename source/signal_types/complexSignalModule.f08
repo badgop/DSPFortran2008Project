@@ -1,6 +1,7 @@
  MODULE complexSignalModule
     USE analyticSignalModule
     USE signumSignalModule
+    USE FastModuleMod
     IMPLICIT NONE
     PRIVATE
 
@@ -31,6 +32,7 @@
         PROCEDURE SetName
         PROCEDURE :: RShift
         PROCEDURE :: ConvolveComplexSignum
+        PROCEDURE :: GetModuleFast
         generic :: operator   (.CONVSIGN.) =>  ConvolveComplexSignum
         FINAL :: destructor
 
@@ -167,6 +169,23 @@ CONTAINS
        ConvolveComplexSignum%i= input%i.CONVSIGN.reference
        ConvolveComplexSignum%q= input%q.CONVSIGN.reference
     END FUNCTION ConvolveComplexSignum
+
+    ! Возвращает МАССИВ INT8 с модулем Комплексноого числа
+    FUNCTION GetModuleFast(this)
+       CLASS(complexSignal_t)  , INTENT(IN)    :: this
+       INTEGER(8)              , ALLOCATABLE   :: GetModuleFast(:)
+       INTEGER(8),ALLOCATABLE                  :: extractedI(:)
+       INTEGER(8),ALLOCATABLE                  :: extractedQ(:)
+
+
+       CALL this%i%ExtractSignalData(extractedI)
+       CALL this%q%ExtractSignalData(extractedQ)
+       GetModuleFast = GetFastMouleFromComplexInt8(extractedI,extractedQ)
+       DEALLOCATE (extractedI)
+       DEALLOCATE (extractedQ)
+
+    END FUNCTION GetModuleFast
+
 
 
     SUBROUTINE destructor(this)

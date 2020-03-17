@@ -31,6 +31,7 @@ CONTAINS
         REAL(8)               , INTENT(IN)    :: initialPhase
         INTEGER(8)            , INTENT(IN)    :: impluseResponse(:)
         INTEGER(8)            , INTENT(IN)    :: outputShift
+        INTEGER(8)                             :: stat
 
 
         this%centralFrequency = centralFrequency
@@ -38,6 +39,18 @@ CONTAINS
         this%sampleRate       = sampleRate
         this%outputShift      = outputShift
         CALL this%lpf%Constructor(impluseResponse)
+
+          ! настройка гетеродинов
+        stat =  this%iMixer%Constructor(romLengthInBits = int(32,1)&
+                                     , romLengthTruncedInBits =int(14,1) &
+                                     , samplingFrequency =int(this%SampleRate,4) &
+                                     , outputSignalSampleCapacity=int(8,1))
+        CALL this%iMixer%SetPhase(PI/2+this%initialPhase)
+        stat =  this%qMixer%Constructor(romLengthInBits = int(32,1)&
+                                     , romLengthTruncedInBits =int(14,1) &
+                                     , samplingFrequency =int(this%SampleRate,4) &
+                                     , outputSignalSampleCapacity=int(8,1))
+
         WRITE(*,*) 'PhaseDemod constructor works!!!!'
     END SUBROUTINE Constructor
 
@@ -49,23 +62,14 @@ CONTAINS
         CLASS(analyticSignal_t), allocatable   :: qSignal
         CLASS(analyticSignal_t), allocatable   :: iHeterodyne
         CLASS(analyticSignal_t), allocatable   :: qHeterodyne
-        INTEGER(8)                             :: stat
+
         ALLOCATE(Downconvert)
         ALLOCATE(iSignal)
         ALLOCATE(qSignal)
         ALLOCATE(iHeterodyne)
         ALLOCATE(qHeterodyne)
 
-        ! настройка гетеродинов
-        stat =  this%iMixer%Constructor(romLengthInBits = int(32,1)&
-                                     , romLengthTruncedInBits =int(14,1) &
-                                     , samplingFrequency =int(this%SampleRate,4) &
-                                     , outputSignalSampleCapacity=int(8,1))
-        CALL this%iMixer%SetPhase(PI/2+this%initialPhase)
-        stat =  this%qMixer%Constructor(romLengthInBits = int(32,1)&
-                                     , romLengthTruncedInBits =int(14,1) &
-                                     , samplingFrequency =int(this%SampleRate,4) &
-                                     , outputSignalSampleCapacity=int(8,1))
+
         CALL this%qMixer%SetPhase(0+this%initialPhase)
         ! формирование сигналов гетеродинов
 

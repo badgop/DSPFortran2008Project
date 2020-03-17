@@ -119,15 +119,16 @@ PROGRAM main
 
 !      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
 !                                      ,lenInblocks = int(10,8))
-!       CALL BPSKGeneratorTest(      pspFileName       = 'test_signals\input\psp_valera.txt'&
-!                                   ,dataFileName      =  'test_signals\input\data.txt'&
-!                                   ,outPutFileName    =  'test_signals\output\BPSKTest1.pcm'&
-!                                   ,filterFileName    = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
-!                                   ,baudRateInSamples = int(10240,8), chipRateInSamples = int(10,8) &
-!                                   ,sampleRate = int(20*MEGA,8)&
-!                                   ,centralFrequency = int (3*MEGA,8)&
-!                                   , outPutSampleCapacity= int(14,1)&
-!                                   , outPutShift= int(17,1))
+       CALL BPSKGeneratorTest(      pspFileName       = 'test_signals\input\psp_valera.txt'&
+                                   ,dataFileName      =  'test_signals\input\data.txt'&
+                                   ,outPutFileName    =  'test_signals\output\BPSKTest1.pcm'&
+                                   ,filterFileName    = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+                                   ,codedDataFileName =  'test_signals\output\codedData.txt'&
+                                   ,baudRateInSamples = int(10240,8), chipRateInSamples = int(10,8) &
+                                   ,sampleRate = int(20*MEGA,8)&
+                                   ,centralFrequency = int (3*MEGA,8)&
+                                   , outPutSampleCapacity= int(14,1)&
+                                   , outPutShift= int(17,1))
 !        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\BPSKTest1.pcm ' &
 !                              , outPutFileNameI = 'test_signals\output\phaseDemodTestI.pcm'&
 !                              ,outPutFileNameQ  = 'test_signals\output\phaseDemodTestQ.pcm'&
@@ -139,11 +140,25 @@ PROGRAM main
 
 !         WRITE(*,*) 'аналитич со знаковым'
 !'test_signals\input\noise_7897.pcm'
-         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-                                         ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
-                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
-                                         ,shift = int(0,1)&
-                                         ,iterationCount=int(1,4))
+!         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+!                                         ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+!                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
+!                                         ,shift = int(0,1)&
+!                                         ,iterationCount=int(1,4))
+
+
+              CALL  BPSKDemodulatorTest(      pspFileName       = 'test_signals\input\psp_valera.txt'&
+                                   ,dataFileName      =  'test_signals\input\data.txt'&
+                                   ,inPutFileName    =  'test_signals\output\BPSKTest1.pcm'&
+                                   ,filterFileName    = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+                                   ,deCodedDataFileName =  'test_signals\output\decodedData.txt'&
+                                   ,phaseDetectorIName = 'test_signals\output\bpskDemodI.pcm'&
+                                   ,phaseDetectorQName = 'test_signals\output\bpskDemodQ.pcm'&
+                                   ,baudRateInSamples = int(10240,8), chipRateInSamples = int(10,8) &
+                                   ,sampleRate = int(20*MEGA,8)&
+                                   ,centralFrequency = int (3*MEGA,8)&
+                                   , outPutSampleCapacity= int(14,1)&
+                                   , outPutShift= int(17,1))
 
     CONTAINS
 

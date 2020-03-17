@@ -14,6 +14,7 @@ MODULE PSNSimpleMod
         PROCEDURE :: OutPutPsnArray
         PROCEDURE :: OutPutPsnAs
 
+
         FINAL     :: destructor
     END TYPE PSNSimple_t
 

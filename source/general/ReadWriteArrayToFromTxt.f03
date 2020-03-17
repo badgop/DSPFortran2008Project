@@ -121,7 +121,7 @@ END INTERFACE
 
     END SUBROUTINE ReadArrayFromTxtInt8
 
-     SUBROUTINE WriteArrayFromTxtInt8(x, name_x)
+     SUBROUTINE WriteArrayFromTxtInt8(x, name_x,fmt)
 
         IMPLICIT NONE
 
@@ -129,8 +129,8 @@ END INTERFACE
 
         !Входные параметры
         INTEGER(INT_KIND), INTENT(IN) :: x(:)
-        CHARACTER(*), INTENT(IN):: name_x
-
+        CHARACTER(*), INTENT(IN) :: name_x
+        CHARACTER(*), INTENT(IN) :: fmt
         INTEGER(4):: iostat_Num=0
 
         OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE",ASYNCHRONOUS="YES", FORM="FORMATTED",IOSTAT=iostat_Num)
@@ -145,7 +145,7 @@ END INTERFACE
                 WRITE(*,*) 'End of file ', name_x
         END SELECT
 
-        WRITE(10,*) x
+        WRITE(10,fmt) x
         CLOSE(10)
 
 

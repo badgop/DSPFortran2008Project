@@ -26,8 +26,14 @@ MODULE DBPSKDemod
         TYPE(signumSignal_t)         :: currentPRSSignal
     CONTAINS
         PROCEDURE :: Constructor
+        ! преобразование по частоте вниз
+        ! разложение на квадратуры
+        ! Вычисление ВКФ
         PROCEDURE :: Demodulate
         PROCEDURE :: SetTreshold
+        ! Пороговая обработка сигнала после согласованного фильтра
+        PROCEDURE :: TresholdProcessing
+        PROCEDURE :: GetData
         FINAL     :: destructor
     END TYPE BPSKDemodulator_t
 
@@ -46,7 +52,7 @@ CONTAINS
         INTEGER(8)  , INTENT(IN)           :: chipRateInSamples
         INTEGER(8)  , INTENT(IN)           :: impulseResponseArray(:)
         INTEGER(8)  , INTENT(IN)           :: outputShift
-
+        INTEGER(8)  , ALLOCATABLE          :: psnSignalArray(:)
         this%baudRateInSamples              = baudRate
         this%centralFrequency               = centralFrequency
         this%initialPhase                   = initialPhase
@@ -54,48 +60,79 @@ CONTAINS
         this%outPutSampleCapacity           = outPutSampleCapacity
         this%outputShift                    = outputShift
         CALL this%psnGnerator%Constructor (psn, chipRateInSamples)
-
         CALL this%phaseDemodulator%Constructor(this%centralFrequency&
                                         ,this%initialPhase&
                                         ,this%sampleRate&
                                         ,impulseResponseArray&
                                         ,int(8,8))
-
-       !ТО ЧТО СДЕЛАТЬ С ГЕНЕРАТОРОМ ПСП!!!!
-       ! Перегрузить нахер, пусть выдает или аналитич сигнал, или массив
-
-
-
+       psnSignalArray=this%psnGnerator%OutPutPsnArray(int(1,8))
+       CALL this%currentPRSSignal%Constructor(psnSignalArray)
+       DEALLOCATE(psnSignalArray)
      END SUBROUTINE
 
      ! установка порогового значения решающего устройства
      SUBROUTINE SetTreshold(this,threshold)
         CLASS(BPSKDemodulator_t), INTENT(inout) :: this
         INTEGER(8)  , INTENT(IN)                :: threshold
-
         this%threshold   = threshold
      END SUBROUTINE
     
-
     FUNCTION Demodulate (this, inputSig)
         CLASS(BPSKDemodulator_t), INTENT(inout) :: this
         CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
-        INTEGER(8)              , ALLOCATABLE   :: Demodulate(:)
-
-        CLASS(complexSignal_t)  , ALLOCATABLE   :: matchedFilterOut
-        CLASS(complexSignal_t)  , ALLOCATABLE   :: Demodulated
-
-
-        ALLOCATE (matchedFilterOut)
-        ALLOCATE (Demodulated)
-
-        Demodulated = this%phaseDemodulator%Downconvert(inputSig)
-
-
-
+        CLASS(complexSignal_t)  , ALLOCATABLE   :: Demodulate
+        ALLOCATE (Demodulate)
+        ! преобразование вниз и разложение на квадратуры
+        Demodulate = this%phaseDemodulator%Downconvert(inputSig)
+        ! согласованная фильтрация
+        Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
      END FUNCTION Demodulate
 
+     FUNCTION TresholdProcessing(this, matchedFilterOut)
+        CLASS(BPSKDemodulator_t), INTENT(in)  :: this
+        CLASS(complexSignal_t)  , INTENT(in)  :: matchedFilterOut
+        INTEGER(8)              , ALLOCATABLE :: TresholdProcessing(:)
+        INTEGER(8)              , ALLOCATABLE :: module(:)
+        INTEGER(8), ALLOCATABLE               :: realPart(:)
+        INTEGER(8), ALLOCATABLE               :: imagePart(:)
+        INTEGER(8)                            :: i
+        INTEGER(1)                            :: bitBuffer(1:1000)
+        INTEGER(8)                            :: cnt
+        bitBuffer=0
+        module = matchedFilterOut%GetModuleFast()
+        CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
+        cnt=1
+        DO i=1,size(module)
+           IF (module(i)>=this%threshold) THEN
+               IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
+                   bitBuffer(cnt)=1
+                   cnt=cnt+1
+               END IF
+               IF((realPart(i)<0).AND.(imagePart(i)>0)) THEN
+                   bitBuffer(cnt)=0
+                   cnt=cnt+1
+               END IF
+           END IF
 
+        END DO
+        WRITE(*,*) 'ВО ТУТ ПИЗДЕЦ '
+        ALLOCATE(TresholdProcessing(1:cnt))
+        TresholdProcessing = bitBuffer(1:cnt)
+     END FUNCTION TresholdProcessing
+
+     FUNCTION GetData(this, inputSig)
+        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
+        INTEGER(8)              , ALLOCATABLE   :: GetData(:)
+        CLASS(complexSignal_t)  , ALLOCATABLE   :: Demodulate
+
+        ALLOCATE(Demodulate)
+
+        Demodulate = this%Demodulate(inputSig)
+        GetData    = this%TresholdProcessing(Demodulate)
+
+
+     END FUNCTION GetData
 
     SUBROUTINE destructor(this)
         type(BPSKDemodulator_t), INTENT(IN) :: this

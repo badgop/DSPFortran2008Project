@@ -24,6 +24,7 @@ MODULE BPSKmod
     CONTAINS
         PROCEDURE :: Constructor
         PROCEDURE :: Generate
+        PROCEDURE :: GenerateDiffData
         FINAL     :: destructor
     END TYPE BPSKmodulator_t
 
@@ -50,6 +51,16 @@ CONTAINS
         CALL this%impluseResponse%Constructor(impulseResponseArray)
     END SUBROUTINE
     
+
+    FUNCTION GenerateDiffData (this, data)
+        CLASS(BPSKmodulator_t), intent(inout) :: this
+        INTEGER(8)  , intent(in)              :: data(:)
+        INTEGER(8)  , allocatable             :: GenerateDiffData(:)
+
+        GenerateDiffData = this%coder%GenerateDBPSKData(data)
+
+    END FUNCTION GenerateDiffData
+
     FUNCTION Generate (this, data)
         CLASS(BPSKmodulator_t), intent(inout) :: this
         INTEGER(8)  , intent(in)              :: data(:)
@@ -66,7 +77,7 @@ CONTAINS
         ALLOCATE(OutPutPsn)
         ALLOCATE(OutPutModulationSig)
         ALLOCATE(heterodyneSignal)
-        diffData = this%coder%GenerateDBPSKData(data)
+        diffData = this%GenerateDiffData(data)
         outputDataSig = GenerateImpluseSequence(this%baudRateInSamples,diffData)
         CALL OutPutModulationSig%Constructor(outputDataSig)
         OutPutPsn = this%psnGnerator%OutPutPsnAs (int(size(diffData),8))
@@ -86,7 +97,7 @@ CONTAINS
         DeALLOCATE(OutPutModulationSig)
         DEALLOCATE(heterodyneSignal)
 
-    END FUNCTION
+    END FUNCTION Generate
 
 
 
