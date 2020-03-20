@@ -183,7 +183,8 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                     DO j=1,reference%signalSize-1
                        !!WRITE(*,*) j
                        result= NOT(XOR(window(j),reference%signal(j)))
-                       Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
+                      ! WRITE(*,*) SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
+                       Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
                     END DO
 
                     ! последний элемент массива содержит хвост, его обработка ведется отдельно с маской
@@ -192,12 +193,15 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                     result = NOT(XOR(window(reference%signalSize),reference%signal(reference%signalSize)))
                     result = AND(result,mask)
                     !!WRITE(*,*) 'result ',result
-                    Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
+                    Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result) -(reference%trailLen-SumOnesInInt_8(result))
+                   ! WRITE(*,*) SumOnesInInt_8(result) -(reference%trailLen-SumOnesInInt_8(result))
                      !!WRITE(*,*) 'DEBUG '
                  ELSE
                     DO j=1,reference%signalSize
                        result= NOT(XOR(window(j),reference%signal(j)))
-                       Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)
+                       Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)&
+                                           -(64-SumOnesInInt_8(result))
+
                     END DO
                  END IF
 

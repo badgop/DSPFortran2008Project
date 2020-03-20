@@ -82,7 +82,7 @@ CONTAINS
         CALL OutPutModulationSig%Constructor(outputDataSig)
         OutPutPsn = this%psnGnerator%OutPutPsnAs (int(size(diffData),8))
         Generate =  OutPutPsn * OutPutModulationSig
-        CALL Generate%ZeroesStuffing(this%baudRateInSamples/10,this%baudRateInSamples/10)
+        CALL Generate%ZeroesStuffing(this%baudRateInSamples,this%baudRateInSamples)
         Generate=Generate.CONV.this%impluseResponse
         stat = this%mixer%Constructor (romLengthInBits = int(32,1)&
                                      , romLengthTruncedInBits =int(16,1) &

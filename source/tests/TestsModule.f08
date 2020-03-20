@@ -913,8 +913,11 @@ module TestsModule
                                    , deCodedDataFileName&
                                    , phaseDetectorIName&
                                    , phaseDetectorQName&
+                                   ,complexModuleCorrNAme&
                                    ,baudRateInSamples, chipRateInSamples&
-                                   ,sampleRate,centralFrequency,outPutSampleCapacity,outPutShift)
+                                   ,sampleRate,centralFrequency&
+                                   ,initialPhase&
+                                   ,outPutSampleCapacity,outPutShift)
 
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -926,6 +929,7 @@ module TestsModule
          USE complexSignalModule
          CHARACTER(*), intent(in)           :: pspFileName,dataFileName, inPutFileName,filterFileName
          CHARACTER(*), intent(in)           :: phaseDetectorIName, phaseDetectorQName
+         CHARACTER(*), intent(in)           :: complexModuleCorrNAme
          CHARACTER(*), intent(in)           :: deCodedDataFileName
          INTEGER(8)  , intent(in)           :: baudRateInSamples
          INTEGER(8)  , intent(in)           :: SampleRate
@@ -934,13 +938,15 @@ module TestsModule
          INTEGER(8)  , ALLOCATABLE          :: psn(:)
          INTEGER(8)  , intent(in)           :: chipRateInSamples
          INTEGER(8), ALLOCATABLE                         :: data(:)
+         INTEGER(8), ALLOCATABLE                         :: module(:)
          INTEGER(8), ALLOCATABLE                         :: decodedData(:)
          INTEGER(8), ALLOCATABLE                         :: impulseResponse(:)
          INTEGER(1)  , intent(in)           :: outPutShift
+         REAL(8), intent(in)                ::initialPhase
 
          TYPE(BPSKDemodulator_t)               :: DemodulatorBPSK
          TYPE(analyticSignal_t)  :: sig
-          TYPE(complexSignal_t) ::  signal_1
+         TYPE(complexSignal_t) ::  signal_1
 
          CALL ReadArrayFromFile (psn,pspFileName,.FALSE. )
          CALL ReadArrayFromFile (data,dataFileName,.FALSE. )
@@ -950,7 +956,7 @@ module TestsModule
          CALL DemodulatorBPSK%Constructor( baudRate = baudRateInSamples&
                                           ,SampleRate =SampleRate&
                                           ,centralFrequency = centralFrequency &
-                                          ,initialPhase = REAL(0.0,8)&
+                                          ,initialPhase = initialPhase&
                                           ,outPutSampleCapacity=outPutSampleCapacity &
                                           ,psn=psn, chipRateInSamples=chipRateInSamples&
                                           ,impulseResponseArray= impulseResponse&
@@ -963,10 +969,15 @@ module TestsModule
 !         codedData = modulatorBPSK%GenerateDiffData(data)
 !         CALL  WriteArrayToFileTxt(codedData,codedDataFileName,'(I1.1)')
 
-          CALL  DemodulatorBPSK%SetTreshold(int(5000,8))
-
+          CALL  DemodulatorBPSK%SetTreshold(int(5500,8))
+!
           signal_1 =  DemodulatorBPSK%Demodulate(sig)
-          CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName,.TRUE.)
+!          signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName,.TRUE.)
+          module= signal_1%GetModuleFast()
+          !??????????????
+          !CALL sig%Constructor(module)
+!          CALL WriteAnalyticSignalToFile(sig,int(2,1),complexModuleCorrNAme,.True.)
           deCodedData = DemodulatorBPSK%GetData(sig)
           CALL  WriteArrayToFileTxt(deCodedData,deCodedDataFileName,'(I1.1)')
 

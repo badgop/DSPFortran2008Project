@@ -107,12 +107,12 @@ PROGRAM main
 !     CALL RegisterPushPopAnsSummTest()
 !     CALL RegisterArrayPushPopTest()
 !     CALL SignumCorrTest()
-!
-!     CALL SignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-!                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
-!                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
-!                     ,shift = int(0,1)&
-!                     ,iterationCount=int(1000,4))
+
+!    CALL SignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+!                    ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+!                    ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
+!                    ,shift = int(0,1)&
+!                    ,iterationCount=int(1,4))
 
 !      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
 
@@ -154,9 +154,11 @@ PROGRAM main
                                    ,deCodedDataFileName =  'test_signals\output\decodedData.txt'&
                                    ,phaseDetectorIName = 'test_signals\output\bpskDemodI.pcm'&
                                    ,phaseDetectorQName = 'test_signals\output\bpskDemodQ.pcm'&
+                                   ,complexModuleCorrNAme= 'test_signals\output\moduleCorr.pcm'&
                                    ,baudRateInSamples = int(10240,8), chipRateInSamples = int(10,8) &
                                    ,sampleRate = int(20*MEGA,8)&
                                    ,centralFrequency = int (3*MEGA,8)&
+                                   ,initialPhase     = 0.05*PI&
                                    , outPutSampleCapacity= int(14,1)&
                                    , outPutShift= int(17,1))
 

@@ -89,10 +89,12 @@ CONTAINS
      END FUNCTION Demodulate
 
      FUNCTION TresholdProcessing(this, matchedFilterOut)
+        USE WriteReadAnalyticSignalToFromFile
         CLASS(BPSKDemodulator_t), INTENT(in)  :: this
         CLASS(complexSignal_t)  , INTENT(in)  :: matchedFilterOut
         INTEGER(8)              , ALLOCATABLE :: TresholdProcessing(:)
         INTEGER(8)              , ALLOCATABLE :: module(:)
+        CLASS(analyticSignal_t) , ALLOCATABLE :: moduleAn
         INTEGER(8), ALLOCATABLE               :: realPart(:)
         INTEGER(8), ALLOCATABLE               :: imagePart(:)
         INTEGER(8)                            :: i
@@ -101,9 +103,16 @@ CONTAINS
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
         CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
+        ALLOCATE(moduleAn)
+        CALL   moduleAn%Constructor(module)
+        CALL WriteAnalyticSignalToFile(moduleAn,int(2,1),'modul.pcm',.True.)
+
         cnt=1
+        WRITE(*,*) 'size module ', size(module)
         DO i=1,size(module)
+
            IF (module(i)>=this%threshold) THEN
+               WRITE(*,*) 'БОЛЬШЕ i',i
                IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
                    bitBuffer(cnt)=1
                    cnt=cnt+1
