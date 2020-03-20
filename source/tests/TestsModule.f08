@@ -946,6 +946,7 @@ module TestsModule
 
          TYPE(BPSKDemodulator_t)               :: DemodulatorBPSK
          TYPE(analyticSignal_t)  :: sig
+          TYPE(analyticSignal_t)  :: sig2
          TYPE(complexSignal_t) ::  signal_1
 
          CALL ReadArrayFromFile (psn,pspFileName,.FALSE. )
@@ -976,7 +977,7 @@ module TestsModule
          CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName,.TRUE.)
           module= signal_1%GetModuleFast()
           !??????????????
-          !CALL sig%Constructor(module)
+          CALL sig2%Constructor(module)
 !          CALL WriteAnalyticSignalToFile(sig,int(2,1),complexModuleCorrNAme,.True.)
           deCodedData = DemodulatorBPSK%GetData(sig)
           CALL  WriteArrayToFileTxt(deCodedData,deCodedDataFileName,'(I1.1)')
