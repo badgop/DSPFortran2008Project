@@ -72,6 +72,8 @@ MODULE analyticSignalModule
         ! т.к по умолчанию она передается первым аргументом
         ! умножить  ИНТ8  на Аналтич сигнал на
         PROCEDURE,PASS(yOp) :: Multiplydonstant8AndAnalyticSignals
+        ! простая децимация
+        PROCEDURE :: Decimate
         ! далее выполняется перегрузка операторов
         ! умножения, вычитания, сложения и присваивания
         ! для типа данных analyticSignal_t
@@ -428,6 +430,14 @@ CONTAINS
             CALL Multiplydonstant8AndAnalyticSignals%Setname('промежут умножение')
             Multiplydonstant8AndAnalyticSignals%isAllocated=.TRUE.
      END FUNCTION Multiplydonstant8AndAnalyticSignals
+
+     FUNCTION Decimate(this,r)
+         CLASS(analyticSignal_t), INTENT(IN)  :: this
+         CLASS(analyticSignal_t), allocatable :: Decimate
+         INTEGER(8) , INTENT(IN)              :: r
+         ALLOCATE(Decimate)
+         CALL Decimate%Constructor(this%signal(1:this%signalSize:r))
+     END FUNCTION Decimate
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this

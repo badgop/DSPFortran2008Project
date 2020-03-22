@@ -160,7 +160,8 @@ PROGRAM main
                                    ,centralFrequency = int (3*MEGA,8)&
                                    ,initialPhase     = 0.05*PI&
                                    , outPutSampleCapacity= int(14,1)&
-                                   , outPutShift= int(17,1))
+                                   , outPutShift= int(17,1)&
+                                   , decimationCoeff= int(5,8))
 
     CONTAINS
 

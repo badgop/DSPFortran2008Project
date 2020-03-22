@@ -917,7 +917,7 @@ module TestsModule
                                    ,baudRateInSamples, chipRateInSamples&
                                    ,sampleRate,centralFrequency&
                                    ,initialPhase&
-                                   ,outPutSampleCapacity,outPutShift)
+                                   ,outPutSampleCapacity,outPutShift,decimationCoeff)
 
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -935,6 +935,7 @@ module TestsModule
          INTEGER(8)  , intent(in)           :: SampleRate
          INTEGER(8)  , intent(in)           :: centralFrequency
          INTEGER(1)  , intent(in)           :: outPutSampleCapacity
+         INTEGER(8)  , intent(in)           :: decimationCoeff
          INTEGER(8)  , ALLOCATABLE          :: psn(:)
          INTEGER(8)  , intent(in)           :: chipRateInSamples
          INTEGER(8), ALLOCATABLE                         :: data(:)
@@ -961,7 +962,8 @@ module TestsModule
                                           ,outPutSampleCapacity=outPutSampleCapacity &
                                           ,psn=psn, chipRateInSamples=chipRateInSamples&
                                           ,impulseResponseArray= impulseResponse&
-                                          ,outPutShift = int(outPutShift,8) )
+                                          ,outPutShift = int(outPutShift,8)&
+                                          ,decimationCoeff= decimationCoeff )
 
 !         sig = modulatorBPSK%Generate(data)
 !
@@ -970,7 +972,7 @@ module TestsModule
 !         codedData = modulatorBPSK%GenerateDiffData(data)
 !         CALL  WriteArrayToFileTxt(codedData,codedDataFileName,'(I1.1)')
 
-          CALL  DemodulatorBPSK%SetTreshold(int(5500,8))
+          CALL  DemodulatorBPSK%SetTreshold(int(1800,8))
 !
           signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !          signal_1 =  DemodulatorBPSK%Demodulate(sig)

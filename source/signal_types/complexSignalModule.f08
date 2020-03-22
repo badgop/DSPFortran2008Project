@@ -33,6 +33,7 @@
         PROCEDURE :: RShift
         PROCEDURE :: ConvolveComplexSignum
         PROCEDURE :: GetModuleFast
+        PROCEDURE :: Decimate
         generic :: operator   (.CONVSIGN.) =>  ConvolveComplexSignum
         FINAL :: destructor
 
@@ -185,6 +186,16 @@ CONTAINS
        DEALLOCATE (extractedQ)
 
     END FUNCTION GetModuleFast
+
+        ! Возвращает МАССИВ INT8 с модулем Комплексноого числа
+    FUNCTION Decimate(this,r)
+       CLASS(complexSignal_t)  , INTENT(IN)    :: this
+       INTEGER(8)              , INTENT(IN)    :: r
+       CLASS(complexSignal_t)  , ALLOCATABLE   :: Decimate
+       ALLOCATE(Decimate)
+       Decimate%i=(this%i%Decimate(r))
+       Decimate%q=(this%q%Decimate(r))
+    END FUNCTION Decimate
 
 
 

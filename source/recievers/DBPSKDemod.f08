@@ -21,6 +21,8 @@ MODULE DBPSKDemod
         INTEGER(1)                   :: outPutSampleCapacity
         INTEGER(8)                   :: outputShift
         INTEGER(8)                   :: threshold
+        INTEGER(8)                   :: decimationCoeff
+
         TYPE(PSNSimple_t)            :: psnGnerator
         TYPE(PhaseDetector_t)        :: phaseDemodulator
         TYPE(signumSignal_t)         :: currentPRSSignal
@@ -41,7 +43,7 @@ CONTAINS
 
     SUBROUTINE Constructor(this,baudRate,sampleRate,centralFrequency,initialPhase&
                                ,outPutSampleCapacity,psn,chipRateInSamples&
-                               ,impulseResponseArray,outputShift)
+                               ,impulseResponseArray,outputShift,decimationCoeff)
         CLASS(BPSKDemodulator_t), INTENT(inout) :: this
         INTEGER(8)  , INTENT(IN)           :: baudRate
         INTEGER(8)  , INTENT(IN)           :: SampleRate
@@ -52,6 +54,7 @@ CONTAINS
         INTEGER(8)  , INTENT(IN)           :: chipRateInSamples
         INTEGER(8)  , INTENT(IN)           :: impulseResponseArray(:)
         INTEGER(8)  , INTENT(IN)           :: outputShift
+        INTEGER(8)  , INTENT(IN)           :: decimationCoeff
         INTEGER(8)  , ALLOCATABLE          :: psnSignalArray(:)
         this%baudRateInSamples              = baudRate
         this%centralFrequency               = centralFrequency
@@ -59,7 +62,8 @@ CONTAINS
         this%SampleRate                     = SampleRate
         this%outPutSampleCapacity           = outPutSampleCapacity
         this%outputShift                    = outputShift
-        CALL this%psnGnerator%Constructor (psn, chipRateInSamples)
+        this%decimationCoeff                = decimationCoeff
+        CALL this%psnGnerator%Constructor (psn, chipRateInSamples/this%decimationCoeff)
         CALL this%phaseDemodulator%Constructor(this%centralFrequency&
                                         ,this%initialPhase&
                                         ,this%sampleRate&
@@ -84,6 +88,7 @@ CONTAINS
         ALLOCATE (Demodulate)
         ! преобразование вниз и разложение на квадратуры
         Demodulate = this%phaseDemodulator%Downconvert(inputSig)
+        Demodulate = Demodulate%Decimate(this%decimationCoeff)
         ! согласованная фильтрация
         Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
      END FUNCTION Demodulate
