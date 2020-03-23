@@ -27,7 +27,7 @@ CONTAINS
         ALLOCATE (this%psn, source = input_psn )
         this%osr = osr
         this%psn =  GenerateImpluseSequence(osr,input_psn)
-        WRITE (*,*) 'psn lrn ',size(this%psn)
+!        WRITE (*,*) 'psn lrn ',size(this%psn)
     END SUBROUTINE
     
     FUNCTION OutPutPsnAs(this, lengthInBlocks)
@@ -40,7 +40,7 @@ CONTAINS
         ALLOCATE(OutPutPsnAs)
         psnLen = size(this%psn)
         ALLOCATE (psnTmp(1:(lengthInBlocks*(psnLen))))
-        WRITE (*,*) 'size ', size(psnTmp)
+!        WRITE (*,*) 'size ', size(psnTmp)
         DO i=1,lengthInBlocks
            psnTmp((psnLen*(i-1)+1):(psnLen*i))= this%psn(1:psnLen)
         END DO
@@ -58,7 +58,7 @@ CONTAINS
 
         psnLen = size(this%psn)
         ALLOCATE (OutPutPsnArray(1:(lengthInBlocks*(psnLen))))
-        WRITE (*,*) 'size ', size(OutPutPsnArray)
+!        WRITE (*,*) 'size ', size(OutPutPsnArray)
         DO i=1,lengthInBlocks
            OutPutPsnArray((psnLen*(i-1)+1):(psnLen*i))= this%psn(1:psnLen)
         END DO

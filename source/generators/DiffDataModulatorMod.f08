@@ -35,7 +35,7 @@ CONTAINS
         ALLOCATE (GenerateDBPSKData(1:(size(data)+1)))
         GenerateDBPSKData(1) = (this%initialPhase)
         DO i=2,size(data)
-           GenerateDBPSKData(i) = XOR (GenerateDBPSKData(i-1),data(i))
+           GenerateDBPSKData(i) = XOR (GenerateDBPSKData(i-1),data(i-1))
         END DO
 
      END FUNCTION

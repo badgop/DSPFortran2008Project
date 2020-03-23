@@ -46,6 +46,7 @@ CONTAINS
         this%SampleRate                     = SampleRate
         this%outPutSampleCapacity           = outPutSampleCapacity
         this%outputShift                    = outputShift
+        ! начальная фаза сигнала!!!!
         CALL this%coder%Constructor(int(1,8))
         CALL this%psnGnerator%Constructor (psn, chipRateInSamples)
         CALL this%impluseResponse%Constructor(impulseResponseArray)

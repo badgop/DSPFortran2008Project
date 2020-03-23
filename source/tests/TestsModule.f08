@@ -954,7 +954,6 @@ module TestsModule
          CALL ReadArrayFromFile (data,dataFileName,.FALSE. )
          CALL ReadArrayFromFile (impulseResponse,filterFileName,.FALSE. )
 
-         WRITE(*,*) 'Constructor bpskmod start'
          CALL DemodulatorBPSK%Constructor( baudRate = baudRateInSamples&
                                           ,SampleRate =SampleRate&
                                           ,centralFrequency = centralFrequency &
@@ -969,10 +968,7 @@ module TestsModule
 !
          CALL ReadAnalyticSignalFromFile(sig,int(2,1),inPutFileName,.True.)
 !
-!         codedData = modulatorBPSK%GenerateDiffData(data)
-!         CALL  WriteArrayToFileTxt(codedData,codedDataFileName,'(I1.1)')
-
-          CALL  DemodulatorBPSK%SetTreshold(int(1800,8))
+         CALL  DemodulatorBPSK%SetTreshold(int(2000,8))
 !
           signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !          signal_1 =  DemodulatorBPSK%Demodulate(sig)
@@ -980,7 +976,7 @@ module TestsModule
           module= signal_1%GetModuleFast()
           !??????????????
           CALL sig2%Constructor(module)
-!          CALL WriteAnalyticSignalToFile(sig,int(2,1),complexModuleCorrNAme,.True.)
+          CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme,.True.)
           deCodedData = DemodulatorBPSK%GetData(sig)
           CALL  WriteArrayToFileTxt(deCodedData,deCodedDataFileName,'(I1.1)')
 

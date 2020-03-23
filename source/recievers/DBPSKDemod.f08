@@ -110,7 +110,7 @@ CONTAINS
         CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
         ALLOCATE(moduleAn)
         CALL   moduleAn%Constructor(module)
-        CALL WriteAnalyticSignalToFile(moduleAn,int(2,1),'modul.pcm',.True.)
+!        CALL WriteAnalyticSignalToFile(moduleAn,int(2,1),'modul.pcm',.True.)
 
         cnt=1
         WRITE(*,*) 'size module ', size(module)
@@ -132,6 +132,7 @@ CONTAINS
         WRITE(*,*) 'ВО ТУТ ПИЗДЕЦ '
         ALLOCATE(TresholdProcessing(1:cnt))
         TresholdProcessing = bitBuffer(1:cnt)
+
      END FUNCTION TresholdProcessing
 
      FUNCTION GetData(this, inputSig)
