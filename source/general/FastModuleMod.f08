@@ -13,7 +13,7 @@ ELEMENTAL FUNCTION GetFastMouleFromComplexInt8(realPart,imagePart)
       absR= abs(realPart)
       absI= abs(imagePart)
       IF (absR>absI)  THEN
-         GetFastMouleFromComplexInt8 = absR + absI/2
+         GetFastMouleFromComplexInt8 = absR   + absI/2
       ELSE
          GetFastMouleFromComplexInt8 = absR/2 + absI
       END IF

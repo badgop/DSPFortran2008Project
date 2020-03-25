@@ -81,6 +81,10 @@ CONTAINS
         this%threshold   = threshold
      END SUBROUTINE
     
+    !Осуществляет : преобразоваине по частоте вниз
+    !               разложение на квадратуры
+    !               Согласованную фильтрацию знаковую
+    ! Возвращает выходной сигнал согласованного фильтра
     FUNCTION Demodulate (this, inputSig)
         CLASS(BPSKDemodulator_t), INTENT(inout) :: this
         CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
@@ -93,13 +97,16 @@ CONTAINS
         Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
      END FUNCTION Demodulate
 
+     ! Осуществляет пороговую обработку выходного сигнала
+     ! согласованного фильтра
+     ! Возвращает массив  с принятой информацией
+     ! Ождиается что на один импульс приходиться не более 3 отсчетов
      FUNCTION TresholdProcessing(this, matchedFilterOut)
         USE WriteReadAnalyticSignalToFromFile
         CLASS(BPSKDemodulator_t), INTENT(in)  :: this
         CLASS(complexSignal_t)  , INTENT(in)  :: matchedFilterOut
         INTEGER(8)              , ALLOCATABLE :: TresholdProcessing(:)
         INTEGER(8)              , ALLOCATABLE :: module(:)
-        CLASS(analyticSignal_t) , ALLOCATABLE :: moduleAn
         INTEGER(8), ALLOCATABLE               :: realPart(:)
         INTEGER(8), ALLOCATABLE               :: imagePart(:)
         INTEGER(8)                            :: i
@@ -108,23 +115,19 @@ CONTAINS
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
         CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
-        ALLOCATE(moduleAn)
-        CALL   moduleAn%Constructor(module)
-!        CALL WriteAnalyticSignalToFile(moduleAn,int(2,1),'modul.pcm',.True.)
-
-        cnt=1
+        cnt=0
         WRITE(*,*) 'size module ', size(module)
         DO i=1,size(module)
-
            IF (module(i)>=this%threshold) THEN
                WRITE(*,*) 'БОЛЬШЕ i',i
+               !Обработка созвездия ведется с учетом базиса [COS, -SIN]
                IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
-                   bitBuffer(cnt)=1
                    cnt=cnt+1
+                   bitBuffer(cnt)=1
                END IF
                IF((realPart(i)<0).AND.(imagePart(i)>0)) THEN
-                   bitBuffer(cnt)=0
                    cnt=cnt+1
+                   bitBuffer(cnt)=0
                END IF
            END IF
 
@@ -140,13 +143,9 @@ CONTAINS
         CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
         INTEGER(8)              , ALLOCATABLE   :: GetData(:)
         CLASS(complexSignal_t)  , ALLOCATABLE   :: Demodulate
-
         ALLOCATE(Demodulate)
-
         Demodulate = this%Demodulate(inputSig)
         GetData    = this%TresholdProcessing(Demodulate)
-
-
      END FUNCTION GetData
 
     SUBROUTINE destructor(this)

@@ -801,7 +801,6 @@ module TestsModule
          INTEGER(8), ALLOCATABLE                         :: codedData(:)
          INTEGER(8), ALLOCATABLE                         :: impulseResponse(:)
          INTEGER(1)  , intent(in)           :: outPutShift
-
          TYPE(BPSKmodulator_t)               :: modulatorBPSK
          TYPE(analyticSignal_t)  :: sig
 
@@ -814,12 +813,9 @@ module TestsModule
                                       , psn, chipRateInSamples,impulseResponse,outPutShift)
 
          sig = modulatorBPSK%Generate(data)
-
          CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
-
          codedData = modulatorBPSK%GenerateDiffData(data)
          CALL  WriteArrayToFileTxt(codedData,codedDataFileName,'(I1.1)')
-
       END SUBROUTINE BPSKGeneratorTest
 
       SUBROUTINE PhaseDetectorTest(inputFileName, outPutFileNameI,outPutFileNameQ,filterFileName&
