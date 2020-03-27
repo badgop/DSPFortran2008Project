@@ -1,7 +1,7 @@
 MODULE signumSignalModule
 
-    USE SIGNUM_FUNC
     USE BitOpsMod
+    USE SignumArrayMod
     USE MathConstModule
     USE ModuleExitProg
     IMPLICIT NONE

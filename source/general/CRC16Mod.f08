@@ -1,0 +1,16 @@
+MODULE CRC16Mod
+
+    IMPLICIT NONE
+
+    CONTAINS
+
+
+    FUNCTION CRC16Compute(inputBitArrayINT8,poly)
+
+       INTEGER(1),INTENT(IN)  :: inputBitArrayINT8
+       INTEGER(2),INTENT(IN)  :: poly
+       INTEGER(1),ALLOCATABLE :: CRC16Compute(:)
+
+    END FUNCTION
+
+END MODULE CRC16Mod

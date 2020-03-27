@@ -618,6 +618,7 @@ module TestsModule
      ! + еще тест функции подсчета единиц в одном регистре (целом числе)
      SUBROUTINE RegisterArrayPushPopTest()
          USE signumSignalModule
+         USE SignumArrayMod
          USE BitOpsMod
 
          INTEGER(8)             ::  register(1:3)
@@ -634,7 +635,7 @@ module TestsModule
          startPos=0
          DO i=1,129
 
-             popBit   = PushPopBitSignumArrayInt_8(register,pushBit,startPos)
+             popBit   = PushPopBitSignumArray(register,pushBit,startPos)
 
          END DO
          WRITE(*,*) 'register all elements was -1 '
@@ -978,5 +979,27 @@ module TestsModule
 
 
       END SUBROUTINE BPSKDemodulatorTest
+
+      SUBROUTINE OctetDataMaker(inputDataFileName,outputDataFileName)
+           USE OctetDataModule
+           USE ModuleWriteReadArrayFromToFile
+           CHARACTER(*), intent(in)           :: inputDataFileName,outputDataFileName
+           INTEGER(8), ALLOCATABLE            :: dataArray(:)
+           INTEGER(1), ALLOCATABLE            :: dataArrayOctets(:)
+
+           TYPE(octetData_t)                  :: dataOctets
+
+           CALL ReadArrayFromFile (dataArray,inputDataFileName,.FALSE. )
+
+           CALL dataOctets%Constructor(dataArray)
+
+           CALL dataOctets%ExtractSignalData(dataArrayOctets)
+
+           WRITE (*,'(Z4)') dataArrayOctets
+
+
+
+
+      END SUBROUTINE OctetDataMaker
 
 end module TestsModule

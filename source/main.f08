@@ -163,6 +163,10 @@ PROGRAM main
                                    , outPutShift           = int(17,1)&
                                    , decimationCoeff       = int(5,8))
 
+
+              CALL OctetDataMaker(inputDataFileName  = 'test_signals\input\data.txt'&
+                                 ,outputDataFileName = 'test_signals\output\decodedData.txt')
+
     CONTAINS
 
 
