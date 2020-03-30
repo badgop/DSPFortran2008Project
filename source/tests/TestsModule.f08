@@ -983,23 +983,16 @@ module TestsModule
       SUBROUTINE OctetDataMaker(inputDataFileName,outputDataFileName)
            USE OctetDataModule
            USE ModuleWriteReadArrayFromToFile
+           USE ReadWriteArrayToFromTxt
            CHARACTER(*), intent(in)           :: inputDataFileName,outputDataFileName
            INTEGER(8), ALLOCATABLE            :: dataArray(:)
            INTEGER(1), ALLOCATABLE            :: dataArrayOctets(:)
-
-           TYPE(octetData_t)                  :: dataOctets
-
+           INTEGER(1), ALLOCATABLE            :: dataArray2(:)
            CALL ReadArrayFromFile (dataArray,inputDataFileName,.FALSE. )
-
-           CALL dataOctets%Constructor(dataArray)
-
-           CALL dataOctets%ExtractSignalData(dataArrayOctets)
-
+           dataArrayOctets = BitsToOctets(dataArray,.TRUE.)
+           dataArray2     = OctetsToBits(dataArrayOctets, .TRUE.)
            WRITE (*,'(Z4)') dataArrayOctets
-
-
-
-
+           CALL WriteArrayToFileTxt(int( dataArray2,8),outputDataFileName,'(I1.1)' )
       END SUBROUTINE OctetDataMaker
 
 end module TestsModule
