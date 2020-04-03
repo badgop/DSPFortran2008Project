@@ -286,7 +286,7 @@ CONTAINS
         WRITE(*,*) ''
         WRITE(*,*) 'Пишем в файл усеченную таблицу ПЗУ'
         isBinary=.FALSE.
-        CALL WriteArrayToFile(this%romSinusTable, romTableFileName,isBinary)
+        CALL WriteArrayToFile(this%romSinusTable, romTableFileName)
 
         ret=0
      END FUNCTION DebugOutput

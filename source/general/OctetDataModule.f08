@@ -21,7 +21,9 @@ CONTAINS
         INTEGER(8) :: i,j,k
         INTEGER(1) :: registerKind
         registerKind=KIND(BitsToOctets)
+         WRITE(*,*) 'BitsToOctets registerKind=', registerKind
         length_new= size(loadedSignal)/(registerKind*bitsInByte_const)
+        WRITE(*,*) 'length_new ', length_new
         !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
         trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
         IF ( trailLen>0) length_new=length_new + 1

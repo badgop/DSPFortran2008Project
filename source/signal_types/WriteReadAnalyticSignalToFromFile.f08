@@ -2,6 +2,7 @@ MODULE WriteReadAnalyticSignalToFromFile
 
     USE analyticSignalModule
     USE ModuleWriteReadArrayFromToFile
+    USE ModuleExitProg
     IMPLICIT NONE
 
 
@@ -36,73 +37,94 @@ MODULE WriteReadAnalyticSignalToFromFile
 
    CONTAINS
 
-   SUBROUTINE ReadAnalyticSignalFromFile(readedSignal,intType,fileName,isBinary)
-
-        CLASS(analyticSignal_t), INTENT(INOUT)  :: readedSignal
-        INTEGER(1), INTENT(IN)                  :: intType
-        CHARACTER(*), INTENT(IN)                :: fileName
-        LOGICAL, INTENT(IN)                     :: isBinary
+   SUBROUTINE ReadAnalyticSignalFromFile(readedSignal,intType,fileName,fmt)
+        CLASS(analyticSignal_t), INTENT(INOUT)            :: readedSignal
+        INTEGER(1)             , INTENT(IN)               :: intType
+        CHARACTER(*)           , INTENT(IN)               :: fileName
+        CHARACTER(*)           , INTENT(IN) ,OPTIONAL     :: fmt
 
         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
 
-        SELECT CASE (intType)
 
+        IF (.NOT.(PRESENT(fmt))) THEN
+               SELECT CASE (intType)
+                CASE(2)
+                    CALL ReadArrayFromFile(arrayInt2,fileName)
+                    CALL readedSignal%Constructor(  int(arrayInt2,8))
+                    DEALLOCATE(arrayInt2)
+                CASE(4)
+                    CALL ReadArrayFromFile(arrayInt4,fileName)
+                    CALL readedSignal%Constructor(  int(arrayInt4,8))
+                    DEALLOCATE(arrayInt4)
+                CASE(8)
+                    CALL ReadArrayFromFile(arrayInt8,fileName)
+                    CALL readedSignal%Constructor(  arrayInt8)
+                    DEALLOCATE(arrayInt8)
+                CASE DEFAULT
+                    WRITE(*,*) 'Неправильно выбран тип целого для чтения'
+            END SELECT
+        ELSE
+            WRITE(*,*) 'Есть формат!!!'
+            SELECT CASE (intType)
             CASE(2)
-                CALL ReadArrayFromFile(arrayInt2,fileName,isBinary)
+                CALL ReadArrayFromFile(arrayInt2,fileName,fmt)
                 CALL readedSignal%Constructor(  int(arrayInt2,8))
                 DEALLOCATE(arrayInt2)
-
             CASE(4)
-                CALL ReadArrayFromFile(arrayInt4,fileName,isBinary)
+                CALL ReadArrayFromFile(arrayInt4,fileName,fmt)
                 CALL readedSignal%Constructor(  int(arrayInt4,8))
                 DEALLOCATE(arrayInt4)
-
             CASE(8)
-                CALL ReadArrayFromFile(arrayInt8,fileName,isBinary)
+                CALL ReadArrayFromFile(arrayInt8,fileName,fmt)
                 CALL readedSignal%Constructor(  arrayInt8)
                 DEALLOCATE(arrayInt8)
-
             CASE DEFAULT
                 WRITE(*,*) 'Неправильно выбран тип целого для чтения'
-
         END SELECT
 
-
-
+        END IF
    END SUBROUTINE ReadAnalyticSignalFromFile
 
-   SUBROUTINE WriteAnalyticSignalToFile(writedSignal,intType,fileName,isBinary)
+   SUBROUTINE WriteAnalyticSignalToFile(writedSignal,intType,fileName)
 
         CLASS(analyticSignal_t), INTENT(IN)  :: writedSignal
         INTEGER(1), INTENT(IN)               :: intType
         CHARACTER(*), INTENT(IN)             :: fileName
-        LOGICAL, INTENT(IN)                  :: isBinary
 
-!        INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
-!        INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
-         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+        INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
+        INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
+        INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+        INTEGER(1)                           :: status
 
         CALL writedSignal%ExtractSignalData(arrayInt8)
 
         SELECT CASE (intType)
 
             CASE(2)
-
-                CALL WriteArrayToFile(int(arrayInt8,2),fileName,isBinary)
+                ALLOCATE(arrayInt2(1:size(arrayInt8)),STAT=status)
+                IF (status/=0) THEN
+                    WRITE(*,*) 'не могу выделить память, для записи ', fileName
+                    CALL   ExitFromProgramNormal()
+                END IF
+                arrayInt2 = int(arrayInt8,2)
+                CALL WriteArrayToFile(arrayInt2,fileName)
                 DEALLOCATE(arrayInt8)
-
+                DEALLOCATE(arrayInt2)
             CASE(4)
-
-                CALL WriteArrayToFile(int(arrayInt8,4),fileName,isBinary)
+                ALLOCATE(arrayInt4(1:size(arrayInt8)),STAT=status)
+                IF (status/=0) THEN
+                    WRITE(*,*) 'не могу выделить память, для записи ', fileName
+                    CALL   ExitFromProgramNormal()
+                END IF
+                arrayInt4 = int(arrayInt8,4)
+                CALL WriteArrayToFile(arrayInt4,fileName)
                 DEALLOCATE(arrayInt8)
-
+                DEALLOCATE(arrayInt4)
             CASE(8)
-
-                CALL WriteArrayToFile(arrayInt8,fileName,isBinary)
+                CALL WriteArrayToFile(arrayInt8,fileName)
                 DEALLOCATE(arrayInt8)
-
             CASE DEFAULT
                 WRITE(*,*) 'Неправильно выбран тип целого для записи'
            END SELECT

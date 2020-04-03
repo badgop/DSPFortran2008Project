@@ -76,6 +76,7 @@ module TestsModule
             INTEGER(8), ALLOCATABLE :: frequencys(:)
 
             INTEGER(8), ALLOCATABLE :: outputArray(:)
+            INTEGER(2), ALLOCATABLE :: tmp(:)
 
             TYPE(DDS_t) ::ddsGenerator
             TYPE(analyticSignal_t) ::imputFreqSignal
@@ -119,13 +120,15 @@ module TestsModule
              !извлекаем массив из обьекта
              CALL outputsignal%ExtractSignalData(outputArray)
              ! пишем файл
-             ! оператор int (,kind) можно применять и к массивам!!!
-             CALL WriteArrayToFile(int(outputArray,2),file1Name, isBinary=.True.)
+             ALLOCATE(tmp(1:size(outputArray)))
+             tmp = int(outputArray,2)
+             CALL WriteArrayToFile(tmp,file1Name)
+             DEALLOCATE(tmp)
 
              ! второй вариант получения выходного гармонического сигнала
              CALL ddsGenerator%ComputeOutput(int(centralFrequency2,8),int(signalLengthInSamples,8),outputsignal2)
               ! оператор int (,kind) можно применять и к массивам!!!
-             CALL WriteAnalyticSignalToFile(outputsignal2,int(2,1),file2Name,isBinary=.True.)
+             CALL WriteAnalyticSignalToFile(outputsignal2,int(2,1),file2Name)
 
              WRITE(*,*) ''
              WRITE(*,*) 'ТЕСТ DDS ЗАКОНЧЕН!!!!!'
@@ -176,11 +179,12 @@ module TestsModule
 
            INTEGER(8),ALLOCATABLE :: testSignalExtractI(:)
            INTEGER(8),ALLOCATABLE :: testSignalExtractQ(:)
+           INTEGER(2),ALLOCATABLE :: tmp(:)
 
 
            ! читаем два сигнала из бинарных файлов и положим в массив
-           CALL ReadArrayFromFile(testSignal1,inputSignalFileNameI,isBinary)
-           CALL ReadArrayFromFile(testSignal2,inputSignalFileNameQ,isBinary)
+           CALL ReadArrayFromFile(testSignal1,inputSignalFileNameI)
+           CALL ReadArrayFromFile(testSignal2,inputSignalFileNameQ)
 
            ! создаем один аналитический сигнал из массива
            CALL signal_1%Constructor(  int(testSignal1,8))
@@ -192,8 +196,11 @@ module TestsModule
            CALL signal_2% ExtractSignalData(testSignalExtract)
 
            ! и пишем его в файл, что бы проверить ГЛАЗАМИ
-           CALL WriteArrayToFile(int(testSignalExtract,2),outputSignalFileNameAnaytic,isBinary)
 
+            ALLOCATE(tmp(1:size(testSignalExtract)))
+            tmp = int(testSignalExtract,2)
+            CALL WriteArrayToFile(tmp,outputSignalFileNameAnaytic)
+            DEALLOCATE(tmp)
 
 
            ! проверяем выделана ли память для signalComplex_1
@@ -227,9 +234,14 @@ module TestsModule
 
            CALL signalComplex_2%ExtractSignalData(testSignalExtractI,testSignalExtractQ)
 
+           ALLOCATE(tmp(1:size(testSignalExtractI)))
+           tmp = int(testSignalExtractI,2)
 
-           CALL WriteArrayToFile(int(testSignalExtractI,2),outputSignalFileNameComplexI,isBinary)
-           CALL WriteArrayToFile(int(testSignalExtractQ,2),outputSignalFileNameComplexQ,isBinary)
+           CALL WriteArrayToFile(tmp,outputSignalFileNameComplexI)
+
+           tmp = int(testSignalExtractQ,2)
+
+           CALL WriteArrayToFile(tmp,outputSignalFileNameComplexQ)
 
      END SUBROUTINE  AnalyticComplexSignalTestConstructors
 
@@ -249,8 +261,8 @@ module TestsModule
            CHARACTER(*), INTENT(IN) :: outputSignalFileName
 
            intType=2
-           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName,.True.)
-           CALL WriteAnalyticSignalToFile(signal_1,intType,outputSignalFileName,.True.)
+           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName)
+           CALL WriteAnalyticSignalToFile(signal_1,intType,outputSignalFileName)
 
      END SUBROUTINE AnalyticSignalTestWriteRead
 
@@ -272,8 +284,8 @@ module TestsModule
 
            LOGICAL          ::isBinary=.True.
 
-           CALL ReadComplexSignalFromFile(signal_1,capacity,inputSignalFileNameI,inputSignalFileNameQ,isBinary)
-           CALL WriteComplexSignalToFile(signal_1,capacity,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
+           CALL ReadComplexSignalFromFile(signal_1,capacity,inputSignalFileNameI,inputSignalFileNameQ)
+           CALL WriteComplexSignalToFile(signal_1,capacity,outputSignalFileNameI,outputSignalFileNameQ)
      END SUBROUTINE ComplexSignalTestWriteRead
 
      ! тест оператора умножения аналитического сигнала
@@ -307,14 +319,14 @@ module TestsModule
 
 
            intType=2
-           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName,isBinary)
-           CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileName2,isBinary)
+           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName)
+           CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileName2)
            WRITE(*,*) 'signal_3=signal_1*signal_2'
            signal_3=signal_1*signal_2
 
            CALL signal_3%Rshift(shift)
 
-           CALL WriteAnalyticSignalToFile(signal_3,intType,outputSignalFileName,isBinary)
+           CALL WriteAnalyticSignalToFile(signal_3,intType,outputSignalFileName)
 
 
      END SUBROUTINE AnalyticSignalMultiplyPlusShiftTest
@@ -370,7 +382,7 @@ module TestsModule
             CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
 
             intType=2
-            CALL WriteComplexSignalToFile(signal_out,intType,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
+            CALL WriteComplexSignalToFile(signal_out,intType,outputSignalFileNameI,outputSignalFileNameQ)
 
        END SUBROUTINE ComplexDDSTest
 
@@ -401,25 +413,25 @@ module TestsModule
 
            INTEGER(1)    :: intType=2
 
-           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileNameI,.True.)
-           CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileNameQ,.True.)
+           CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileNameI)
+           CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileNameQ)
 
 
            CALL signal_1%SetName('Первый!')
 
            CALL signal_2%SetName('Второй!')
-
+           WRITE(*,*) 'signal_3=signal_1+signal_2'
            signal_3=signal_1+signal_2
 
            CALL signal_3%SetName('Третрий!')
 
-           CALL WriteAnalyticSignalToFile(signal_3,intType,outputSignalAddName,.True.)
+           CALL WriteAnalyticSignalToFile(signal_3,intType,outputSignalAddName)
 
            signal_4=signal_1-signal_1
-
+            WRITE(*,*) 'signal_4=signal_1-signal_1'
            CALL signal_4%SetName('Чотвiртий!')
 
-           CALL WriteAnalyticSignalToFile(signal_4,intType,outputSignalSubName,.True.)
+           CALL WriteAnalyticSignalToFile(signal_4,intType,outputSignalSubName)
 
      END SUBROUTINE  AnalyticSignalTestAddSub
 
@@ -458,15 +470,15 @@ module TestsModule
            CALL signal_4%SetName('четвертый И',' четвертый Ку')
 
            intType=2
-           CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ,isBinary)
+           CALL ReadComplexSignalFromFile(signal_1,intType,inputSignalFileNameI,inputSignalFileNameQ)
 
-           CALL ReadComplexSignalFromFile(signal_2,intType,inputRefI,inputRefQ,isBinary)
+           CALL ReadComplexSignalFromFile(signal_2,intType,inputRefI,inputRefQ)
 
            signal_3=signal_2*signal_1
 
            CALL signal_3%RShift(shift)
            intType=2
-           CALL WriteComplexSignalToFile(signal_3,intType,outputSignalFileNameI,outputSignalFileNameQ,isBinary)
+           CALL WriteComplexSignalToFile(signal_3,intType,outputSignalFileNameI,outputSignalFileNameQ)
 
       END SUBROUTINE ComplexMultiplyTest
 
@@ -489,12 +501,13 @@ module TestsModule
          TYPE(analyticSignal_t) ::conv_result
 
 
-         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
-         CALL ReadAnalyticSignalFromFile(reference_sig,int(4,1),inputRefFileName,.False.)
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+         !!!!!!
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(4,1),inputRefFileName,'(I10)')
 
          conv_result= input_sig.CONV.reference_sig
          CALL conv_result%Rshift(shift)
-         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
      END SUBROUTINE ConvolveTest
 
@@ -514,13 +527,13 @@ module TestsModule
          TYPE(analyticSignal_t) ::reference_sig
          TYPE(analyticSignal_t) ::conv_result
 
-         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
-         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
 
          CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
          conv_result= input_sig.CONV.reference_sig
          CALL conv_result%Rshift(shift)
-         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
      END SUBROUTINE AutoConvolveTest
 
@@ -544,8 +557,8 @@ module TestsModule
          REAL(4) :: start, finish, mean,percents
          INTEGER(8) :: i
 
-         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
-         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
          CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
 
          mean=0
@@ -567,7 +580,7 @@ module TestsModule
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
-         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
      END SUBROUTINE OpenMPIConvolveTest
 
@@ -700,8 +713,8 @@ module TestsModule
 
          CHARACTER(10) :: fmt="(I64.1)"
 
-         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
-         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
          CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
 
          mean=0
@@ -725,7 +738,7 @@ module TestsModule
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
-         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
      END SUBROUTINE SignumConvolveTest
 
@@ -744,8 +757,8 @@ module TestsModule
          TYPE(analyticSignal_t)               :: sig
 
 
-
-         CALL ReadArrayFromFile (prbs,pspFileName,.FALSE. )
+          !!!!!!!
+         CALL ReadArrayFromFile (prbs,pspFileName,'(I1)')
 
          prbsSignal = GenerateImpluseSequence (tau = osr, prbs = prbs)
 
@@ -753,7 +766,7 @@ module TestsModule
 
          CALL sig%Constructor(prbsSignal)
 
-        CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
+        CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName)
 
 
 
@@ -772,11 +785,11 @@ module TestsModule
          INTEGER(8),ALLOCATABLE               :: prbs(:)
          TYPE(analyticSignal_t)               :: sig
          TYPE(PSNSimple_t)                    :: gen1
-
-         CALL ReadArrayFromFile (prbs,pspFileName,.FALSE. )
+         !!!!!!!!
+         CALL ReadArrayFromFile (prbs,pspFileName,'(I1)')
          CALL gen1%Constructor(int(prbs,8),osr)
          sig = gen1%OutPutPsnAs(lenInblocks)
-         CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
+         CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName)
 
       END SUBROUTINE SimplePSNGeneratorTest
 
@@ -804,17 +817,17 @@ module TestsModule
          INTEGER(1)  , intent(in)           :: outPutShift
          TYPE(BPSKmodulator_t)               :: modulatorBPSK
          TYPE(analyticSignal_t)  :: sig
-
-         CALL ReadArrayFromFile (psn,pspFileName,.FALSE. )
-         CALL ReadArrayFromFile (data,dataFileName,.FALSE. )
-         CALL ReadArrayFromFile (impulseResponse,filterFileName,.FALSE. )
+         !!!!!!!!!!!!!!!!!!
+         CALL ReadArrayFromFile (psn,pspFileName,'(I1)')
+         CALL ReadArrayFromFile (data,dataFileName,'(I1)')
+         CALL ReadArrayFromFile (impulseResponse,filterFileName,'(I10)')
 
          WRITE(*,*) 'Constructor bpskmod start'
          CALL modulatorBPSK%Constructor(baudRateInSamples, SampleRate, centralFrequency, outPutSampleCapacity&
                                       , psn, chipRateInSamples,impulseResponse,outPutShift)
 
          sig = modulatorBPSK%Generate(data)
-         CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName,.True.)
+         CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName)
          codedData = modulatorBPSK%GenerateDiffData(data)
          CALL  WriteArrayToFileTxt(codedData,codedDataFileName,'(I1.1)')
       END SUBROUTINE BPSKGeneratorTest
@@ -838,12 +851,12 @@ module TestsModule
          TYPE(PhaseDetector_t)              :: phaseDemodulator
          TYPE(complexSignal_t)              :: outSignal
          TYPE(analyticSignal_t)             :: input_sig!
-
-         CALL ReadArrayFromFile (impulseResponse,filterFileName,.FALSE. )
-         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputFileName,.True.)
+         !!!!!!!!!!
+         CALL ReadArrayFromFile (impulseResponse,filterFileName,'(I10)')
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputFileName)
          CALL phaseDemodulator%Constructor(centralFrequency,initialPhase,sampleRate,impulseResponse,outputShift)
          outSignal = phaseDemodulator%Downconvert(input_sig)
-         CALL WriteComplexSignalToFile(outSignal,int(2,1),outPutFileNameI,outPutFileNameQ,.TRUE.)
+         CALL WriteComplexSignalToFile(outSignal,int(2,1),outPutFileNameI,outPutFileNameQ)
       END SUBROUTINE PhaseDetectorTest
 
 
@@ -872,8 +885,8 @@ module TestsModule
 
          CHARACTER(10) :: fmt="(I64.1)"
 
-         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName,.True.)
-         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
          CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
 
          CALL reference_sig%ExtractSignalData(extractedSignal)
@@ -902,7 +915,7 @@ module TestsModule
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
-         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName,.True.)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
      END SUBROUTINE AnalyticSignumConvolveTest
 
@@ -946,10 +959,10 @@ module TestsModule
          TYPE(analyticSignal_t)  :: sig
           TYPE(analyticSignal_t)  :: sig2
          TYPE(complexSignal_t) ::  signal_1
-
-         CALL ReadArrayFromFile (psn,pspFileName,.FALSE. )
-         CALL ReadArrayFromFile (data,dataFileName,.FALSE. )
-         CALL ReadArrayFromFile (impulseResponse,filterFileName,.FALSE. )
+         !!!!!!!!!!!
+         CALL ReadArrayFromFile (psn,pspFileName,'(I1)' )
+         CALL ReadArrayFromFile (data,dataFileName,'(I1)'  )
+         CALL ReadArrayFromFile (impulseResponse,filterFileName,'(I10)'  )
 
          CALL DemodulatorBPSK%Constructor( baudRate = baudRateInSamples&
                                           ,SampleRate =SampleRate&
@@ -963,17 +976,17 @@ module TestsModule
 
 !         sig = modulatorBPSK%Generate(data)
 !
-         CALL ReadAnalyticSignalFromFile(sig,int(2,1),inPutFileName,.True.)
+         CALL ReadAnalyticSignalFromFile(sig,int(2,1),inPutFileName)
 !
          CALL  DemodulatorBPSK%SetTreshold(int(2000,8))
 !
           signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !          signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName,.TRUE.)
+         CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName)
           module= signal_1%GetModuleFast()
           !??????????????
           CALL sig2%Constructor(module)
-          CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme,.True.)
+          CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
           deCodedData = DemodulatorBPSK%GetData(sig)
           CALL  WriteArrayToFileTxt(deCodedData,deCodedDataFileName,'(I1.1)')
 
@@ -988,11 +1001,29 @@ module TestsModule
            INTEGER(8), ALLOCATABLE            :: dataArray(:)
            INTEGER(1), ALLOCATABLE            :: dataArrayOctets(:)
            INTEGER(1), ALLOCATABLE            :: dataArray2(:)
-           CALL ReadArrayFromFile (dataArray,inputDataFileName,.FALSE. )
+           CALL ReadArrayFromFile (dataArray,inputDataFileName,'(I1)')
            dataArrayOctets = BitsToOctets(dataArray,.TRUE.)
            dataArray2     = OctetsToBits(dataArrayOctets, .TRUE.)
            WRITE (*,'(Z4)') dataArrayOctets
            CALL WriteArrayToFileTxt(int( dataArray2,8),outputDataFileName,'(I1.1)' )
       END SUBROUTINE OctetDataMaker
+
+      SUBROUTINE Crc16Test(inputDataFileName,outputDataFileName)
+         USE OctetDataModule
+         USE ModuleWriteReadArrayFromToFile
+         USE CRC16Mod
+
+         CHARACTER(*), intent(in)           :: inputDataFileName,outputDataFileName
+         INTEGER(1)  , ALLOCATABLE          :: messageOctets(:)
+         INTEGER(1),ALLOCATABLE              :: CRC16(:)
+
+
+         CALL ReadArrayFromFile (messageOctets,inputDataFileName,'(Z2)' )
+         !WRITE (*,'(Z4)') messageOctets
+
+         CRC16 = CRC16Compute(messageOctets, 4129)
+         WRITE (*,'(Z4)') CRC16
+
+      END SUBROUTINE Crc16Test
 
 end module TestsModule

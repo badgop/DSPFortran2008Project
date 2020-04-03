@@ -17,4 +17,13 @@ module BitOpsMod
             IF (BTEST(x,i)) SumOnesInInt_8=SumOnesInInt_8+1
          END DO
     END FUNCTION SumOnesInInt_8
+
+    PURE FUNCTION ReverseBitOrderINT1(x)
+         INTEGER(1), PARAMETER ::INT_KIND = 8
+         INTEGER(INT_KIND),INTENT(IN) :: x
+          INTEGER(INT_KIND) :: ReverseBitOrderINT1
+
+
+    END FUNCTION ReverseBitOrderINT1
+
 end module BitOpsMod

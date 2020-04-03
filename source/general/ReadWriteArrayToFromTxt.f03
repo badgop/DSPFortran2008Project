@@ -72,7 +72,7 @@ END INTERFACE
     CONTAINS
 
 
-    SUBROUTINE ReadArrayFromTxtInt8(x, name_x)
+    SUBROUTINE ReadArrayFromTxtInt8(x, name_x,fmt)
 
         IMPLICIT NONE
 
@@ -81,6 +81,7 @@ END INTERFACE
         !Входные параметры
         INTEGER(INT_KIND), INTENT(IN OUT), ALLOCATABLE:: x(:)
         CHARACTER(*), INTENT(IN):: name_x
+        CHARACTER(*), INTENT(IN) :: fmt
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
@@ -104,7 +105,7 @@ END INTERFACE
                 !Платформозависимый код
                 !ВНИМАНИЕ
                 ALLOCATE(x(1:lengthFile/INT_KIND))
-                READ(10,*,IOSTAT=iostat_Num) x
+                READ(10,fmt,IOSTAT=iostat_Num) x
                 IF (iostat_Num.NE.0) then
                     WRITE(*,*) 'Ошибка при чтении файла ', name_x
                     CALL   ExitFromProgramNormal()

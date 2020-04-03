@@ -164,8 +164,16 @@ PROGRAM main
 !                                   , decimationCoeff       = int(5,8))
 
 
-              CALL OctetDataMaker(inputDataFileName  = 'test_signals\input\data.txt'&
-                                 ,outputDataFileName = 'test_signals\output\decodedData2.txt')
+!              CALL OctetDataMaker(inputDataFileName  = 'test_signals\input\data.txt'&
+!                                 ,outputDataFileName = 'test_signals\output\octetData.txt')
+
+
+               CALL Crc16Test(inputDataFileName = 'test_signals\input\vdl4_octets.txt'&
+                             , outputDataFileName = 'test_signals\output\decodedData3.txt'  )
+
+
+
+
 
     CONTAINS
 
