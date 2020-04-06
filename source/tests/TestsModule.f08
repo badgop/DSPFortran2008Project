@@ -804,6 +804,8 @@ module TestsModule
          USE WriteReadAnalyticSignalToFromFile
          USE ReadWriteArrayToFromTxt
          USE BPSKmod
+         USE OctetDataModule
+         USE CRC16Mod
          CHARACTER(*), intent(in)           :: pspFileName,dataFileName, outPutFileName,filterFileName,codedDataFileName
          INTEGER(8)  , intent(in)           :: baudRateInSamples
          INTEGER(8)  , intent(in)           :: SampleRate
@@ -811,7 +813,13 @@ module TestsModule
          INTEGER(1)  , intent(in)           :: outPutSampleCapacity
          INTEGER(8)  , ALLOCATABLE          :: psn(:)
          INTEGER(8)  , intent(in)           :: chipRateInSamples
-         INTEGER(8), ALLOCATABLE                         :: data(:)
+         INTEGER(1), ALLOCATABLE                         :: data(:)
+         INTEGER(1), ALLOCATABLE                         :: dataOctets(:)
+         INTEGER(1), ALLOCATABLE                         :: dataOctetsWithCrc(:)
+          INTEGER(1), ALLOCATABLE                         :: dataOctetsWithCrcBybit(:)
+
+         INTEGER(2)                                      :: CRC16
+
          INTEGER(8), ALLOCATABLE                         :: codedData(:)
          INTEGER(8), ALLOCATABLE                         :: impulseResponse(:)
          INTEGER(1)  , intent(in)           :: outPutShift
@@ -822,13 +830,38 @@ module TestsModule
          CALL ReadArrayFromFile (data,dataFileName,'(I1)')
          CALL ReadArrayFromFile (impulseResponse,filterFileName,'(I10)')
 
+         WRITE(*,'(I1)') data
+         dataOctets = BitsToOctets(data,.TRUE.)
+         WRITE(*,*) 'data Octets-----------'
+         WRITE(*,'(z4)') dataOctets
+         WRITE(*,*) '-----------'
+         dataOctets = ReverseBitOrderINT1(dataOctets)
+         WRITE(*,*) 'data Octets- reverse----------'
+         WRITE(*,'(z4)') dataOctets
+          WRITE(*,*) 'data Octets- reverse END----------'
+
+         CRC16 = CRC16Compute(dataOctets, 4129,65535)
+
+         ALLOCATE(dataOctetsWithCrc(1:(size(dataOctets)+2)))
+         dataOctetsWithCrc(1:size(dataOctets))= dataOctets
+         dataOctetsWithCrc(size(dataOctets)+1) = int(SHIFTR(crc16,8),1)
+         dataOctetsWithCrc(size(dataOctets)+2) = int(crc16,1)
+         WRITE(*,*) 'size(dataOctets)',size(dataOctets)
+         WRITE(*,*) 'dataOctetsWithCrc size',size(dataOctetsWithCrc)
+         WRITE(*,*) 'dataOctetsWithCrc- reverse----------'
+         WRITE(*,'(z4)')  dataOctetsWithCrc
+
+         dataOctetsWithCrcBybit = OctetsToBits(dataOctetsWithCrc,.TRUE.)
+
+
          WRITE(*,*) 'Constructor bpskmod start'
          CALL modulatorBPSK%Constructor(baudRateInSamples, SampleRate, centralFrequency, outPutSampleCapacity&
                                       , psn, chipRateInSamples,impulseResponse,outPutShift)
 
-         sig = modulatorBPSK%Generate(data)
+
+         sig = modulatorBPSK%Generate(dataOctetsWithCrcBybit)
          CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName)
-         codedData = modulatorBPSK%GenerateDiffData(data)
+         codedData = modulatorBPSK%GenerateDiffData(dataOctetsWithCrcBybit)
          CALL  WriteArrayToFileTxt(codedData,codedDataFileName,'(I1.1)')
       END SUBROUTINE BPSKGeneratorTest
 
@@ -937,6 +970,9 @@ module TestsModule
          USE DBPSKDemod
          USE WriteReadComplexSignalToFromFile
          USE complexSignalModule
+         USE OctetDataModule
+         USE CRC16Mod
+
          CHARACTER(*), intent(in)           :: pspFileName,dataFileName, inPutFileName,filterFileName
          CHARACTER(*), intent(in)           :: phaseDetectorIName, phaseDetectorQName
          CHARACTER(*), intent(in)           :: complexModuleCorrNAme
@@ -950,10 +986,13 @@ module TestsModule
          INTEGER(8)  , intent(in)           :: chipRateInSamples
          INTEGER(8), ALLOCATABLE                         :: data(:)
          INTEGER(8), ALLOCATABLE                         :: module(:)
-         INTEGER(8), ALLOCATABLE                         :: decodedData(:)
+         INTEGER(1), ALLOCATABLE                         :: decodedData(:)
          INTEGER(8), ALLOCATABLE                         :: impulseResponse(:)
          INTEGER(1)  , intent(in)           :: outPutShift
          REAL(8), intent(in)                ::initialPhase
+         INTEGER(1), ALLOCATABLE            :: decodedDataOctets(:)
+         INTEGER(2)                         :: crc16
+
 
          TYPE(BPSKDemodulator_t)               :: DemodulatorBPSK
          TYPE(analyticSignal_t)  :: sig
@@ -988,7 +1027,16 @@ module TestsModule
           CALL sig2%Constructor(module)
           CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
           deCodedData = DemodulatorBPSK%GetData(sig)
-          CALL  WriteArrayToFileTxt(deCodedData,deCodedDataFileName,'(I1.1)')
+          decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
+          crc16 =  CRC16Compute(decodedDataOctets, 4129,65535)
+          crc16=XOR(crc16,z'ffff')
+           WRITE (*,*) 'А ПРИЕМЕ!'
+           WRITE (*,'(Z4)') CRC16
+           IF (crc16 ==z'1D0F' ) WRITE(*,*)'CRC is ok!!!!'
+
+
+
+          CALL  WriteArrayToFileTxt(int(deCodedData,8),deCodedDataFileName,'(I1.1)')
 
 
       END SUBROUTINE BPSKDemodulatorTest
@@ -998,7 +1046,7 @@ module TestsModule
            USE ModuleWriteReadArrayFromToFile
            USE ReadWriteArrayToFromTxt
            CHARACTER(*), intent(in)           :: inputDataFileName,outputDataFileName
-           INTEGER(8), ALLOCATABLE            :: dataArray(:)
+           INTEGER(1), ALLOCATABLE            :: dataArray(:)
            INTEGER(1), ALLOCATABLE            :: dataArrayOctets(:)
            INTEGER(1), ALLOCATABLE            :: dataArray2(:)
            CALL ReadArrayFromFile (dataArray,inputDataFileName,'(I1)')
@@ -1023,12 +1071,15 @@ module TestsModule
          CALL ReadArrayFromFile (messageOctets,inputDataFileName,'(Z2)' )
 
 
-         DO i=1,size(messageOctets)
-            messageOctets(i) = ReverseBitOrderINT1(messageOctets(i))
-         END DO
+!         DO i=1,size(messageOctets)
+!            messageOctets(i) = ReverseBitOrderINT1(messageOctets(i))
+!         END DO
 
-         CRC16 = CRC16Compute(messageOctets, 4129)
-         WRITE (*,'(Z4)') CRC16
+          messageOctets = ReverseBitOrderINT1(messageOctets)
+
+         CRC16 = CRC16Compute(messageOctets, 4129,65536)
+         WRITE (*,'(Z4)') 'crc16 = ', CRC16
+
 
       END SUBROUTINE Crc16Test
 

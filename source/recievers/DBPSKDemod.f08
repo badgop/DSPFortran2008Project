@@ -25,6 +25,7 @@ MODULE DBPSKDemod
 
         TYPE(PSNSimple_t)            :: psnGnerator
         TYPE(PhaseDetector_t)        :: phaseDemodulator
+        TYPE(DiffCodeGenerator_t)    :: deCoder
         TYPE(signumSignal_t)         :: currentPRSSignal
     CONTAINS
         PROCEDURE :: Constructor
@@ -141,11 +142,15 @@ CONTAINS
      FUNCTION GetData(this, inputSig)
         CLASS(BPSKDemodulator_t), INTENT(inout) :: this
         CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
-        INTEGER(8)              , ALLOCATABLE   :: GetData(:)
+        INTEGER(1)              , ALLOCATABLE   :: GetData(:)
+        INTEGER(1)              , ALLOCATABLE   :: demodulatedData(:)
+
         CLASS(complexSignal_t)  , ALLOCATABLE   :: Demodulate
         ALLOCATE(Demodulate)
         Demodulate = this%Demodulate(inputSig)
-        GetData    = this%TresholdProcessing(Demodulate)
+        demodulatedData    = this%TresholdProcessing(Demodulate)
+        GetData            = this%deCoder%DecodeDBPSKData(demodulatedData)
+
      END FUNCTION GetData
 
     SUBROUTINE destructor(this)

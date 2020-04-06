@@ -5,9 +5,10 @@ MODULE CRC16Mod
     CONTAINS
 
 
-    FUNCTION CRC16Compute(inputBitArrayINT8,poly)
+    FUNCTION CRC16Compute(inputBitArrayINT8,poly,xorReg)
        INTEGER(1),INTENT(IN)  :: inputBitArrayINT8(:)
        INTEGER(4),INTENT(IN)  :: poly
+       INTEGER(4),INTENT(IN)  :: xorReg
        INTEGER(2)             :: CRC16Compute
        INTEGER(4)             :: i,j, crc16,tmp
 
@@ -31,7 +32,7 @@ MODULE CRC16Mod
 
 
        crc16=AND(crc16,z'ffff')
-       crc16=XOR(crc16,z'ffff')
+       crc16=XOR(crc16,xorReg)
        CRC16Compute= crc16
 !       CRC16Compute(1:size(inputBitArrayINT8)) = inputBitArrayINT8
 !       CRC16Compute(size(inputBitArrayINT8)+1) = int(SHIFTR(crc16,8),1)

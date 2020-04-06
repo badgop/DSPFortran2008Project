@@ -55,8 +55,8 @@ CONTAINS
 
     FUNCTION GenerateDiffData (this, data)
         CLASS(BPSKmodulator_t), intent(inout) :: this
-        INTEGER(8)  , intent(in)              :: data(:)
-        INTEGER(8)  , allocatable             :: GenerateDiffData(:)
+        INTEGER(1)  , intent(in)              :: data(:)
+        INTEGER(1)  , allocatable             :: GenerateDiffData(:)
 
         GenerateDiffData = this%coder%GenerateDBPSKData(data)
 
@@ -64,7 +64,7 @@ CONTAINS
 
     FUNCTION Generate (this, data)
         CLASS(BPSKmodulator_t), intent(inout) :: this
-        INTEGER(8)  , intent(in)              :: data(:)
+        INTEGER(1)  , intent(in)              :: data(:)
         INTEGER(8)  , allocatable             :: Diffdata(:)
         CLASS(analyticSignal_t),  allocatable :: OutPutPsn
         CLASS(analyticSignal_t) , allocatable :: OutPutModulationSig

@@ -18,7 +18,7 @@ module BitOpsMod
          END DO
     END FUNCTION SumOnesInInt_8
 
-    FUNCTION ReverseBitOrderINT1(x)
+   ELEMENTAL FUNCTION ReverseBitOrderINT1(x)
          INTEGER(1), PARAMETER        ::INT_KIND = 1
          INTEGER(INT_KIND),INTENT(IN) :: x
          INTEGER(INT_KIND)            :: ReverseBitOrderINT1

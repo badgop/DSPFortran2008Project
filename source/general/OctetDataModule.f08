@@ -12,7 +12,7 @@ MODULE OctetDataModule
 CONTAINS
     ! ВНИМАНИЕ отсчеты ЗНАКОВОГО сигнала заносятя в старшие разряды!
     FUNCTION BitsToOctets(loadedSignal,isMSBFIRST)
-        INTEGER(8), INTENT(IN)  :: loadedSignal(:)
+        INTEGER(1), INTENT(IN)  :: loadedSignal(:)
         LOGICAL   , INTENT(IN)  :: isMSBFIRST
         INTEGER(1), ALLOCATABLE :: BitsToOctets(:)
         INTEGER(1)               :: trailLen

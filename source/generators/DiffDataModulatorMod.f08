@@ -10,6 +10,7 @@ MODULE DiffDataModulatorMod
     CONTAINS
         PROCEDURE :: Constructor
         PROCEDURE :: GenerateDBPSKData
+        PROCEDURE :: DecodeDBPSKData
         FINAL     :: destructor
     END TYPE DiffCodeGenerator_t
 
@@ -27,8 +28,8 @@ CONTAINS
 
     FUNCTION GenerateDBPSKData(this,data)
         CLASS(DiffCodeGenerator_t), intent(in) :: this
-        INTEGER(8), allocatable                :: GenerateDBPSKData(:)
-        INTEGER(8),INTENT(IN)                  :: data(:)
+        INTEGER(1), allocatable                :: GenerateDBPSKData(:)
+        INTEGER(1),INTENT(IN)                  :: data(:)
         INTEGER(8)                             :: i
         ALLOCATE (GenerateDBPSKData(1:(size(data)+1)))
         GenerateDBPSKData(1) = (this%initialPhase)
@@ -36,6 +37,21 @@ CONTAINS
            GenerateDBPSKData(i) = XOR (GenerateDBPSKData(i-1),data(i-1))
         END DO
      END FUNCTION
+
+     FUNCTION DecodeDBPSKData(this,data)
+        CLASS(DiffCodeGenerator_t), intent(in) :: this
+        INTEGER(1), allocatable                :: DecodeDBPSKData(:)
+        INTEGER(1),INTENT(IN)                  :: data(:)
+        INTEGER(8)                             :: i
+
+        ALLOCATE (DecodeDBPSKData(1:(size(data)-1)))
+
+        DO i=1,size(data)-1
+           DecodeDBPSKData(i) = XOR (data(i),data(i+1))
+        END DO
+
+
+      END FUNCTION DecodeDBPSKData
 
      SUBROUTINE destructor(this)
         type(DiffCodeGenerator_t), intent(in) :: this
