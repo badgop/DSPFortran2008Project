@@ -1012,14 +1012,20 @@ module TestsModule
          USE OctetDataModule
          USE ModuleWriteReadArrayFromToFile
          USE CRC16Mod
+         USE BitOpsMod
 
          CHARACTER(*), intent(in)           :: inputDataFileName,outputDataFileName
          INTEGER(1)  , ALLOCATABLE          :: messageOctets(:)
-         INTEGER(1),ALLOCATABLE              :: CRC16(:)
+         INTEGER(2)                          :: CRC16
+         INTEGER(1)                          :: i,xx
 
 
          CALL ReadArrayFromFile (messageOctets,inputDataFileName,'(Z2)' )
-         !WRITE (*,'(Z4)') messageOctets
+
+
+         DO i=1,size(messageOctets)
+            messageOctets(i) = ReverseBitOrderINT1(messageOctets(i))
+         END DO
 
          CRC16 = CRC16Compute(messageOctets, 4129)
          WRITE (*,'(Z4)') CRC16

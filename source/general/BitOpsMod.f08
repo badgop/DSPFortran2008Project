@@ -18,11 +18,16 @@ module BitOpsMod
          END DO
     END FUNCTION SumOnesInInt_8
 
-    PURE FUNCTION ReverseBitOrderINT1(x)
-         INTEGER(1), PARAMETER ::INT_KIND = 8
+    FUNCTION ReverseBitOrderINT1(x)
+         INTEGER(1), PARAMETER        ::INT_KIND = 1
          INTEGER(INT_KIND),INTENT(IN) :: x
-          INTEGER(INT_KIND) :: ReverseBitOrderINT1
+         INTEGER(INT_KIND)            :: ReverseBitOrderINT1
+         INTEGER(INT_KIND)            :: i
+         ReverseBitOrderINT1 = 0
 
+         DO i=0,(bitsInByte_const-1)
+            IF(BTEST(x,i))  ReverseBitOrderINT1 = IBSET(ReverseBitOrderINT1,(bitsInByte_const-1)-i)
+         END DO
 
     END FUNCTION ReverseBitOrderINT1
 

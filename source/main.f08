@@ -168,8 +168,8 @@ PROGRAM main
 !                                 ,outputDataFileName = 'test_signals\output\octetData.txt')
 
 
-               CALL Crc16Test(inputDataFileName = 'test_signals\input\vdl4_octets.txt'&
-                             , outputDataFileName = 'test_signals\output\decodedData3.txt'  )
+!               CALL Crc16Test(inputDataFileName = 'test_signals\input\vdl4_octets.txt'&
+!                             , outputDataFileName = 'test_signals\output\decodedData3.txt'  )
 
 
 
