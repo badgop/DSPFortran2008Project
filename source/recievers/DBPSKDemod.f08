@@ -8,6 +8,9 @@ MODULE DBPSKDemod
     USE DDSModule
     USE MathConstModule
     USE PhaseDetectorModule
+    USE  ModuleWriteReadArrayFromToFile
+    USE ModuleWriteReadArrayFromToFile
+    USE WriteReadComplexSignalToFromFile
     IMPLICIT NONE
     PRIVATE
 
@@ -69,7 +72,7 @@ CONTAINS
                                         ,this%initialPhase&
                                         ,this%sampleRate&
                                         ,impulseResponseArray&
-                                        ,int(8,8))
+                                        ,int(outputShift,8))
        psnSignalArray=this%psnGnerator%OutPutPsnArray(int(1,8))
        CALL this%currentPRSSignal%Constructor(psnSignalArray)
        DEALLOCATE(psnSignalArray)
@@ -94,8 +97,10 @@ CONTAINS
         ! преобразование вниз и разложение на квадратуры
         Demodulate = this%phaseDemodulator%Downconvert(inputSig)
         Demodulate = Demodulate%Decimate(this%decimationCoeff)
+         CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
         ! согласованная фильтрация
         Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
+
      END FUNCTION Demodulate
 
      ! Осуществляет пороговую обработку выходного сигнала
@@ -105,9 +110,11 @@ CONTAINS
      FUNCTION TresholdProcessing(this, matchedFilterOut)
         USE WriteReadAnalyticSignalToFromFile
         CLASS(BPSKDemodulator_t), INTENT(in)  :: this
-        CLASS(complexSignal_t)  , INTENT(in)  :: matchedFilterOut
+        CLASS(complexSignal_t)  , INTENT(inout)  :: matchedFilterOut
         INTEGER(8)              , ALLOCATABLE :: TresholdProcessing(:)
         INTEGER(8)              , ALLOCATABLE :: module(:)
+        !!!!!!!!!!!!!!!!!!!
+        INTEGER(2)              , ALLOCATABLE :: module2(:)
         INTEGER(8), ALLOCATABLE               :: realPart(:)
         INTEGER(8), ALLOCATABLE               :: imagePart(:)
         INTEGER(8)                            :: i
@@ -115,20 +122,28 @@ CONTAINS
         INTEGER(8)                            :: cnt
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
+        ALLOCATE(module2(1:size(module)))
+        module2 =  module
+        CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
+
+
+
         CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
         cnt=0
         WRITE(*,*) 'size module ', size(module)
         DO i=1,size(module)
            IF (module(i)>=this%threshold) THEN
-               WRITE(*,*) 'БОЛЬШЕ i',i
+               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i))
                !Обработка созвездия ведется с учетом базиса [COS, -SIN]
                IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
                    cnt=cnt+1
                    bitBuffer(cnt)=1
+                   WRITE(*,*) 'принята 1 ', i , module(i), (realPart(i)) , (imagePart(i))
                END IF
                IF((realPart(i)<0).AND.(imagePart(i)>0)) THEN
                    cnt=cnt+1
                    bitBuffer(cnt)=0
+                   WRITE(*,*) 'принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
                END IF
            END IF
 

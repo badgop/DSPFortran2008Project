@@ -13,8 +13,8 @@ PROGRAM main
 !                             ,samplingFrequency=192*KILO&
 !                             ,phase=real(1.0,8)&
 !                             ,signalLengthInSamples=2346&
-!                             ,centralFrequency=1*KILO&
-!                             ,centralFrequency2=2*KILO&
+!                             ,centralFrequency=int(2*KILO,4)&
+!                             ,centralFrequency2=int(1*KILO,4)&
 !                             ,file1Name='test_signals\input\dds_test_output1.pcm'&
 !                             ,file2Name='test_signals\input\dds_test_output2.pcm' )
 
@@ -39,7 +39,7 @@ PROGRAM main
 !                                           ,inputSignalFileName2='test_signals\input\dds_test_output2.pcm'&
 !                                           ,outputSignalFileName='test_signals\output\analytic_multiply.pcm'&
 !                                           ,shift=INT(10,1))
-!     CALL ComplexDDSTest(centralFrequency= 1*KILO,samplingFrequency=192*KILO&
+!     CALL ComplexDDSTest(centralFrequency= int(0.05*KILO,4),samplingFrequency=192*KILO&
 !                         ,sig_len=16384,romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1)&
 !                        ,outputSignalSampleCapacity=int(12,1)&
 !                        ,outputSignalFileNameI='test_signals\output\complexdds_outI.pcm'&
@@ -119,29 +119,29 @@ PROGRAM main
 
 !      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
 !                                      ,lenInblocks = int(10,8))
-       CALL BPSKGeneratorTest(      pspFileName          = 'test_signals\input\psp_valera.txt'&
-                                   ,dataFileName         = 'test_signals\input\data.txt'&
-                                   ,outPutFileName       = 'test_signals\output\BPSKTest1.pcm'&
-                                   ,filterFileName       = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
-                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
-                                   ,baudRateInSamples    = int(10240,8), chipRateInSamples = int(10,8) &
-                                   ,sampleRate           = int(20*MEGA,8)&
-                                   ,centralFrequency     = int(3*MEGA,8)&
-                                   ,outPutSampleCapacity = int(14,1)&
-                                   ,outPutShift          = int(17,1))
+!       CALL BPSKGeneratorTest(      pspFileName          = 'test_signals\input\psp_valera.txt'&
+!                                   ,dataFileName         = 'test_signals\input\data.txt'&
+!                                   ,outPutFileName       = 'test_signals\output\BPSKTest1.pcm'&
+!                                   ,filterFileName       = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+!                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
+!                                   ,baudRateInSamples    = int(10240,8), chipRateInSamples = int(10,8) &
+!                                   ,sampleRate           = int(20*MEGA,8)&
+!                                   ,centralFrequency     = int(3*MEGA,8)&
+!                                   ,outPutSampleCapacity = int(14,1)&
+!                                   ,outPutShift          = int(17,1))
 !        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\BPSKTest1.pcm ' &
 !                              , outPutFileNameI = 'test_signals\output\phaseDemodTestI.pcm'&
 !                              ,outPutFileNameQ  = 'test_signals\output\phaseDemodTestQ.pcm'&
 !                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
 !                              ,sampleRate       = int(20*MEGA,8)&
-!                              ,centralFrequency = int (3*MEGA,8)&
-!                              ,initialPhase     = 0.25*PI&
-!                              ,outputShift      = int(22,8))
+!                              ,centralFrequency = int (3*MEGA+0,8)&
+!                              ,initialPhase     = 0.0*PI&
+!                              ,outputShift      = int(27,8))
 
 !         WRITE(*,*) 'аналитич со знаковым'
 !'test_signals\input\noise_7897.pcm'
-!         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
-!                                         ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
+!         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\output\phaseDemodTestQ.pcm'&
+!                                         ,inputRefFileName     = 'test_signals\input\impGenTest1.pcm'&
 !                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
 !                                         ,shift = int(0,1)&
 !                                         ,iterationCount=int(1,4))
@@ -157,10 +157,10 @@ PROGRAM main
                                    ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
                                    ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
                                    ,sampleRate             = int(20*MEGA,8)&
-                                   ,centralFrequency       = int (3*MEGA,8)&
-                                   ,initialPhase           = 0.05*PI&
+                                   ,centralFrequency       = int (3*MEGA+0,8)&
+                                   ,initialPhase           = 0.3*PI&
                                    , outPutSampleCapacity  = int(14,1)&
-                                   , outPutShift           = int(17,1)&
+                                   , outPutShift           = int(26,1)&
                                    , decimationCoeff       = int(5,8))
 
 

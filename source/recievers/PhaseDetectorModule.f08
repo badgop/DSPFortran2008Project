@@ -46,10 +46,12 @@ CONTAINS
                                      , samplingFrequency =int(this%SampleRate,4) &
                                      , outputSignalSampleCapacity=int(8,1))
         CALL this%iMixer%SetPhase(PI/2+this%initialPhase)
+
         stat =  this%qMixer%Constructor(romLengthInBits = int(32,1)&
                                      , romLengthTruncedInBits =int(14,1) &
                                      , samplingFrequency =int(this%SampleRate,4) &
                                      , outputSignalSampleCapacity=int(8,1))
+       CALL this%qMixer%SetPhase(0+this%initialPhase)
 
         WRITE(*,*) 'PhaseDemod constructor works!!!!'
     END SUBROUTINE Constructor
@@ -68,10 +70,9 @@ CONTAINS
         ALLOCATE(qSignal)
         ALLOCATE(iHeterodyne)
         ALLOCATE(qHeterodyne)
-
-
-        CALL this%qMixer%SetPhase(0+this%initialPhase)
-        ! формирование сигналов гетеродинов
+!
+!         CALL this%iMixer%SetPhase(PI/2+this%initialPhase)
+!         CALL this%qMixer%SetPhase(0+this%initialPhase)
 
         CALL this%iMixer%ComputeOutput(int(this%centralFrequency,8),(inputSignal%GetSignalSize()),iHeterodyne)
         CALL this%qMixer%ComputeOutput(int(this%centralFrequency,8),(inputSignal%GetSignalSize()),qHeterodyne)
@@ -86,6 +87,7 @@ CONTAINS
         ! Берем старшие разряды
         CALL iSignal%Rshift(int(this%outputShift,1))
         CALL qSignal%Rshift(int(this%outputShift,1))
+
         ! формируеым выходной комплексный сигнал
         CALL Downconvert%Constructor(iSignal,qSignal)
         DEALLOCATE(iSignal)

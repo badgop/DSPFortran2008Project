@@ -122,11 +122,11 @@ CONTAINS
             tempArray(i)= GetAmplitudeSample(this,this%phaseAccState)
 
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
-            !эмуляция переполнения аккумулятора фазы
+!            !эмуляция переполнения аккумулятора фазы
             IF (this%phaseAccState>this%romLengthInNumber) THEN
-                this%phaseAccState=this%phaseAccState-this%romLengthInNumber
+               this%phaseAccState=this%phaseAccState - this%romLengthInNumber
             END IF
-            !WRITE(*,*) 'ФАЗА', this%phaseAccState
+          !WRITE(*,*) 'ФАЗА', this%phaseAccState
         END DO
 
         CALL outputSignal%Constructor(tempArray)
@@ -160,7 +160,7 @@ CONTAINS
         frequencyCode= INT((REAL(frequency)/this%frequencyStep),8)
 
          ALLOCATE(tempArray(1:signalLength))
-
+         WRITE(*,*) 'ФАЗА ГЕНЕРАТОРА', this%phaseAccState
 
         ! цикл вычисления выходного сигнала
         DO i=1,signalLength
@@ -170,9 +170,9 @@ CONTAINS
             this%phaseAccState=this%phaseAccState+frequencyCode
             !эмуляция переполнения аккумулятора фазы
             IF (this%phaseAccState>this%romLengthInNumber) THEN
-                this%phaseAccState=this%phaseAccState-this%romLengthInNumber
+                this%phaseAccState=this%phaseAccState - this%romLengthInNumber
             END IF
-            !WRITE(*,*) 'ФАЗА', this%phaseAccState
+
         END DO
 
         CALL outputSignal%Constructor(tempArray)
@@ -298,7 +298,7 @@ CONTAINS
         CLASS(DDS_t), INTENT(IN) :: this
         INTEGER(8), INTENT(IN) ::inputPhase
         INTEGER(2)             ::amplitude
-        INTEGER(8)             ::resultPhase
+        INTEGER(4)             ::resultPhase
 
         !значение на которое нужно сдвигать значение акумулятора фазы для взятия требуемого числа старших бит
         INTEGER(1)                          :: neededShift

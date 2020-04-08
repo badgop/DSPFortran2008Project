@@ -115,6 +115,12 @@ module TestsModule
 
              ! поулчаем гармонический сигнал
              CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
+              CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
+               CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
+                CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
+                 CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
+                  CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
+                   CALL ddsGenerator%ComputeOutput(imputFreqSignal, outputsignal)
 
 
              !извлекаем массив из обьекта
@@ -379,6 +385,16 @@ module TestsModule
 
             CALL ddsGeneratorComplex%Constructor(romLengthInBits,romLenthTruncedInBits,samplingFrequency,&
                                                 outputSignalSampleCapacity)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
+            CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
             CALL ddsGeneratorComplex%ComputeOutput(frequencys,signal_out)
 
             intType=2
@@ -1017,15 +1033,27 @@ module TestsModule
 !
          CALL ReadAnalyticSignalFromFile(sig,int(2,1),inPutFileName)
 !
-         CALL  DemodulatorBPSK%SetTreshold(int(2000,8))
+         CALL  DemodulatorBPSK%SetTreshold(int(1600,8))
 !
-          signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!          signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+
+!!          signal_1 =  DemodulatorBPSK%Demodulate(sig)
          CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName)
-          module= signal_1%GetModuleFast()
-          !??????????????
-          CALL sig2%Constructor(module)
-          CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
+         module= signal_1%GetModuleFast()
+!
+         CALL sig2%Constructor(module)
+         CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
           deCodedData = DemodulatorBPSK%GetData(sig)
           decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
           crc16 =  CRC16Compute(decodedDataOctets, 4129,65535)
