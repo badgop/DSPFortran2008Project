@@ -16,7 +16,7 @@ CONTAINS
         LOGICAL   , INTENT(IN)  :: isMSBFIRST
         INTEGER(1), ALLOCATABLE :: BitsToOctets(:)
         INTEGER(1)               :: trailLen
-        INTEGER(4) :: stat
+
         INTEGER(8) :: length_new
         INTEGER(8) :: i,j,k
         INTEGER(1) :: registerKind

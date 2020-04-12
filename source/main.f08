@@ -147,21 +147,21 @@ PROGRAM main
 !                                         ,iterationCount=int(1,4))
 
 
-              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
-                                   ,dataFileName           = 'test_signals\input\data.txt'&
-                                   ,inPutFileName          = 'test_signals\output\BPSKTest1.pcm'&
-                                   ,filterFileName         = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
-                                   ,deCodedDataFileName    = 'test_signals\output\decodedData.txt'&
-                                   ,phaseDetectorIName     = 'test_signals\output\bpskDemodI.pcm'&
-                                   ,phaseDetectorQName     = 'test_signals\output\bpskDemodQ.pcm'&
-                                   ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
-                                   ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
-                                   ,sampleRate             = int(20*MEGA,8)&
-                                   ,centralFrequency       = int (3*MEGA+0,8)&
-                                   ,initialPhase           = 0.3*PI&
-                                   , outPutSampleCapacity  = int(14,1)&
-                                   , outPutShift           = int(26,1)&
-                                   , decimationCoeff       = int(5,8))
+!              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
+!                                   ,dataFileName           = 'test_signals\input\data.txt'&
+!                                   ,inPutFileName          = 'test_signals\output\BPSKTest1.pcm'&
+!                                   ,filterFileName         = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+!                                   ,deCodedDataFileName    = 'test_signals\output\decodedData.txt'&
+!                                   ,phaseDetectorIName     = 'test_signals\output\bpskDemodI.pcm'&
+!                                   ,phaseDetectorQName     = 'test_signals\output\bpskDemodQ.pcm'&
+!                                   ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
+!                                   ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
+!                                   ,sampleRate             = int(20*MEGA,8)&
+!                                   ,centralFrequency       = int (3*MEGA+2,8)&
+!                                   ,initialPhase           = 0.3*PI&
+!                                   , outPutSampleCapacity  = int(14,1)&
+!                                   , outPutShift           = int(26,1)&
+!                                   , decimationCoeff       = int(5,8))
 
 
 !              CALL OctetDataMaker(inputDataFileName  = 'test_signals\input\data.txt'&
@@ -172,7 +172,10 @@ PROGRAM main
 !                             , outputDataFileName = 'test_signals\output\decodedData3.txt'  )
 
 
-
+                 CALL   PowerMeterTest(inputDataFileName = 'test_signals\output\BPSKTest1.pcm'&
+                             , outputDataFileName = 'test_signals\output\decodedData3.txt'&
+                             , samplingFrequency = int((100000*KILO),8)&
+                             , length = int(20000,8)  )
 
 
     CONTAINS

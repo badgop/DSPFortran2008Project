@@ -368,7 +368,9 @@ CONTAINS
          CALL inputSig%Constructor(input%signal)
          CALL referenceSig%Constructor(reference%signal)
          !WRITE(*,*) 'Вычисляю знак корреляцию'
+
          rez = inputSig.CONV.referenceSig
+
          !WRITE(*,*) 'ВЫЗЫВАЮ Аналитич КОНТРСРКУТР'
          CALL ConvolveSignum%Constructor(rez)
          DEALLOCATE(rez)

@@ -169,6 +169,7 @@ CONTAINS
 
        ConvolveComplexSignum%i= input%i.CONVSIGN.reference
        ConvolveComplexSignum%q= input%q.CONVSIGN.reference
+
     END FUNCTION ConvolveComplexSignum
 
     ! Возвращает МАССИВ INT8 с модулем Комплексноого числа

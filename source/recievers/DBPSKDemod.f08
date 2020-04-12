@@ -93,11 +93,13 @@ CONTAINS
         CLASS(BPSKDemodulator_t), INTENT(inout) :: this
         CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
         CLASS(complexSignal_t)  , ALLOCATABLE   :: Demodulate
+
         ALLOCATE (Demodulate)
         ! преобразование вниз и разложение на квадратуры
         Demodulate = this%phaseDemodulator%Downconvert(inputSig)
         Demodulate = Demodulate%Decimate(this%decimationCoeff)
-         CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
+
+        CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
         ! согласованная фильтрация
         Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
 
@@ -118,7 +120,7 @@ CONTAINS
         INTEGER(8), ALLOCATABLE               :: realPart(:)
         INTEGER(8), ALLOCATABLE               :: imagePart(:)
         INTEGER(8)                            :: i
-        INTEGER(1)                            :: bitBuffer(1:1000)
+        INTEGER(1)                            :: bitBuffer(1:32767)
         INTEGER(8)                            :: cnt
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
@@ -133,7 +135,7 @@ CONTAINS
         WRITE(*,*) 'size module ', size(module)
         DO i=1,size(module)
            IF (module(i)>=this%threshold) THEN
-               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i))
+               !WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i))
                !Обработка созвездия ведется с учетом базиса [COS, -SIN]
                IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
                    cnt=cnt+1
@@ -145,6 +147,19 @@ CONTAINS
                    bitBuffer(cnt)=0
                    WRITE(*,*) 'принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
                END IF
+!
+                IF((realPart(i)<0).AND.(imagePart(i)<0)) THEN
+                   cnt=cnt+1
+                   bitBuffer(cnt)=0
+                   WRITE(*,*) 'НЕСТАНДАРТНО принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
+               END IF
+
+               IF((realPart(i)>0).AND.(imagePart(i)>0)) THEN
+                   cnt=cnt+1
+                   bitBuffer(cnt)=1
+                   WRITE(*,*) 'НЕСТАНДАРТНО принята 1 ', i ,module(i), (realPart(i)) , (imagePart(i))
+               END IF
+
            END IF
 
         END DO

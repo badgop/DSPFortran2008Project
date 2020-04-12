@@ -1007,13 +1007,19 @@ module TestsModule
          INTEGER(1)  , intent(in)           :: outPutShift
          REAL(8), intent(in)                ::initialPhase
          INTEGER(1), ALLOCATABLE            :: decodedDataOctets(:)
-         INTEGER(2)                         :: crc16
+         INTEGER(2)                         :: crc16,i,errorCount
 
 
          TYPE(BPSKDemodulator_t)               :: DemodulatorBPSK
          TYPE(analyticSignal_t)  :: sig
           TYPE(analyticSignal_t)  :: sig2
          TYPE(complexSignal_t) ::  signal_1
+
+
+          TYPE(analyticSignal_t)  :: inI
+          TYPE(analyticSignal_t)  :: inQ
+          TYPE(analyticSignal_t)  :: summ
+
          !!!!!!!!!!!
          CALL ReadArrayFromFile (psn,pspFileName,'(I1)' )
          CALL ReadArrayFromFile (data,dataFileName,'(I1)'  )
@@ -1036,17 +1042,17 @@ module TestsModule
          CALL  DemodulatorBPSK%SetTreshold(int(1600,8))
 !
          signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
 
 !!          signal_1 =  DemodulatorBPSK%Demodulate(sig)
          CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName)
@@ -1062,10 +1068,31 @@ module TestsModule
            WRITE (*,'(Z4)') CRC16
            IF (crc16 ==z'1D0F' ) WRITE(*,*)'CRC is ok!!!!'
 
-
+           decodedDataOctets= ReverseBitOrderINT1(decodedDataOctets)
+           DEALLOCATE(deCodedData)
+           deCodedData = OctetsToBits (decodedDataOctets,.TRUE.)
 
           CALL  WriteArrayToFileTxt(int(deCodedData,8),deCodedDataFileName,'(I1.1)')
 
+          errorCount = 0
+          DO i=1,size(data)
+             IF(data(i).NE.deCodedData(i)) THEN
+                  errorCount=errorCount+1
+                   WRITE(*,*) 'i тый бит ', i
+             END IF
+          END DO
+          WRITE(*,*) '********************** '
+          WRITE(*,*) 'число ошибок ', errorCount
+           WRITE(*,*) '********************** '
+
+
+           CALL ReadAnalyticSignalFromFile(inI,int(2,1),'test_signals\output\Icorr.pcm')
+           CALL ReadAnalyticSignalFromFile(inQ,int(2,1),'test_signals\output\Qcorr.pcm')
+           inI= inI*inI
+           inQ = inQ*inQ
+           summ = inI+inQ
+           CALL summ%Rshift(int(10,1))
+            CALL WriteAnalyticSignalToFile(summ,int(2,1),'test_signals\output\summ.pcm')
 
       END SUBROUTINE BPSKDemodulatorTest
 
@@ -1108,7 +1135,43 @@ module TestsModule
          CRC16 = CRC16Compute(messageOctets, 4129,65536)
          WRITE (*,'(Z4)') 'crc16 = ', CRC16
 
-
       END SUBROUTINE Crc16Test
+
+      SUBROUTINE PowerMeterTest(inputDataFileName,outputDataFileName,samplingFrequency,length)
+      USE POWER_METER
+      USE ModuleWriteReadArrayFromToFile
+      USE ieee_arithmetic
+
+          CHARACTER(*), intent(in)           :: inputDataFileName,outputDataFileName
+          INTEGER(8), INTENT(IN)             :: samplingFrequency
+          INTEGER(8),INTENT(IN) :: length
+          REAL(8)                :: resulted
+          INTEGER(2), ALLOCATABLE :: signalIn(:)
+
+           INTEGER(8) startPos,endPos
+
+          resulted = GetSignalRmsPowerReferenceDb(length, samplingFrequency)
+
+          WRITE(*,*) 20*log10(resulted)
+
+          CALL ReadArrayFromFile(signalIn,inputDataFileName)
+
+          startPos =0
+          endPos = length
+
+          DO WHILE (endPos< size(signalIn))
+          resulted =  GetSignalRmsPowerINT2(signalIn(startPos:endPos),int((endPos-startPos),8))
+          IF (ieee_is_finite(resulted)) THEN
+              WRITE(*,*) 'power is ', resulted
+
+          ELSE
+             WRITE(*,*) 'NO SGINAL'
+          END IF
+
+          startPos = endPos
+          endPos = endPos+ length
+          END DO
+
+      END SUBROUTINE PowerMeterTest
 
 end module TestsModule
