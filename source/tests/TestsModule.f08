@@ -176,7 +176,6 @@ module TestsModule
 
 
            LOGICAL       :: state=.FALSE.
-           LOGICAL       :: isBinary=.True.
 
 
            INTEGER(2),ALLOCATABLE :: testSignal1(:)
@@ -288,7 +287,7 @@ module TestsModule
            CHARACTER(*),INTENT(IN) :: inputSignalFileNameI, inputSignalFileNameQ
            CHARACTER(*),INTENT(IN) :: outputSignalFileNameI,outputSignalFileNameQ
 
-           LOGICAL          ::isBinary=.True.
+
 
            CALL ReadComplexSignalFromFile(signal_1,capacity,inputSignalFileNameI,inputSignalFileNameQ)
            CALL WriteComplexSignalToFile(signal_1,capacity,outputSignalFileNameI,outputSignalFileNameQ)
@@ -319,7 +318,6 @@ module TestsModule
            CHARACTER(*), intent(in) :: inputSignalFileName
            CHARACTER(*), intent(in) :: inputSignalFileName2
            CHARACTER(*), intent(in) :: outputSignalFileName
-           LOGICAL         :: isBinary=.True.
 
 
 
@@ -327,9 +325,12 @@ module TestsModule
            intType=2
            CALL ReadAnalyticSignalFromFile(signal_1,intType,inputSignalFileName)
            CALL ReadAnalyticSignalFromFile(signal_2,intType,inputSignalFileName2)
+
+           WRITE(*,*) 'signal_1 kind' ,signal_1%GetSignalKind()
+           WRITE(*,*) 'signal_2 kind' ,signal_2%GetSignalKind()
            WRITE(*,*) 'signal_3=signal_1*signal_2'
            signal_3=signal_1*signal_2
-
+            WRITE(*,*) 'signal_3 kind' ,signal_3%GetSignalKind()
            CALL signal_3%Rshift(shift)
 
            CALL WriteAnalyticSignalToFile(signal_3,intType,outputSignalFileName)
@@ -371,9 +372,6 @@ module TestsModule
 
             CHARACTER(*), intent(in) :: outputSignalFileNameI,outputSignalFileNameQ
             INTEGER(1) :: intType
-
-            LOGICAL         :: isBinary=.True.
-
 
             intType=2
             WRITE(*,*) 'ПОМНИ ПРО ДЛИНУ!'
@@ -478,7 +476,6 @@ module TestsModule
 
            INTEGER(1) :: intType
 
-           LOGICAL :: isBinary=.True.
 
            CALL signal_1%SetName('первый И',' первый Ку')
            CALL signal_2%SetName('вторий И',' вторий Ку')
@@ -547,9 +544,13 @@ module TestsModule
          CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
 
          CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
+
+         WRITE(*,*) 'input_sig kind ', input_sig%GetSignalKind()
+
          conv_result= input_sig.CONV.reference_sig
+         WRITE(*,*) 'kinf conv ', conv_result%GetSignalKind()
          CALL conv_result%Rshift(shift)
-         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
+        CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
      END SUBROUTINE AutoConvolveTest
 
@@ -727,7 +728,6 @@ module TestsModule
          REAL(4) :: start, finish, mean,percents
          INTEGER(8) :: i
 
-         CHARACTER(10) :: fmt="(I64.1)"
 
          CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
          CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
@@ -930,13 +930,12 @@ module TestsModule
 
          REAL(4) :: start, finish, mean,percents
          INTEGER(8) :: i
-         INTEGER(8),ALLOCATABLE :: extractedSignal(:)
+         INTEGER(2),ALLOCATABLE :: extractedSignal(:)
 
-         CHARACTER(10) :: fmt="(I64.1)"
 
          CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
          CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
-         CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
+         CALL input_sig%ZeroesStuffing(int(10240,8),int(10240,8))
 
          CALL reference_sig%ExtractSignalData(extractedSignal)
 
@@ -947,7 +946,7 @@ module TestsModule
          percents=0
          call omp_set_num_threads( 4 )
 
-       !  !$OMP PARALLEL DO
+         !$OMP PARALLEL DO
          DO I=1,iterationCount
              WRITE(*,*) 'Cycle ', i
             call cpu_time(start)
@@ -960,8 +959,8 @@ module TestsModule
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
-     ! !$OMP END PARALLEL DO
-         mean=mean/iterationCount
+     !$OMP END PARALLEL DO
+        mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
          CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
@@ -1041,25 +1040,25 @@ module TestsModule
 !
          CALL  DemodulatorBPSK%SetTreshold(int(1600,8))
 !
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-
-!!          signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName)
-         module= signal_1%GetModuleFast()
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !
-         CALL sig2%Constructor(module)
-         CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
+!!!          signal_1 =  DemodulatorBPSK%Demodulate(sig)
+!         CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName)
+!         module= signal_1%GetModuleFast()
+!!
+!         CALL sig2%Constructor(module)
+!         CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
           deCodedData = DemodulatorBPSK%GetData(sig)
           decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
           crc16 =  CRC16Compute(decodedDataOctets, 4129,65535)
@@ -1086,13 +1085,13 @@ module TestsModule
            WRITE(*,*) '********************** '
 
 
-           CALL ReadAnalyticSignalFromFile(inI,int(2,1),'test_signals\output\Icorr.pcm')
-           CALL ReadAnalyticSignalFromFile(inQ,int(2,1),'test_signals\output\Qcorr.pcm')
-           inI= inI*inI
-           inQ = inQ*inQ
-           summ = inI+inQ
-           CALL summ%Rshift(int(10,1))
-            CALL WriteAnalyticSignalToFile(summ,int(2,1),'test_signals\output\summ.pcm')
+!           CALL ReadAnalyticSignalFromFile(inI,int(2,1),'test_signals\output\Icorr.pcm')
+!           CALL ReadAnalyticSignalFromFile(inQ,int(2,1),'test_signals\output\Qcorr.pcm')
+!           inI= inI*inI
+!           inQ = inQ*inQ
+!           summ = inI+inQ
+!           CALL summ%Rshift(int(10,1))
+!            CALL WriteAnalyticSignalToFile(summ,int(2,1),'test_signals\output\summ.pcm')
 
       END SUBROUTINE BPSKDemodulatorTest
 

@@ -24,7 +24,12 @@ MODULE signumSignalModule
         ! ЖЕЛАТЕЛЬНО добавлять расширение к имени
         CHARACTER(50)         :: signalName=''
     CONTAINS
-        PROCEDURE                 :: Constructor
+
+        PROCEDURE                 :: Constructor8
+        PROCEDURE                 :: Constructor4
+        PROCEDURE                 :: Constructor2
+        PROCEDURE                 :: Constructor1
+        GENERIC :: Constructor       => Constructor1,Constructor2,Constructor4,Constructor8
         PROCEDURE                 :: ExtractSignalData
         PROCEDURE                 :: Correlate
         FINAL                     :: destructor
@@ -34,9 +39,10 @@ MODULE signumSignalModule
 
 CONTAINS
     ! ВНИМАНИЕ отсчеты ЗНАКОВОГО сигнала заносятя в старшие разряды!
-    SUBROUTINE Constructor(this,loadedSignal)
+    SUBROUTINE Constructor8(this,loadedSignal)
         CLASS(signumSignal_t), INTENT(INOUT) :: this
-        INTEGER(8), INTENT(IN) :: loadedSignal(:)
+        INTEGER(1),PARAMETER :: intKind=8
+        INTEGER(intKind), INTENT(IN) :: loadedSignal(:)
         INTEGER(4) :: stat
         INTEGER(8) :: length_new
         INTEGER(8) :: i,j,k
@@ -77,19 +83,159 @@ CONTAINS
         END DO
         this%isAllocated=.TRUE.
         this%signalSize=length_new
-   END SUBROUTINE Constructor
+   END SUBROUTINE Constructor8
+
+   SUBROUTINE Constructor4(this,loadedSignal)
+        CLASS(signumSignal_t), INTENT(INOUT) :: this
+        INTEGER(1),PARAMETER :: intKind=4
+        INTEGER(intKind), INTENT(IN) :: loadedSignal(:)
+        INTEGER(4) :: stat
+        INTEGER(8) :: length_new
+        INTEGER(8) :: i,j,k
+        INTEGER(1) :: registerKind
+
+
+        IF (ALLOCATED(this%signal)) THEN
+           !!WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+           DEALLOCATE(this%signal, STAT=stat)
+           IF (STAT==0) THEN
+               !WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+           END IF
+           this%isAllocated=.FALSE.
+           this%signalName=''
+           this%signalSize= 0
+        END IF
+           !WRITE(*,*) 'SIGNUM CONSTRUCTOR WORKS!', this%signalName
+        ! число байт в типе данных
+        registerKind=KIND(this%signal)
+        length_new= size(loadedSignal)/(registerKind*bitsInByte_const)
+        !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
+        this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
+        IF (this%trailLen>0) length_new=length_new+1
+        !WRITE(*,*) 'trail length = ',this%trailLen
+        !WRITE(*,*) 'Новая длина = ',length_new
+        allocate (this%signal(1:length_new))
+        !обязательно зануляем массив, что бы ставить только 1
+        this%signal=0
+        k=0
+        j=1
+        DO i=1, size(loadedSignal)
+           IF(k>((registerKind*bitsInByte_const)-1)) THEN
+              k=0
+              j=j+1
+           END IF
+           IF(loadedSignal(i)>=0) this%signal(j)=IBSET(this%signal(j),(registerKind*bitsInByte_const-1)-k)
+           k=k+1
+        END DO
+        this%isAllocated=.TRUE.
+        this%signalSize=length_new
+   END SUBROUTINE Constructor4
     
+     SUBROUTINE Constructor2(this,loadedSignal)
+        CLASS(signumSignal_t), INTENT(INOUT) :: this
+        INTEGER(1),PARAMETER :: intKind=2
+        INTEGER(intKind), INTENT(IN) :: loadedSignal(:)
+        INTEGER(4) :: stat
+        INTEGER(8) :: length_new
+        INTEGER(8) :: i,j,k
+        INTEGER(1) :: registerKind
+
+
+        IF (ALLOCATED(this%signal)) THEN
+           !!WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+           DEALLOCATE(this%signal, STAT=stat)
+           IF (STAT==0) THEN
+               !WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+           END IF
+           this%isAllocated=.FALSE.
+           this%signalName=''
+           this%signalSize= 0
+        END IF
+           !WRITE(*,*) 'SIGNUM CONSTRUCTOR WORKS!', this%signalName
+        ! число байт в типе данных
+        registerKind=KIND(this%signal)
+        length_new= size(loadedSignal)/(registerKind*bitsInByte_const)
+        !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
+        this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
+        IF (this%trailLen>0) length_new=length_new+1
+        !WRITE(*,*) 'trail length = ',this%trailLen
+        !WRITE(*,*) 'Новая длина = ',length_new
+        allocate (this%signal(1:length_new))
+        !обязательно зануляем массив, что бы ставить только 1
+        this%signal=0
+        k=0
+        j=1
+        DO i=1, size(loadedSignal)
+           IF(k>((registerKind*bitsInByte_const)-1)) THEN
+              k=0
+              j=j+1
+           END IF
+           IF(loadedSignal(i)>=0) this%signal(j)=IBSET(this%signal(j),(registerKind*bitsInByte_const-1)-k)
+           k=k+1
+        END DO
+        this%isAllocated=.TRUE.
+        this%signalSize=length_new
+   END SUBROUTINE Constructor2
+
+   SUBROUTINE Constructor1(this,loadedSignal)
+        CLASS(signumSignal_t), INTENT(INOUT) :: this
+        INTEGER(1),PARAMETER :: intKind=1
+        INTEGER(intKind), INTENT(IN) :: loadedSignal(:)
+        INTEGER(4) :: stat
+        INTEGER(8) :: length_new
+        INTEGER(8) :: i,j,k
+        INTEGER(1) :: registerKind
+
+
+        IF (ALLOCATED(this%signal)) THEN
+           !!WRITE(*,*) 'ПАмять уже выделена, обнуляю'
+           DEALLOCATE(this%signal, STAT=stat)
+           IF (STAT==0) THEN
+               !WRITE(*,*) ' ANALYTIC SELF DESTRUCTOR WORKS! STAT ,SIZE ', stat,this%signalSize, this%signalName
+           END IF
+           this%isAllocated=.FALSE.
+           this%signalName=''
+           this%signalSize= 0
+        END IF
+           !WRITE(*,*) 'SIGNUM CONSTRUCTOR WORKS!', this%signalName
+        ! число байт в типе данных
+        registerKind=KIND(this%signal)
+        length_new= size(loadedSignal)/(registerKind*bitsInByte_const)
+        !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
+        this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
+        IF (this%trailLen>0) length_new=length_new+1
+        !WRITE(*,*) 'trail length = ',this%trailLen
+        !WRITE(*,*) 'Новая длина = ',length_new
+        allocate (this%signal(1:length_new))
+        !обязательно зануляем массив, что бы ставить только 1
+        this%signal=0
+        k=0
+        j=1
+        DO i=1, size(loadedSignal)
+           IF(k>((registerKind*bitsInByte_const)-1)) THEN
+              k=0
+              j=j+1
+           END IF
+           IF(loadedSignal(i)>=0) this%signal(j)=IBSET(this%signal(j),(registerKind*bitsInByte_const-1)-k)
+           k=k+1
+        END DO
+        this%isAllocated=.TRUE.
+        this%signalSize=length_new
+   END SUBROUTINE Constructor1
+
     SUBROUTINE ExtractSignalData(this,extractedSignal)
         INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedSignal(:)
         CLASS(signumSignal_t), INTENT(INOUT) :: this
         ALLOCATE(extractedSignal,source=this%signal)
      END SUBROUTINE ExtractSignalData
 
+
+      ! ВЫХОДНАЯ РАЗРЯДНОСТЬ - 32 бита!!!!
       FUNCTION Correlate(input,reference)
          CLASS(signumSignal_t), INTENT(IN)  :: input
          CLASS(signumSignal_t), INTENT(IN)  :: reference
 
-         INTEGER(8), allocatable :: Correlate(:)
+         INTEGER(4), allocatable :: Correlate(:)
          INTEGER(8)              :: rezSignalLength
          INTEGER(8)              :: referenceSignalLength
          INTEGER(8), allocatable :: window(:)

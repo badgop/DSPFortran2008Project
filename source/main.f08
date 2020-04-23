@@ -4,7 +4,7 @@ PROGRAM main
     USE ModuleWriteReadArrayFromToFile
     USE  ReadWriteArrayToFromTxt
     USE MathConstModule
-    IMPLICIT NONE
+
 
 
 
@@ -100,7 +100,7 @@ PROGRAM main
 !                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
 !                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
 !                     ,shift = int(22,1)&
-!                     ,iterationCount=int(100,4))
+!                     ,iterationCount=int(1000,4))
 !
 
 !     CALL SignumSignalConstructorTest()
@@ -112,7 +112,7 @@ PROGRAM main
 !                    ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
 !                    ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
 !                    ,shift = int(0,1)&
-!                    ,iterationCount=int(1,4))
+!                    ,iterationCount=int(1000,4))
 
 !      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
 
@@ -135,8 +135,8 @@ PROGRAM main
 !                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
 !                              ,sampleRate       = int(20*MEGA,8)&
 !                              ,centralFrequency = int (3*MEGA+0,8)&
-!                              ,initialPhase     = 0.0*PI&
-!                              ,outputShift      = int(27,8))
+!                              ,initialPhase     = 0.3*PI&
+!                              ,outputShift      = int(28,8))
 
 !         WRITE(*,*) 'аналитич со знаковым'
 !'test_signals\input\noise_7897.pcm'
@@ -157,7 +157,7 @@ PROGRAM main
 !                                   ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
 !                                   ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
 !                                   ,sampleRate             = int(20*MEGA,8)&
-!                                   ,centralFrequency       = int (3*MEGA+2,8)&
+!                                   ,centralFrequency       = int (3*MEGA+0,8)&
 !                                   ,initialPhase           = 0.3*PI&
 !                                   , outPutSampleCapacity  = int(14,1)&
 !                                   , outPutShift           = int(26,1)&
@@ -172,15 +172,19 @@ PROGRAM main
 !                             , outputDataFileName = 'test_signals\output\decodedData3.txt'  )
 
 
-                 CALL   PowerMeterTest(inputDataFileName = 'test_signals\output\BPSKTest1.pcm'&
-                             , outputDataFileName = 'test_signals\output\decodedData3.txt'&
-                             , samplingFrequency = int((100000*KILO),8)&
-                             , length = int(20000,8)  )
+!                 CALL   PowerMeterTest(inputDataFileName = 'test_signals\output\BPSKTest1.pcm'&
+!                             , outputDataFileName = 'test_signals\output\decodedData3.txt'&
+!                             , samplingFrequency = int((100000*KILO),8)&
+!                             , length = int(20000,8)  )
 
 
     CONTAINS
 
 
-
+    FUNCTION qq(a)
+      INTEGER(1),INTENT(IN) :: a
+      INTEGER(1)            :: qq
+      qq = 1
+    END FUNCTION qq
 
 END PROGRAM main

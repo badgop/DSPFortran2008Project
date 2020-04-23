@@ -99,7 +99,7 @@ CONTAINS
         Demodulate = this%phaseDemodulator%Downconvert(inputSig)
         Demodulate = Demodulate%Decimate(this%decimationCoeff)
 
-        CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
+        !CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
         ! согласованная фильтрация
         Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
 
@@ -124,9 +124,9 @@ CONTAINS
         INTEGER(8)                            :: cnt
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
-        ALLOCATE(module2(1:size(module)))
-        module2 =  module
-        CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
+!        ALLOCATE(module2(1:size(module)))
+!        module2 =  module
+!        CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
 
 
 

@@ -43,6 +43,7 @@ MODULE WriteReadAnalyticSignalToFromFile
         CHARACTER(*)           , INTENT(IN)               :: fileName
         CHARACTER(*)           , INTENT(IN) ,OPTIONAL     :: fmt
 
+        INTEGER(2), ALLOCATABLE              :: arrayInt1(:)
         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
@@ -50,13 +51,17 @@ MODULE WriteReadAnalyticSignalToFromFile
 
         IF (.NOT.(PRESENT(fmt))) THEN
                SELECT CASE (intType)
+                CASE(1)
+                     CALL ReadArrayFromFile(arrayInt1,fileName)
+                    CALL readedSignal%Constructor( arrayInt1)
+                    DEALLOCATE(arrayInt1)
                 CASE(2)
                     CALL ReadArrayFromFile(arrayInt2,fileName)
-                    CALL readedSignal%Constructor(  int(arrayInt2,8))
+                    CALL readedSignal%Constructor( arrayInt2)
                     DEALLOCATE(arrayInt2)
                 CASE(4)
                     CALL ReadArrayFromFile(arrayInt4,fileName)
-                    CALL readedSignal%Constructor(  int(arrayInt4,8))
+                    CALL readedSignal%Constructor( arrayInt4)
                     DEALLOCATE(arrayInt4)
                 CASE(8)
                     CALL ReadArrayFromFile(arrayInt8,fileName)
@@ -68,13 +73,17 @@ MODULE WriteReadAnalyticSignalToFromFile
         ELSE
             WRITE(*,*) 'Есть формат!!!'
             SELECT CASE (intType)
+            CASE(1)
+                CALL ReadArrayFromFile(arrayInt1,fileName,fmt)
+                CALL readedSignal%Constructor( arrayInt1)
+                DEALLOCATE(arrayInt1)
             CASE(2)
                 CALL ReadArrayFromFile(arrayInt2,fileName,fmt)
-                CALL readedSignal%Constructor(  int(arrayInt2,8))
+                CALL readedSignal%Constructor(arrayInt2)
                 DEALLOCATE(arrayInt2)
             CASE(4)
                 CALL ReadArrayFromFile(arrayInt4,fileName,fmt)
-                CALL readedSignal%Constructor(  int(arrayInt4,8))
+                CALL readedSignal%Constructor( arrayInt4)
                 DEALLOCATE(arrayInt4)
             CASE(8)
                 CALL ReadArrayFromFile(arrayInt8,fileName,fmt)
@@ -99,6 +108,7 @@ MODULE WriteReadAnalyticSignalToFromFile
         INTEGER(1)                           :: status
 
         CALL writedSignal%ExtractSignalData(arrayInt8)
+         WRITE(*,*) 'да ладно '
 
         SELECT CASE (intType)
 

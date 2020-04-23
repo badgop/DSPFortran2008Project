@@ -98,7 +98,7 @@ CONTAINS
 
         ! массив с кодами часоты, которые надо подавать на генератора
         INTEGER(8), ALLOCATABLE             :: frequencyCodes (:)
-        INTEGER(8), ALLOCATABLE             :: tempArray (:)
+        INTEGER(2), ALLOCATABLE             :: tempArray (:)
         INTEGER(8)                          :: LengthInputSignal
         INTEGER(8)                          :: i
 
@@ -114,7 +114,7 @@ CONTAINS
 
         frequencyCodes= INT((REAL(frequencyCodes)/this%frequencyStep),8)
 
-        ALLOCATE(tempArray,source=frequencyCodes)
+        ALLOCATE(tempArray(1:size(frequencyCodes)))
 
         ! цикл вычисления выходного сигнала
         DO i=1,LengthInputSignal
