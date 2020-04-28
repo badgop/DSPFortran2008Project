@@ -8,13 +8,14 @@ MODULE AWGNChannelMod
 
     TYPE, PUBLIC :: AWGNChannel_t
         PRIVATE
-        REAL(4),ALLOCATABLE    :: noiseArray(:)
-        REAL(8)                   :: powerNoise
+        INTEGER(2),ALLOCATABLE    :: noiseArray(:)
+        REAL(4)                   :: powerNoise
         INTEGER(8)                :: noiseArraySize
         INTEGER(8)                :: ptr = 0
     CONTAINS
         PROCEDURE                 :: MakeBandNoise
-        PROCEDURE                 :: LoadNoise
+        PROCEDURE                 :: LoadNoiseInt2
+        PROCEDURE                 :: AddNoiseAnalytic
         PROCEDURE, PRIVATE        :: CheckNoiseIsLoaded
         PROCEDURE,NOPASS, PRIVATE :: CalculateNeededAmplitudeKoeff
         PROCEDURE                 :: SetPtr
@@ -36,60 +37,58 @@ CONTAINS
         CALL MakeBandNoise%RShift(outPutShift)
     END  FUNCTION MakeBandNoise
 
-    SUBROUTINE LoadNoise(this,inputSignal)
+    SUBROUTINE LoadNoiseInt2(this,inputSignal)
         CLASS(AWGNChannel_t), INTENT(INOUT)     :: this
         CLASS(analyticSignal_t), INTENT(IN)     :: inputSignal
-        INTEGER(8),ALLOCATABLE                  :: tmpArray(:)
-        CALL inputSignal%ExtractSignalData(tmpArray)
-        ! обратите внимание - приведение у другому типу
-        ALLOCATE(this%noiseArray,source  = FLOAT(tmpArray))
-        !this%powerNoise     = GetSignalRmsPowerReal4(this%noiseArray,int(50000,8))
-        this%noiseArraySize = size(this%noiseArray)
-        DEALLOCATE(tmpArray)
+        INTEGER(2),ALLOCATABLE                  :: tmpArray(:)
 
-    END SUBROUTINE LoadNoise
+        CALL inputSignal%ExtractSignalData(tmpArray)
+        ALLOCATE(this%noiseArray,source  =(tmpArray))
+        DEALLOCATE(tmpArray)
+        this%powerNoise     = GetSignalRmsPowerINT2(this%noiseArray,int(900000,8))
+        this%noiseArraySize = size(this%noiseArray)
+    END SUBROUTINE LoadNoiseInt2
     
     FUNCTION AddNoiseAnalytic(this,inputSignal,snrNeed,outCapacity)
         CLASS(AWGNChannel_t)    , INTENT(in)          :: this
         CLASS(analyticSignal_t) , INTENT(IN)          :: inputSignal
-        REAL(8)                 , INTENT(IN)          :: snrNeed
+        REAL(4)                 , INTENT(IN)          :: snrNeed
         INTEGER(1)              , INTENT(IN)          :: outCapacity
         CLASS (analyticSignal_t),ALLOCATABLE          :: AddNoiseAnalytic
-        REAL(4)                 ,ALLOCATABLE          :: inputSignalArrayReal(:)
-        INTEGER(8)              ,ALLOCATABLE          :: inputSignalArrayInt8(:)
-        REAL(4)                 ,ALLOCATABLE          :: outputSignalArrayReal(:)
-        REAL(8)                                       :: powerInput
-        REAL(8)                                       :: koeff
-        INTEGER(8)                                    :: inputSignalSize
+        INTEGER(2)              ,ALLOCATABLE          :: inputSignalArrayInt2(:)
 
+        REAL(4)                                       :: powerInput
+        REAL(4)                                       :: koeff,x,y
+        INTEGER(8)                                    :: i,ptr
+        integer(2)                                    :: z
+
+
+        CALL CheckNoiseIsLoaded(this)
 
         ALLOCATE(AddNoiseAnalytic)
-        CALL CheckNoiseIsLoaded(this)
-        CALL inputSignal%ExtractSignalData(inputSignalArrayInt8)
-        inputSignalArrayReal = FLOAT(inputSignalArrayInt8)/FLOAT(2**15-1)
-        DEALLOCATE(inputSignalArrayInt8)
-        inputSignalSize = inputSignal%GetSignalSize()
-
-       ! powerInput = GetSignalRmsPowerReal4(inputSignalArrayReal, inputSignalSize)
+        WRITE (*,*) 'Извлекаю! '
+        Write (*,*) 'kind ' ,  inputSignal%GetSiGnalKind()
+        CALL inputSignal%ExtractSignalData(inputSignalArrayInt2)
+        powerInput =  GetSignalRmsPowerINT2 (inputSignalArrayInt2,int(size(inputSignalArrayInt2),8))
         koeff = CalculateNeededAmplitudeKoeff (powerInput,this%powerNoise,snrNeed)
-
-        IF ( (this%ptr+inputSignalSize)>this%noiseArraySize) THEN
-
-         inputSignalArrayReal(1:(this%noiseArraySize-this%ptr) ) =  inputSignalArrayReal(1:(this%noiseArraySize-this%ptr))&
-                             + (this%noiseArray(this%ptr:this%noiseArraySize))/FLOAT(2**15-1)
-
-         inputSignalArrayReal((this%noiseArraySize-this%ptr+1):inputSignalSize) = &
-                          inputSignalArrayReal((this%noiseArraySize-this%ptr+1):inputSignalSize)&
-                         + (this%noiseArray(1:(this%ptr+inputSignalSize-this%noiseArraySize+1)))/FLOAT(2**15-1)
-
-        ELSE
-          inputSignalArrayReal =  inputSignalArrayReal + inputSignalArrayReal(this%ptr+inputSignalSize)
-        END IF
-
-          ! inputSignalArrayReal = inputSignalArrayReal /max(inputSignalArrayReal)
-
-
-
+        WRITE(*,*) 'koeff ',koeff
+        ptr= this%ptr
+        DO i=1, size (inputSignalArrayInt2)
+           IF ((ptr)>size(this%noiseArray)) THEN
+              ptr = 1
+              WRITE(*,*) 'ПЕРЕХОД'
+           END IF
+           x= float(inputSignalArrayInt2(i))/32767.0
+           y = (float(this%noiseArray(ptr))/32767.0)*koeff
+           z = int((x+y)*float(2**(outCapacity-1)-1),2)
+           inputSignalArrayInt2(i) = z
+           ptr = ptr + 1
+           !WRITE(*,*) this%noiseArray(i+ptr)
+        END DO
+        CALL  AddNoiseAnalytic%Constructor(inputSignalArrayInt2)
+        WRITE (*,*) 'size ', size(inputSignalArrayInt2)
+        DEALLOCATE(inputSignalArrayInt2)
+        WRITE (*,*) 'ВЫШЕЛ! '
 
     END  FUNCTION AddNoiseAnalytic
 
@@ -105,10 +104,10 @@ CONTAINS
     END  FUNCTION AddNoiseComplex
 
     FUNCTION CalculateNeededAmplitudeKoeff(powerInput,powerNoise,snrNeed)
-       REAL(8)                 , INTENT(IN)          :: snrNeed
-       REAL(8)                 , INTENT(IN)          :: powerInput
-       REAL(8)                 , INTENT(IN)          :: powerNoise
-       REAL(8)                           :: CalculateNeededAmplitudeKoeff
+       REAL(4)                 , INTENT(IN)          :: snrNeed
+       REAL(4)                 , INTENT(IN)          :: powerInput
+       REAL(4)                 , INTENT(IN)          :: powerNoise
+       REAL(4)                           :: CalculateNeededAmplitudeKoeff
        CalculateNeededAmplitudeKoeff = 10**(0.05*(powerInput-powerNoise-snrNeed))
     END  FUNCTION CalculateNeededAmplitudeKoeff
 

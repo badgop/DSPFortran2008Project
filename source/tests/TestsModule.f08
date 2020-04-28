@@ -588,7 +588,7 @@ module TestsModule
             conv_result = input_sig.CONV.reference_sig
 
             call cpu_time(finish)
-            WRITE(*,*) 'count ', I
+           ! WRITE(*,*) 'count ', I
 
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
@@ -737,9 +737,9 @@ module TestsModule
          percents=0
          call omp_set_num_threads( 4 )
 
-         !$OMP PARALLEL DO
+     !$OMP PARALLEL DO SHARED (input_sig,reference_sig)
          DO I=1,iterationCount
-             WRITE(*,*) 'Cycle ', i
+             !WRITE(*,*) 'Cycle ', i
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
 
@@ -750,7 +750,7 @@ module TestsModule
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
-      !$OMP END PARALLEL DO
+       !$OMP END PARALLEL DO
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
@@ -1040,7 +1040,7 @@ module TestsModule
 !
          CALL  DemodulatorBPSK%SetTreshold(int(1600,8))
 !
-!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
+         signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
@@ -1054,11 +1054,11 @@ module TestsModule
 !!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !
 !!!          signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!         CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName)
-!         module= signal_1%GetModuleFast()
+         CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName)
+         module= signal_1%GetModuleFast()
 !!
-!         CALL sig2%Constructor(module)
-!         CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
+         CALL sig2%Constructor(module)
+         CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
           deCodedData = DemodulatorBPSK%GetData(sig)
           decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
           crc16 =  CRC16Compute(decodedDataOctets, 4129,65535)
@@ -1172,5 +1172,78 @@ module TestsModule
           END DO
 
       END SUBROUTINE PowerMeterTest
+
+      SUBROUTINE NoiseMakerTest(inputSignalFileName,inputRefFileName,outputSignalFileName,shift)
+      USE POWER_METER
+      USE ModuleWriteReadArrayFromToFile
+      USE ieee_arithmetic
+      USE analyticSignalModule
+
+      USE WriteReadAnalyticSignalToFromFile
+      USE ReadWriteArrayToFromTxt
+
+      CHARACTER(*), INTENT(IN) :: inputSignalFileName
+      CHARACTER(*), INTENT(IN) :: inputRefFileName
+      CHARACTER(*), INTENT(IN) :: outputSignalFileName
+      INTEGER(1)  , INTENT(IN) :: shift
+
+
+      TYPE(analyticSignal_t) ::input_sig
+      TYPE(analyticSignal_t) ::reference_sig
+      TYPE(analyticSignal_t) ::conv_result
+
+
+      CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+         !!!!!!
+      CALL ReadAnalyticSignalFromFile(reference_sig,int(4,1),inputRefFileName,'(I10)')
+      conv_result= input_sig.CONV.reference_sig
+      CALL conv_result%Rshift(shift)
+      CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
+
+      END SUBROUTINE NoiseMakerTest
+
+      SUBROUTINE RandomGeneratorTest()
+      USE RandomMod
+         INTEGER(8)      :: i,z
+         CALL RanomGeneratorInit()
+         DO i=1,10
+            z= GetRandomInt(int(7,1))
+            WRITE(*,*) z
+         END DO
+
+      END SUBROUTINE RandomGeneratorTest
+
+       SUBROUTINE AddNoiseTEst(inputNoiseFileName,inputSignalFileName,outputSignalFileName,amplifiedNoise,snr)
+             USE RandomMod
+             USE analyticSignalModule
+             USE AWGNChannelMod
+             USE WriteReadAnalyticSignalToFromFile
+             USE ReadWriteArrayToFromTxt
+
+            CHARACTER(*), INTENT(IN) :: inputNoiseFileName
+            CHARACTER(*), INTENT(IN) :: inputSignalFileName
+            CHARACTER(*), INTENT(IN) :: outputSignalFileName
+            CHARACTER(*), INTENT(IN) :: amplifiedNoise
+            REAL,         INTENT(IN) :: snr
+            INTEGER(2)               :: testArray(1:10000)
+            TYPE(AWGNChannel_t)      :: awgnChannel
+            TYPE(analyticSignal_t) ::input_sig
+            TYPE(analyticSignal_t) ::noise_sig
+            TYPE(analyticSignal_t) ::  bold
+            TYPE(analyticSignal_t) :: out_sig1
+            testArray = 127
+            CALL ReadAnalyticSignalFromFile(noise_sig,int(2,1),inputNoiseFileName)
+            CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+            CALL bold%Constructor(testArray)
+            CALL awgnChannel%LoadNoiseInt2(noise_sig)
+            WRITE(*,*) 'noise power ',awgnChannel%GetPowerNoise()
+
+            out_sig1 = awgnChannel%AddNoiseAnalytic(input_sig,snr,int(16,1))
+
+            CALL WriteAnalyticSignalToFile(out_sig1,int(2,1),amplifiedNoise)
+
+       END SUBROUTINE AddNoiseTEst
+
+
 
 end module TestsModule

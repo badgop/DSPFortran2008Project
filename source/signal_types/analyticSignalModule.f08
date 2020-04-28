@@ -698,6 +698,7 @@ CONTAINS
          INTEGER(8),ALLOCATABLE               :: tempArray(:)
          INTEGER(8)                           :: i,j
          INTEGER(4)                           :: stat
+         INTEGER(1)                           :: inKind,refKind
          CHARACTER(len=60) ::errorCode
 
          allocate(Convolve)
@@ -705,27 +706,65 @@ CONTAINS
          ! ЗАщита
          IF (input%signalSize<reference%signalSize) THEN
              WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
-              CALL ExitFromProgramNormal()
-         ELSE
-            ALLOCATE(tempArray(1:input%GetSignalSize()),STAT=stat)
-            IF (stat/=0) THEN
-                WRITE (*,*) 'НЕ могу выделить память под выч. корр. ф-ции,ERRMSG = ',errorCode
-                CALL ExitFromProgramNormal()
-            END IF
-            tempArray = 0
+             CALL ExitFromProgramNormal()
+
+         END IF
+
+!            ALLOCATE(tempArray(1:input%GetSignalSize()),STAT=stat)
+!            IF (stat/=0) THEN
+!                WRITE (*,*) 'НЕ могу выделить память под выч. корр. ф-ции,ERRMSG = ',errorCode
+!                CALL ExitFromProgramNormal()
+!            tempArray = 0
+!             END IF
+!
+!             DO i=1,input%GetSignalSize()-reference%GetSignalSize()
+!                DO j=1,reference%GetSignalSize()
+!                    tempArray(i)=tempArray(i)+input%GetValue(i+j)*reference%GetValue(j)
+!                    !WRITE(*,*) 'tempArray', tempArray(i)
+!                END DO
+!             END DO
+!            tempArray = 0
 
 
+!
+            inKind = input%GetSignalKind()
+            refKind = reference%GetSignalKind()
+!            WRITE(*,*) 'inKind ', inKind
+!            WRITE(*,*) 'refKind ', refKind
+!            WRITE (*,*) 'input%signalInt2 ', ALLOCATED (input%signalInt2)
+!            WRITE (*,*) 'reference%signalInt2 ', ALLOCATED (reference%signalInt2)
+!
+!            CALL input%ExtractSignalData2(in)
+!            CALL reference%ExtractSignalData2(ref)
+!
+!            tempArray = CorrelationRaw222(in,ref)
 
+           ! tempArray = CorrelationRaw(in,ref)
 
-             DO i=1,input%GetSignalSize()-reference%GetSignalSize()
-                DO j=1,reference%GetSignalSize()
-                    tempArray(i)=tempArray(i)+input%GetValue(i+j)*reference%GetValue(j)
-                    !WRITE(*,*) 'tempArray', tempArray(i)
-                END DO
-             END DO
+!             DO i=1,input%GetSignalSize()-reference%GetSignalSize()
+!                DO j=1,reference%GetSignalSize()
+!                    tempArray(i)=tempArray(i)+in(i+j)*ref(j)
+!                    !WRITE(*,*) 'tempArray', tempArray(i)
+!                END DO
+!             END DO
+
+            IF ((inKind == 1).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt1)
+            IF ((inKind == 1).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt2)
+            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt4)
+            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt8)
+            IF ((inKind == 8).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt4)
+            IF ((inKind == 8).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt2)
+            IF ((inKind == 8).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt1)
+            IF ((inKind == 2).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt1)
+            IF ((inKind == 2).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt2)
+            IF ((inKind == 2).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt4)
+            IF ((inKind == 4).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt1)
+            IF ((inKind == 4).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt2)
+            IF ((inKind == 4).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt4)
+            IF ((inKind == 4).AND.(refKind== 8)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt8)
              CALL convolve%Constructor(tempArray)
              DEALLOCATE(tempArray)
-         END IF
+
     END FUNCTION   Convolve
 
 
@@ -841,8 +880,6 @@ CONTAINS
     SUBROUTINE RShift(this,shift)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),INTENT(IN)                   :: shift
-         WRITE(*,*) 'ЗАшел в сдвиг'
-
          SELECT CASE(this%signalArrayKind)
                 CASE(1)
                   this%signalInt1=SHIFTA( this%signalInt1,shift)
@@ -852,11 +889,7 @@ CONTAINS
                   this%signalInt4=SHIFTA( this%signalInt4,shift)
                 CASE(8)
                   this%signalInt8=SHIFTA( this%signalInt8,shift)
-
          END SELECT
-         WRITE(*,*) 'Вышел из сдвига'
-
-
     END SUBROUTINE RShift
 
 
@@ -1239,9 +1272,9 @@ CONTAINS
 
          END SELECT
 
-
-
     END SUBROUTINE
+
+
 
 END MODULE analyticSignalModule
 

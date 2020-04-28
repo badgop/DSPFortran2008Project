@@ -41,8 +41,8 @@ SUBROUTINE  POWER_METER_REAL(signal,fd,power,period)
    FUNCTION GetSignalRmsPowerINT2(signal,length)
         INTEGER(2),  INTENT(IN)    :: signal(:)
         INTEGER(8),  INTENT(IN)    :: length
-        REAL(8)   ,  ALLOCATABLE   :: tmpArray(:)
-        REAL(8)                    :: GetSignalRmsPowerINT2,summ
+        REAL(4)   ,  ALLOCATABLE   :: tmpArray(:)
+        REAL(4)                    :: GetSignalRmsPowerINT2,summ
         ALLOCATE(tmpArray(1:length))
         tmpArray = float(signal(1:length))/32767.0
         tmpArray = (tmpArray*tmpArray)

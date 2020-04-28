@@ -81,10 +81,12 @@ CONTAINS
         !  -sin(wt)
         qHeterodyne=qHeterodyne*(int(-1,8))
         qSignal = inputSignal*qHeterodyne
+        WRITE(*,*) 'FILTER BITCH!'
         ! Фильтрация каналов
         iSignal = iSignal.CONV.this%lpf
         qSignal = qSignal.CONV.this%lpf
         ! Берем старшие разряды
+
         CALL iSignal%Rshift(int(this%outputShift,1))
         CALL qSignal%Rshift(int(this%outputShift,1))
 

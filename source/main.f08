@@ -100,19 +100,19 @@ PROGRAM main
 !                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
 !                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
 !                     ,shift = int(22,1)&
-!                     ,iterationCount=int(1000,4))
+!                     ,iterationCount=int(10000,4))
 !
 
 !     CALL SignumSignalConstructorTest()
 !     CALL RegisterPushPopAnsSummTest()
 !     CALL RegisterArrayPushPopTest()
 !     CALL SignumCorrTest()
-
+!  WRITE (*,*) 'SIGNIM!'
 !    CALL SignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
 !                    ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
 !                    ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
 !                    ,shift = int(0,1)&
-!                    ,iterationCount=int(1000,4))
+!                    ,iterationCount=int(10000,4))
 
 !      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
 
@@ -176,6 +176,46 @@ PROGRAM main
 !                             , outputDataFileName = 'test_signals\output\decodedData3.txt'&
 !                             , samplingFrequency = int((100000*KILO),8)&
 !                             , length = int(20000,8)  )
+
+
+!                 CALL NoiseMakerTest(inputSignalFileName  = 'noise\noise.pcm'&
+!                     ,inputRefFileName     = 'test_signals\input\20_mhz_bandpass_3Mhz_1_9_to_4_1_int.txt'&
+!                     ,outputSignalFileName = 'test_signals\output\noise_1_1Mhz.pcm'&
+!                     ,shift = int(31,1))
+
+!                 CALL RandomGeneratorTest()
+                CALL  AddNoiseTEst(inputNoiseFileName = 'test_signals\output\noise_1_1Mhz.pcm'&
+                                  ,inputSignalFileName ='test_signals\output\BPSKTest1.pcm'&
+                                  ,outputSignalFileName = 'test_signals\output\noiseAmpTEst.pcm'&
+                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
+                                  ,snr =  17.5 )
+
+
+              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
+                                   ,dataFileName           = 'test_signals\input\data.txt'&
+                                   ,inPutFileName          = 'test_signals\output\awgnTest.pcm'&
+                                   ,filterFileName         = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+                                   ,deCodedDataFileName    = 'test_signals\output\decodedData.txt'&
+                                   ,phaseDetectorIName     = 'test_signals\output\bpskDemodI.pcm'&
+                                   ,phaseDetectorQName     = 'test_signals\output\bpskDemodQ.pcm'&
+                                   ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
+                                   ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
+                                   ,sampleRate             = int(20*MEGA,8)&
+                                   ,centralFrequency       = int (3*MEGA+0,8)&
+                                   ,initialPhase           = 0.3*PI&
+                                   , outPutSampleCapacity  = int(14,1)&
+                                   , outPutShift           = int(26,1)&
+                                   , decimationCoeff       = int(5,8))
+
+
+!        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\awgnTest.pcm' &
+!                              , outPutFileNameI = 'test_signals\output\phaseDemodTestI.pcm'&
+!                              ,outPutFileNameQ  = 'test_signals\output\phaseDemodTestQ.pcm'&
+!                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
+!                              ,sampleRate       = int(20*MEGA,8)&
+!                              ,centralFrequency = int (3*MEGA+0,8)&
+!                              ,initialPhase     = 0.3*PI&
+!                              ,outputShift      = int(28,8))
 
 
     CONTAINS
