@@ -37,7 +37,7 @@ CONTAINS
         INTEGER(8)  , intent(in)           :: SampleRate
         INTEGER(8)  , intent(in)           :: centralFrequency
         INTEGER(1)  , intent(in)           :: outPutSampleCapacity
-        INTEGER(8)  , intent(in)           :: psn(:)
+        INTEGER(1)  , intent(in)           :: psn(:)
         INTEGER(8)  , intent(in)           :: chipRateInSamples
         INTEGER(8)  , intent(in)           :: impulseResponseArray(:)
         INTEGER(1)  , intent(in)           :: outputShift
@@ -65,7 +65,7 @@ CONTAINS
     FUNCTION Generate (this, data)
         CLASS(BPSKmodulator_t), intent(inout) :: this
         INTEGER(1)  , intent(in)              :: data(:)
-        INTEGER(8)  , allocatable             :: Diffdata(:)
+        INTEGER(1)  , allocatable             :: Diffdata(:)
         CLASS(analyticSignal_t),  allocatable :: OutPutPsn
         CLASS(analyticSignal_t) , allocatable :: OutPutModulationSig
         INTEGER(8)              , allocatable :: outputDataSig(:)

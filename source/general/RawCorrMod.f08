@@ -20,6 +20,7 @@ module RawCorrMod
           MODULE PROCEDURE       CorrelationRaw21
           MODULE PROCEDURE       CorrelationRaw22
           MODULE PROCEDURE       CorrelationRaw24
+          MODULE PROCEDURE       CorrelationRaw28
           MODULE PROCEDURE       CorrelationRaw41
           MODULE PROCEDURE       CorrelationRaw42
           MODULE PROCEDURE       CorrelationRaw44
@@ -283,6 +284,28 @@ module RawCorrMod
                 END DO
           END DO
     END FUNCTION   CorrelationRaw24
+
+       PURE FUNCTION CorrelationRaw28(input,reference)
+          INTEGER(1),PARAMETER                       :: arrayKindInput=2
+          INTEGER(1),PARAMETER                       :: arrayKindReference=8
+          INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
+          INTEGER(arrayKindReference) ,INTENT(IN)    :: reference(:)
+          INTEGER(8),ALLOCATABLE                     :: CorrelationRaw28(:)
+          INTEGER(8)                                 :: i,j
+          INTEGER(8)                                 :: inputLen, referenceLEn
+          ! длительность выходного сигнала в отсчетах
+          inputLen=SIZE(input)
+          referenceLen=SIZE(reference)
+          ALLOCATE (CorrelationRaw28(1:inputLen))
+          ! что бы не было мусора в элементах массива
+          CorrelationRaw28=0
+          ! Выбрать пределы корреляции
+          DO i=1,inputLen-referenceLen
+                DO j=1,referenceLen
+                    CorrelationRaw28(i)=CorrelationRaw28(i)+int(input(i+j),8)*int(reference(j),8)
+                END DO
+          END DO
+    END FUNCTION   CorrelationRaw28
 
        PURE FUNCTION CorrelationRaw41(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=4

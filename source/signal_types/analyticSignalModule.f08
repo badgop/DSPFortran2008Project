@@ -166,7 +166,7 @@ CONTAINS
     END SUBROUTINE ConstructorInt1
 
 
-        SUBROUTINE ConstructorInt2(this,loadedSignal)
+    SUBROUTINE ConstructorInt2(this,loadedSignal)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),PARAMETER                  :: arrayKind=2
         INTEGER(arrayKind), INTENT(IN) :: loadedSignal(:)
@@ -184,7 +184,6 @@ CONTAINS
            this%isAllocated=.FALSE.
            this%signalName=''
            this%signalSize= 0
-
         ELSE
            !WRITE(*,*) 'КАКОЙ_ТА БАЛАГАН!'
         END IF
@@ -193,15 +192,15 @@ CONTAINS
            WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS INT2!', this%signalName
           allocate (this%signalInt2,source=loadedSignal,STAT=stat,ERRMSG = errorCode )
            IF (STAT/=0) THEN
-
                WRITE (*,*) 'Аналитич конструктор не смог выделить память,ERRMSG = ',errorCode
-
                CALL ExitFromProgramNormal()
            END IF
-
            this%isAllocated=.TRUE.
-           this%signalSize=size(loadedSignal)
+           this%signalSize=size(this%signalInt2)
            this%signalArrayKind = arrayKind
+!           WRITE(*,'(I20)') this%signalInt2
+!           WRITE(*,*) 'COnstruvctor 2 size ', this%signalSize
+!           WRITE(*,*) 'real ', size(this%signalInt2)
     END SUBROUTINE ConstructorInt2
 
 
@@ -704,6 +703,9 @@ CONTAINS
          allocate(Convolve)
          convolve%signalName='fun name'
          ! ЗАщита
+         WRITE(*,*) input%signalSize
+         WRITE(*,*) reference%signalSize
+
          IF (input%signalSize<reference%signalSize) THEN
              WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
              CALL ExitFromProgramNormal()
@@ -729,8 +731,8 @@ CONTAINS
 !
             inKind = input%GetSignalKind()
             refKind = reference%GetSignalKind()
-!            WRITE(*,*) 'inKind ', inKind
-!            WRITE(*,*) 'refKind ', refKind
+            WRITE(*,*) 'inKind ', inKind
+            WRITE(*,*) 'refKind ', refKind
 !            WRITE (*,*) 'input%signalInt2 ', ALLOCATED (input%signalInt2)
 !            WRITE (*,*) 'reference%signalInt2 ', ALLOCATED (reference%signalInt2)
 !
@@ -758,6 +760,7 @@ CONTAINS
             IF ((inKind == 2).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt1)
             IF ((inKind == 2).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt2)
             IF ((inKind == 2).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt4)
+            IF ((inKind == 2).AND.(refKind== 8)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt8)
             IF ((inKind == 4).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt1)
             IF ((inKind == 4).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt2)
             IF ((inKind == 4).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt4)

@@ -768,7 +768,7 @@ module TestsModule
 
          INTEGER(8), intent(in)               :: osr
          CHARACTER(*), intent(in)             :: pspFileName, outPutFileName
-         INTEGER(8),ALLOCATABLE               :: prbs(:)
+         INTEGER(1),ALLOCATABLE               :: prbs(:)
          INTEGER(8),ALLOCATABLE               :: prbsSignal(:)
          TYPE(analyticSignal_t)               :: sig
 
@@ -798,12 +798,12 @@ module TestsModule
          INTEGER(8), intent(in)               :: osr
          INTEGER(8), intent(in)               :: lenInblocks
          CHARACTER(*), intent(in)             :: pspFileName, outPutFileName
-         INTEGER(8),ALLOCATABLE               :: prbs(:)
+         INTEGER(1),ALLOCATABLE               :: prbs(:)
          TYPE(analyticSignal_t)               :: sig
          TYPE(PSNSimple_t)                    :: gen1
          !!!!!!!!
          CALL ReadArrayFromFile (prbs,pspFileName,'(I1)')
-         CALL gen1%Constructor(int(prbs,8),osr)
+         CALL gen1%Constructor(prbs,osr)
          sig = gen1%OutPutPsnAs(lenInblocks)
          CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName)
 
@@ -827,7 +827,7 @@ module TestsModule
          INTEGER(8)  , intent(in)           :: SampleRate
          INTEGER(8)  , intent(in)           :: centralFrequency
          INTEGER(1)  , intent(in)           :: outPutSampleCapacity
-         INTEGER(8)  , ALLOCATABLE          :: psn(:)
+         INTEGER(1)  , ALLOCATABLE          :: psn(:)
          INTEGER(8)  , intent(in)           :: chipRateInSamples
          INTEGER(1), ALLOCATABLE                         :: data(:)
          INTEGER(1), ALLOCATABLE                         :: dataOctets(:)
@@ -997,14 +997,14 @@ module TestsModule
          INTEGER(8)  , intent(in)           :: centralFrequency
          INTEGER(1)  , intent(in)           :: outPutSampleCapacity
          INTEGER(8)  , intent(in)           :: decimationCoeff
-         INTEGER(8)  , ALLOCATABLE          :: psn(:)
+         INTEGER(1)  , ALLOCATABLE          :: psn(:)
          INTEGER(8)  , intent(in)           :: chipRateInSamples
-         INTEGER(8), ALLOCATABLE                         :: data(:)
-         INTEGER(8), ALLOCATABLE                         :: module(:)
-         INTEGER(1), ALLOCATABLE                         :: decodedData(:)
-         INTEGER(8), ALLOCATABLE                         :: impulseResponse(:)
+         INTEGER(8), ALLOCATABLE            :: data(:)
+         INTEGER(8), ALLOCATABLE            :: module(:)
+         INTEGER(1), ALLOCATABLE            :: decodedData(:)
+         INTEGER(8), ALLOCATABLE            :: impulseResponse(:)
          INTEGER(1)  , intent(in)           :: outPutShift
-         REAL(8), intent(in)                ::initialPhase
+         REAL(8), intent(in)                :: initialPhase
          INTEGER(1), ALLOCATABLE            :: decodedDataOctets(:)
          INTEGER(2)                         :: crc16,i,errorCount
 
@@ -1238,7 +1238,7 @@ module TestsModule
             CALL awgnChannel%LoadNoiseInt2(noise_sig)
             WRITE(*,*) 'noise power ',awgnChannel%GetPowerNoise()
 
-            out_sig1 = awgnChannel%AddNoiseAnalytic(input_sig,snr,int(16,1))
+            out_sig1 = awgnChannel%AddNoiseAnalytic(input_sig,snr,int(8,1))
 
             CALL WriteAnalyticSignalToFile(out_sig1,int(2,1),amplifiedNoise)
 

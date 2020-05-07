@@ -6,7 +6,7 @@ MODULE PSNSimpleMod
 
     TYPE, PUBLIC :: PSNSimple_t
         PRIVATE
-        INTEGER(8), ALLOCATABLE :: psn(:)
+        INTEGER(1), ALLOCATABLE :: psn(:)
         INTEGER(8)              :: osr
     CONTAINS
         PROCEDURE :: Constructor
@@ -22,7 +22,7 @@ CONTAINS
 
     SUBROUTINE Constructor(this, input_psn,osr)
         class(PSNSimple_t), intent(inOUT) :: this
-        INTEGER (8)       , intent(in)    :: input_psn(:)
+        INTEGER (1)       , intent(in)    :: input_psn(:)
         INTEGER(8)        , intent(in)    :: osr
         ALLOCATE (this%psn, source = input_psn )
         this%osr = osr

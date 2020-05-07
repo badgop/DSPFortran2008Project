@@ -13,8 +13,8 @@ MODULE impulseGeneratorModule
     !          [1....] =  1
     FUNCTION GenerateImpluseSequence(tau,prbs)
          INTEGER(8),INTENT(IN)    :: tau
-         INTEGER(8),INTENT(IN)    :: prbs(:)
-         INTEGER(8),ALLOCATABLE   :: GenerateImpluseSequence(:)
+         INTEGER(1),INTENT(IN)    :: prbs(:)
+         INTEGER(1),ALLOCATABLE   :: GenerateImpluseSequence(:)
          INTEGER(8)               :: i,j
          INTEGER(8)               :: zn
          ALLOCATE (GenerateImpluseSequence(1:(size(prbs)*tau)))

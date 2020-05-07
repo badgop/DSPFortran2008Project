@@ -12,7 +12,6 @@ MODULE CRC16Mod
        INTEGER(2)             :: CRC16Compute
        INTEGER(4)             :: i,j, crc16,tmp
 
-
        crc16=z'ffff'
        DO  i = 1,size(inputBitArrayINT8)
            tmp = inputBitArrayINT8(i)
@@ -30,14 +29,12 @@ MODULE CRC16Mod
            END DO
        END DO
 
-
        crc16=AND(crc16,z'ffff')
        crc16=XOR(crc16,xorReg)
        CRC16Compute= crc16
 !       CRC16Compute(1:size(inputBitArrayINT8)) = inputBitArrayINT8
 !       CRC16Compute(size(inputBitArrayINT8)+1) = int(SHIFTR(crc16,8),1)
 !       CRC16Compute(size(inputBitArrayINT8)+2) = int(crc16,1)
-
     END FUNCTION
 
 END MODULE CRC16Mod

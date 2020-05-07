@@ -54,7 +54,7 @@ CONTAINS
         INTEGER(8)  , INTENT(IN)           :: centralFrequency
         REAL(8)     , INTENT(IN)           :: initialPhase
         INTEGER(1)  , INTENT(IN)           :: outPutSampleCapacity
-        INTEGER(8)  , INTENT(IN)           :: psn(:)
+        INTEGER(1)  , INTENT(IN)           :: psn(:)
         INTEGER(8)  , INTENT(IN)           :: chipRateInSamples
         INTEGER(8)  , INTENT(IN)           :: impulseResponseArray(:)
         INTEGER(8)  , INTENT(IN)           :: outputShift

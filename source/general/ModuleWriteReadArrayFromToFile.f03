@@ -1,6 +1,3 @@
-
-
-
 MODULE ModuleWriteReadArrayFromToFile
 
     USE ModuleExitProg
@@ -11,7 +8,7 @@ MODULE ModuleWriteReadArrayFromToFile
     PRIVATE
 
     !из вне будут  будут доступны толкьо эти обобщенные имена
-    PUBLIC :: ReadArrayFromFile, WriteArrayToFile
+    PUBLIC :: ReadArrayFromFile, WriteArrayToFile,IsFileExists
 
     !======================================================
     !===== Модуль записи и чтения МАССИВА в/из файла ======
@@ -97,6 +94,11 @@ CONTAINS
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
+!        IF (IsFileExists(name_x) .EQV. .FALSE.) THEN
+!            CALL   ExitFromProgramNormal()
+!        END IF
+
         OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="UNFORMATTED",IOSTAT=iostat_Num)
 
         IF (iostat_Num.GT.0) then
@@ -144,9 +146,9 @@ CONTAINS
         INTEGER(8):: iostat_Num=0
 
 
-       INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
+            INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
 
-        IF (existsFile) THEN
+            IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
                 WRITE(*,*) 'Файл ', name_x, ' пустой'
                 CALL ExitFromProgramNormal()
@@ -155,6 +157,11 @@ CONTAINS
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
+!        IF (IsFileExists(name_x) .EQV. .FALSE.) THEN
+!            CALL   ExitFromProgramNormal()
+!        END IF
+
         OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="UNFORMATTED",IOSTAT=iostat_Num)
 
         IF (iostat_Num.GT.0) then
@@ -205,7 +212,7 @@ CONTAINS
 
        INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
 
-             IF (existsFile) THEN
+            IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
                 WRITE(*,*) 'Файл ', name_x, ' пустой'
                 CALL ExitFromProgramNormal()
@@ -214,6 +221,10 @@ CONTAINS
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
+!        IF (IsFileExists(name_x) .EQV. .FALSE.) THEN
+!            CALL   ExitFromProgramNormal()
+!        END IF
         OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="UNFORMATTED",IOSTAT=iostat_Num)
 
         IF (iostat_Num.GT.0) then
@@ -265,7 +276,7 @@ CONTAINS
 
        INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
 
-             IF (existsFile) THEN
+            IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
                 WRITE(*,*) 'Файл ', name_x, ' пустой'
                 CALL ExitFromProgramNormal()
@@ -274,6 +285,10 @@ CONTAINS
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
+!        IF (IsFileExists(name_x) .EQV. .FALSE.) THEN
+!            CALL   ExitFromProgramNormal()
+!        END IF
         OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="UNFORMATTED",IOSTAT=iostat_Num)
 
         IF (iostat_Num.GT.0) then
@@ -322,8 +337,9 @@ CONTAINS
         LOGICAL(1):: existsFile=.FALSE.
         INTEGER(8):: iostat_Num=0
 
-        INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
-             IF (existsFile) THEN
+       INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
+
+            IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
                 WRITE(*,*) 'Файл ', name_x, ' пустой'
                 CALL ExitFromProgramNormal()
@@ -332,6 +348,10 @@ CONTAINS
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
+!        IF (IsFileExists(name_x) .EQV. .FALSE.) THEN
+!            CALL   ExitFromProgramNormal()
+!        END IF
 
        lengthFile = GetFormattedTxtFileSize(name_x,fmt)
        IF (lengthFile < 0) THEN
@@ -371,8 +391,9 @@ CONTAINS
         LOGICAL(1):: existsFile=.FALSE.
         INTEGER(8):: iostat_Num=0
 
-        INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
-             IF (existsFile) THEN
+       INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
+
+            IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
                 WRITE(*,*) 'Файл ', name_x, ' пустой'
                 CALL ExitFromProgramNormal()
@@ -381,6 +402,10 @@ CONTAINS
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
+!        IF (IsFileExists(name_x) .EQV. .FALSE.) THEN
+!            CALL   ExitFromProgramNormal()
+!        END IF
 
        lengthFile = GetFormattedTxtFileSize(name_x,fmt)
        IF (lengthFile < 0) THEN
@@ -420,8 +445,9 @@ CONTAINS
         LOGICAL(1):: existsFile=.FALSE.
         INTEGER(8):: iostat_Num=0
 
-        INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
-             IF (existsFile) THEN
+       INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
+
+            IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
                 WRITE(*,*) 'Файл ', name_x, ' пустой'
                 CALL ExitFromProgramNormal()
@@ -430,6 +456,10 @@ CONTAINS
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
+!        IF (IsFileExists(name_x) .EQV. .FALSE.) THEN
+!            CALL   ExitFromProgramNormal()
+!        END IF
 
        lengthFile = GetFormattedTxtFileSize(name_x,fmt)
        WRITE(*,*) 'Длина!!! ', lengthFile
@@ -470,8 +500,9 @@ CONTAINS
         LOGICAL(1):: existsFile=.FALSE.
         INTEGER(8):: iostat_Num=0
 
-        INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
-             IF (existsFile) THEN
+       INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
+
+            IF (existsFile) THEN
             IF (lengthFile.EQ.0) THEN
                 WRITE(*,*) 'Файл ', name_x, ' пустой'
                 CALL ExitFromProgramNormal()
@@ -480,6 +511,10 @@ CONTAINS
             WRITE(*,*) 'Файл ', name_x, ' не существует'
             CALL   ExitFromProgramNormal()
         END IF
+
+!        IF (IsFileExists(name_x) .EQV. .FALSE.) THEN
+!            CALL   ExitFromProgramNormal()
+!        END IF
 
        lengthFile = GetFormattedTxtFileSize(name_x,fmt)
        IF (lengthFile < 0) THEN
@@ -631,12 +666,10 @@ CONTAINS
         i=0
         WRITE(*,*) 'Получать длину делаю, IOSTAT ', iostat_Num ,fmt
 
-
         DO WHILE (iostat_Num>=0)
            READ(10,fmt,IOSTAT=iostat_Num) x
            i=i+1
         END DO
-
 
         SELECT CASE (iostat_Num)
            case (-1)
@@ -651,7 +684,6 @@ CONTAINS
         END SELECT
 
 
-
 !  111
 !        IF(iostat_Num<0) goto 333
 !        IF(iostat_Num==0)  i=i+1
@@ -661,8 +693,26 @@ CONTAINS
 
         close(10)
 
+    END FUNCTION GetFormattedTxtFileSize
 
+    FUNCTION IsFileExists(fileName) RESULT(isExists)
+        CHARACTER(*), INTENT(IN)      :: fileName
+        LOGICAL                       :: isExists
+        INTEGER(8)                    :: lengthFile
+        LOGICAL(1)                    :: existsFile=.FALSE.
 
-    END FUNCTION
+        INQUIRE(FILE = fileName, SIZE = lengthFile, EXIST= existsFile)
+
+        IF (existsFile) THEN
+            isExists = .TRUE.
+            IF (lengthFile.EQ.0) THEN
+                WRITE(*,*) 'Файл ', fileName, ' пустой'
+                isExists = .FALSE.
+            END IF
+        ELSE
+            WRITE(*,*) 'Файл ', fileName, ' не существует'
+               isExists = .FALSE.
+        END IF
+    END FUNCTION IsFileExists
 
 END MODULE ModuleWriteReadArrayFromToFile
