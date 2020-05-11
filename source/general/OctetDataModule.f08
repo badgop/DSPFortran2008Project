@@ -21,14 +21,14 @@ CONTAINS
         INTEGER(8) :: i,j,k
         INTEGER(1) :: registerKind
         registerKind=KIND(BitsToOctets)
-         WRITE(*,*) 'BitsToOctets registerKind=', registerKind
+        !WRITE(*,*) 'BitsToOctets registerKind=', registerKind
         length_new= size(loadedSignal)/(registerKind*bitsInByte_const)
-        WRITE(*,*) 'length_new ', length_new
+        !WRITE(*,*) 'length_new ', length_new
         !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
         trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
         IF ( trailLen>0) length_new=length_new + 1
-        WRITE(*,*) 'trail length = ', trailLen
-        WRITE(*,*) 'Новая длина = ',length_new
+        !WRITE(*,*) 'trail length = ', trailLen
+        !WRITE(*,*) 'Новая длина = ',length_new
         allocate (BitsToOctets(1:length_new))
         !обязательно зануляем массив, что бы ставить только 1
         BitsToOctets=0

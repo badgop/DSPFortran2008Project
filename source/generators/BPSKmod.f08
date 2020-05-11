@@ -68,7 +68,7 @@ CONTAINS
         INTEGER(1)  , allocatable             :: Diffdata(:)
         CLASS(analyticSignal_t),  allocatable :: OutPutPsn
         CLASS(analyticSignal_t) , allocatable :: OutPutModulationSig
-        INTEGER(8)              , allocatable :: outputDataSig(:)
+        INTEGER(1)              , allocatable :: outputDataSig(:)
         INTEGER(8)                            :: stat
         CLASS(analyticSignal_t), allocatable  :: Generate
         CLASS(analyticSignal_t), allocatable  :: heterodyneSignal
@@ -94,6 +94,7 @@ CONTAINS
         CALL this%mixer%ComputeOutput(int(this%centralFrequency,8),(Generate%GetSignalSize()),heterodyneSignal)
         Generate = Generate*heterodyneSignal
         CALL Generate%RShift(this%outputShift)
+
         DEALLOCATE(OutPutPsn)
         DeALLOCATE(OutPutModulationSig)
         DEALLOCATE(heterodyneSignal)

@@ -15,6 +15,12 @@ MODULE analyticSignalModule
     USE MathConstModule
     USE RawCorrMod
     IMPLICIT NONE
+
+        INTERFACE
+            INTEGER FUNCTION OMP_GET_THREAD_NUM()
+            END FUNCTION
+    END INTERFACE
+
     PRIVATE
 
     TYPE, PUBLIC :: analyticSignal_t
@@ -189,7 +195,7 @@ CONTAINS
         END IF
         !и только потом выделять
         ! выделять нужно обязательно
-           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS INT2!', this%signalName
+          ! WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS INT2!', this%signalName
           allocate (this%signalInt2,source=loadedSignal,STAT=stat,ERRMSG = errorCode )
            IF (STAT/=0) THEN
                WRITE (*,*) 'Аналитич конструктор не смог выделить память,ERRMSG = ',errorCode
@@ -228,7 +234,7 @@ CONTAINS
         END IF
         !и только потом выделять
         ! выделять нужно обязательно
-           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS! INT4', this%signalName
+         !  WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS! INT4', this%signalName
           allocate (this%signalInt4,source=loadedSignal,STAT=stat,ERRMSG = errorCode )
            IF (STAT/=0) THEN
 
@@ -488,9 +494,9 @@ CONTAINS
 
          allocate( MultiplyAnalyticSignals)
 
-          WRITE(*,*) 'ЗАшел в умножение'
-           WRITE(*,*) 'maxREz ', maxRez
-           WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
+!         WRITE(*,*) 'ЗАшел в умножение'
+!         WRITE(*,*) 'maxREz ', maxRez
+!         WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
 
           SELECT CASE (maxRez)
                 CASE(:HUGE_Int1)
@@ -508,7 +514,7 @@ CONTAINS
                      CALL MultiplyAnalyticSignals%Constructor (arrayInt2)
                      DEALLOCATE(arrayInt2)
                  CASE(HUGE_Int2+1:HUGE_Int4)
-                     WRITE(*,*) 'ЗАшел в нужну ветку'
+!                     WRITE(*,*) 'ЗАшел в нужну ветку'
 
                    ALLOCATE(arrayInt4(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
@@ -600,9 +606,9 @@ CONTAINS
 
         allocate(AddAnalyticSignals)
 
-           WRITE(*,*) 'ЗАшел в сложение'
-           WRITE(*,*) 'maxREz ', maxRez
-           WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
+!           WRITE(*,*) 'ЗАшел в сложение'
+!           WRITE(*,*) 'maxREz ', maxRez
+!           WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
 
 
          SELECT CASE (maxRez)
@@ -701,16 +707,18 @@ CONTAINS
          CHARACTER(len=60) ::errorCode
 
          allocate(Convolve)
-         convolve%signalName='fun name'
+         convolve%signalName='conv fun name'
          ! ЗАщита
-         WRITE(*,*) input%signalSize
-         WRITE(*,*) reference%signalSize
+!         WRITE(*,*) input%signalSize
+!         WRITE(*,*) reference%signalSize
 
          IF (input%signalSize<reference%signalSize) THEN
              WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
              CALL ExitFromProgramNormal()
 
          END IF
+
+
 
 !            ALLOCATE(tempArray(1:input%GetSignalSize()),STAT=stat)
 !            IF (stat/=0) THEN
@@ -731,8 +739,8 @@ CONTAINS
 !
             inKind = input%GetSignalKind()
             refKind = reference%GetSignalKind()
-            WRITE(*,*) 'inKind ', inKind
-            WRITE(*,*) 'refKind ', refKind
+!            WRITE(*,*) 'inKind ', inKind
+!            WRITE(*,*) 'refKind ', refKind
 !            WRITE (*,*) 'input%signalInt2 ', ALLOCATED (input%signalInt2)
 !            WRITE (*,*) 'reference%signalInt2 ', ALLOCATED (reference%signalInt2)
 !
@@ -765,6 +773,8 @@ CONTAINS
             IF ((inKind == 4).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt2)
             IF ((inKind == 4).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt4)
             IF ((inKind == 4).AND.(refKind== 8)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt8)
+
+              !WRITE(*,*) 'обычн свертка, нить №  ',  omp_get_thread_num()
              CALL convolve%Constructor(tempArray)
              DEALLOCATE(tempArray)
 
@@ -938,11 +948,11 @@ CONTAINS
                   CALL referenceSig%Constructor(reference%signalInt8)
          END SELECT
 
-         !WRITE(*,*) 'Вычисляю знак корреляцию'
+        WRITE(*,*) 'Вычисляю знак корреляцию'
 
          rez = inputSig.CONV.referenceSig
 
-         !WRITE(*,*) 'ВЫЗЫВАЮ Аналитич КОНТРСРКУТР'
+         WRITE(*,*) 'ВЫЗЫВАЮ Аналитич КОНТРСРКУТР'
          CALL ConvolveSignum%Constructor(rez)
          DEALLOCATE(rez)
 
@@ -956,10 +966,15 @@ CONTAINS
          INTEGER(8)                            :: status
 
          ! ВЫХОДНАЯ РАЗРЯДНОСТЬ ЗНАКОВОГО КОРРЕЛЯТОРА 32 БИТА
+
          INTEGER(4), ALLOCATABLE               :: rez(:)
+
+         !WRITE(*,*) 'ЗАЩЕЛ'
 
          allocate(ConvolveAnalyticSignalSignumSignal,stat=status)
          ConvolveAnalyticSignalSignumSignal%signalName='fun name ConvolveSignum'
+
+         ! WRITE(*,*) 'дал память'
          !WRITE (*,*)  'NAme = ', ConvolveSignum%signalName
          !WRITE (*,*)  'alloc status = ', status
 
@@ -979,8 +994,10 @@ CONTAINS
 !              CALL ExitFromProgramNormal()
 !         END IF
 
-         !WRITE(*,*) 'Вычисляю знак корреляцию'
+        ! WRITE(*,*) 'Вычисляю знак корреляцию'
+
          rez = inputSig.CONV.reference
+
          !WRITE(*,*) 'ВЫЗЫВАЮ Аналитич КОНТРСРКУТР'
          CALL ConvolveAnalyticSignalSignumSignal%Constructor(rez)
          DEALLOCATE(rez)

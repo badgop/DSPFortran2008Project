@@ -7,6 +7,11 @@ MODULE signumSignalModule
     IMPLICIT NONE
     PRIVATE
 
+    INTERFACE
+            INTEGER FUNCTION OMP_GET_THREAD_NUM()
+            END FUNCTION
+    END INTERFACE
+
     TYPE, PUBLIC :: signumSignal_t
         PRIVATE
         ! отсчеты аналитического сингнала содержаться в динамеческом массиве
@@ -63,11 +68,14 @@ CONTAINS
         ! число байт в типе данных
         registerKind=KIND(this%signal)
         length_new= size(loadedSignal)/(registerKind*bitsInByte_const)
+       ! WRITE(*,*)  'НИТЬ  ',omp_get_thread_num()
+       ! WRITE(*,*) 'длина сигнала знаковый конструктора 8',  size(loadedSignal)
+
         !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
         this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
         IF (this%trailLen>0) length_new=length_new+1
-        !WRITE(*,*) 'trail length = ',this%trailLen
-        !WRITE(*,*) 'Новая длина = ',length_new
+       !WRITE(*,*) 'trail length = ',this%trailLen
+       ! WRITE(*,*) 'Новая длина = ',length_new
         allocate (this%signal(1:length_new))
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
@@ -158,8 +166,10 @@ CONTAINS
         !если длина массива не кратна числу бит в целом типе данных, то надо еще одно число добавить
         this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
         IF (this%trailLen>0) length_new=length_new+1
-        !WRITE(*,*) 'trail length = ',this%trailLen
-        !WRITE(*,*) 'Новая длина = ',length_new
+        ! WRITE(*,*) 'длина сигнала знаковый конструктора 2 ',  size(loadedSignal)
+       ! WRITE(*,*) 'trail length = ',this%trailLen
+
+       ! WRITE(*,*) 'Новая длина = ',length_new
         allocate (this%signal(1:length_new))
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
@@ -205,7 +215,7 @@ CONTAINS
         this%trailLen = INT(MOD(size(loadedSignal),registerKind*bitsInByte_const),1)
         IF (this%trailLen>0) length_new=length_new+1
         !WRITE(*,*) 'trail length = ',this%trailLen
-        !WRITE(*,*) 'Новая длина = ',length_new
+       ! WRITE(*,*) 'Новая длина = ',length_new
         allocate (this%signal(1:length_new))
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
@@ -249,15 +259,17 @@ CONTAINS
          INTEGER(1)              :: extractedBit = 0
          CHARACTER(10)           :: fmt="(I64.1)"
 
+
          registerKind=KIND(input%signal)
          ! длительность сигнала ВКФ = длительного входного сигнала
          IF (input%signalSize==1) THEN
              rezSignalLength = input%trailLen
-         ELSE
-             rezSignalLength = (input%signalSize-1)*(registerKind*bitsInByte_const)+input%trailLen
+         ELSE                                    ! - 1
+             rezSignalLength = (input%signalSize)*(registerKind*bitsInByte_const)+input%trailLen
+
          END IF
 
-         !!WRITE(*,*) 'корр  длина = ',rezSignalLength
+         !WRITE(*,*) 'корр  длина = ',rezSignalLength
          ALLOCATE(Correlate(1:rezSignalLength))
          Correlate=0
          ALLOCATE(window(1:reference%signalSize))
@@ -291,7 +303,8 @@ CONTAINS
          IF (input%signalSize==1) THEN
              referenceSignalLength =reference%trailLen
          ELSE
-             referenceSignalLength =(reference%signalSize-1)*(registerKind*bitsInByte_const)+reference%trailLen
+                                                      ! - 1
+             referenceSignalLength =(reference%signalSize)*(registerKind*bitsInByte_const)+reference%trailLen
          END IF
 
 !         !WRITE(*,*) 'windoow '
@@ -343,12 +356,15 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                    ! WRITE(*,*) SumOnesInInt_8(result) -(reference%trailLen-SumOnesInInt_8(result))
                      !!WRITE(*,*) 'DEBUG '
                  ELSE
+
                     DO j=1,reference%signalSize
                        result= NOT(XOR(window(j),reference%signal(j)))
+
                        Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)&
                                            -(64-SumOnesInInt_8(result))
 
                     END DO
+
                  END IF
 
                  !!WRITE(*,*) 'AND NOW '
@@ -368,7 +384,7 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                  result = PushPopBitSignumArrayInt_8(window,extractedBit,bitPushPos)
                  !!WRITE(*,*) 'AND THEN '
                  corrCnt=corrCnt+1
-                 !!WRITE(*,*) 'corrCnt ',corrCnt
+                ! WRITE(*,*) 'corrCnt ',corrCnt,  omp_get_thread_num()
               END DO MAIN_CYCLE
               DEALLOCATE(window)
     END FUNCTION   Correlate

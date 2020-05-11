@@ -10,6 +10,8 @@ PROGRAM main
 
 
 
+
+
 !CALL DDSOutputTest(romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1),outputSignalSampleCapacity=int(12,1)&
 !                             ,samplingFrequency=192*KILO&
 !                             ,phase=real(1.0,8)&
@@ -101,23 +103,23 @@ PROGRAM main
 !                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
 !                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
 !                     ,shift = int(22,1)&
-!                     ,iterationCount=int(10000,4))
-!
+!                     ,iterationCount=int(1000,4))
+!!
 
 !     CALL SignumSignalConstructorTest()
 !     CALL RegisterPushPopAnsSummTest()
 !     CALL RegisterArrayPushPopTest()
 !     CALL SignumCorrTest()
 !  WRITE (*,*) 'SIGNIM!'
-!    CALL SignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
+!   CALL SignumConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
 !                    ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
 !                    ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
 !                    ,shift = int(0,1)&
-!                    ,iterationCount=int(10000,4))
+!                    ,iterationCount=int(2,4))
 
 !      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
-
-
+!
+!
 !      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
 !                                      ,lenInblocks = int(10,8))
 
@@ -143,8 +145,8 @@ PROGRAM main
 
 !         WRITE(*,*) 'аналитич со знаковым'
 !'test_signals\input\noise_7897.pcm'
-!         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\output\phaseDemodTestQ.pcm'&
-!                                         ,inputRefFileName     = 'test_signals\input\impGenTest1.pcm'&
+!         CALL AnalyticSignumConvolveTest(inputSignalFileName  = 'test_signals\output\PsbSimpleGenTest1.pcm'&
+!                                         ,inputRefFileName     = 'test_signals\output\impGenTest1.pcm'&
 !                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
 !                                         ,shift = int(0,1)&
 !                                         ,iterationCount=int(1,4))
@@ -191,7 +193,7 @@ PROGRAM main
 !                                  ,inputSignalFileName ='test_signals\output\BPSKTest1.pcm'&
 !                                  ,outputSignalFileName = 'test_signals\output\noiseAmpTEst.pcm'&
 !                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
-!                                  ,snr =  18.00 )
+!                                  ,snr =  3.00 )
 !
 !
 !              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
@@ -221,7 +223,7 @@ PROGRAM main
 !                              ,outputShift      = int(28,8))
 
          CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
-                                    , resultFileName = 'test\result.txt' )
+                                    , resultFileName = 'test\res2ult.txt' )
 
     CONTAINS
 

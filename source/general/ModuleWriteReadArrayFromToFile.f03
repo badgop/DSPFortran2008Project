@@ -664,7 +664,7 @@ CONTAINS
 
         OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "READ", FORM="FORMATTED",IOSTAT=iostat_Num)
         i=0
-        WRITE(*,*) 'Получать длину делаю, IOSTAT ', iostat_Num ,fmt
+        !WRITE(*,*) 'Получать длину делаю, IOSTAT ', iostat_Num ,fmt
 
         DO WHILE (iostat_Num>=0)
            READ(10,fmt,IOSTAT=iostat_Num) x

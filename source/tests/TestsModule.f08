@@ -580,7 +580,7 @@ module TestsModule
 
          mean=0
          percents=0
-
+call omp_set_num_threads( 4 )
 !$OMP PARALLEL DO SHARED (input_sig,reference_sig)
          DO I=1,iterationCount
             call cpu_time(start)
@@ -735,22 +735,24 @@ module TestsModule
 
          mean=0
          percents=0
-         call omp_set_num_threads( 4 )
-
+!         call omp_set_num_threads( 4 )
+        call cpu_time(start)
      !$OMP PARALLEL DO SHARED (input_sig,reference_sig)
          DO I=1,iterationCount
              !WRITE(*,*) 'Cycle ', i
-            call cpu_time(start)
+
             CALL conv_result%SetName('свертка')
 
             conv_result = input_sig.CONVSIGN.reference_sig
 
-            call cpu_time(finish)
 
-           mean=finish-start
+
+
 !            WRITE(*,*) 'execution time ', mean
          END DO
        !$OMP END PARALLEL DO
+        call cpu_time(finish)
+        mean=finish-start
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
@@ -946,7 +948,7 @@ module TestsModule
          percents=0
          call omp_set_num_threads( 4 )
 
-         !$OMP PARALLEL DO
+     !    !$OMP PARALLEL DO
          DO I=1,iterationCount
              WRITE(*,*) 'Cycle ', i
             call cpu_time(start)
@@ -959,7 +961,7 @@ module TestsModule
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
-     !$OMP END PARALLEL DO
+ !    !$OMP END PARALLEL DO
         mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
@@ -1015,9 +1017,6 @@ module TestsModule
          TYPE(complexSignal_t) ::  signal_1
 
 
-          TYPE(analyticSignal_t)  :: inI
-          TYPE(analyticSignal_t)  :: inQ
-          TYPE(analyticSignal_t)  :: summ
 
          !!!!!!!!!!!
          CALL ReadArrayFromFile (psn,pspFileName,'(I1)' )
@@ -1119,7 +1118,7 @@ module TestsModule
          CHARACTER(*), intent(in)           :: inputDataFileName,outputDataFileName
          INTEGER(1)  , ALLOCATABLE          :: messageOctets(:)
          INTEGER(2)                          :: CRC16
-         INTEGER(1)                          :: i,xx
+         INTEGER(1)                          :: i
 
 
          CALL ReadArrayFromFile (messageOctets,inputDataFileName,'(Z2)' )

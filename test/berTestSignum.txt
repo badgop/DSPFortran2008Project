@@ -1,0 +1,22 @@
+15.0 !  snrStart
+16.0 ! snrEnd
+1.0  ! snrStep
+200 ! numberOfIterations
+184 ! messageLength
+20000000  !   sampleRateModulator
+3000000         !   centralFrequency
+16        !   outPutSampleCapacityModulator
+17        !  outputShiftModulator
+10240     !baudeRateInSamples
+10        ! chipRateInSamples
+test_signals\input\psp_valera.txt ! pspFileName
+test_signals\input\20_mhz_1_25_cut_int.txt ! trancieverFilterName
+test_signals\output\noise_1_1Mhz.pcm !inputNoiseFileName
+8         !  outPutSampleCapacityChannel
+20000000  !sampleRateDeModulator
+test_signals\input\20_mhz_1_25_cut_int.txt ! recieve Filter name
+0.3       ! initialPhase
+26        !  outputShiftPhaseDetector
+12        !  outPutSampleCapacityDetector  
+5         !   decimationCoeff
+1600      ! demodTreshold

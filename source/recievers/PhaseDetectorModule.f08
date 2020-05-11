@@ -53,7 +53,7 @@ CONTAINS
                                      , outputSignalSampleCapacity=int(8,1))
        CALL this%qMixer%SetPhase(0+this%initialPhase)
 
-        WRITE(*,*) 'PhaseDemod constructor works!!!!'
+!        WRITE(*,*) 'PhaseDemod constructor works!!!!'
     END SUBROUTINE Constructor
 
     FUNCTION Downconvert(this, inputSignal)
@@ -64,6 +64,9 @@ CONTAINS
         CLASS(analyticSignal_t), allocatable   :: qSignal
         CLASS(analyticSignal_t), allocatable   :: iHeterodyne
         CLASS(analyticSignal_t), allocatable   :: qHeterodyne
+
+        CLASS(analyticSignal_t), allocatable   :: iSignal2
+        CLASS(analyticSignal_t), allocatable   :: qSignal2
 
         ALLOCATE(Downconvert)
         ALLOCATE(iSignal)
@@ -77,25 +80,54 @@ CONTAINS
         CALL this%iMixer%ComputeOutput(int(this%centralFrequency,8),(inputSignal%GetSignalSize()),iHeterodyne)
         CALL this%qMixer%ComputeOutput(int(this%centralFrequency,8),(inputSignal%GetSignalSize()),qHeterodyne)
         ! формирование квадратурных каналов
+        !$omp parallel
+          !$omp  single
+       !$omp task
         iSignal = inputSignal*iHeterodyne
+
+        !$omp end task
+
+         !$omp task
         !  -sin(wt)
         qHeterodyne=qHeterodyne*(int(-1,8))
+
         qSignal = inputSignal*qHeterodyne
-        WRITE(*,*) 'FILTER BITCH!'
+ !$omp end task
+  !$omp end single
+         !$omp END parallel
+        DEALLOCATE(iHeterodyne)
+        DEALLOCATE(qHeterodyne)
+
+        !WRITE(*,*) 'FILTER BITCH!'
         ! Фильтрация каналов
+        !$omp parallel
+          !$omp  single
+       !$omp task
+
         iSignal = iSignal.CONV.this%lpf
+
+         !$omp end task
+          !$omp task
+
         qSignal = qSignal.CONV.this%lpf
+
+       !$omp end task
+       !$omp end single
+         !$omp END parallel
         ! Берем старшие разряды
+              !  WRITE(*,*) 'FILTER BITCH END!'
 
         CALL iSignal%Rshift(int(this%outputShift,1))
+
         CALL qSignal%Rshift(int(this%outputShift,1))
+
+      !  WRITE(*,*) 'фаз дем длина' , iSignal%GetSignalSize()
 
         ! формируеым выходной комплексный сигнал
         CALL Downconvert%Constructor(iSignal,qSignal)
         DEALLOCATE(iSignal)
         DEALLOCATE(qSignal)
-        DEALLOCATE(iHeterodyne)
-        DEALLOCATE(qHeterodyne)
+
 
     END FUNCTION Downconvert
     

@@ -160,7 +160,7 @@ CONTAINS
         frequencyCode= INT((REAL(frequency)/this%frequencyStep),8)
 
          ALLOCATE(tempArray(1:signalLength))
-         WRITE(*,*) 'ФАЗА ГЕНЕРАТОРА', this%phaseAccState
+!         WRITE(*,*) 'ФАЗА ГЕНЕРАТОРА', this%phaseAccState
 
         ! цикл вычисления выходного сигнала
         DO i=1,signalLength
@@ -335,7 +335,7 @@ CONTAINS
     SUBROUTINE destructor(this)
         TYPE(DDS_t), INTENT(INOUT) :: this
            IF (ALLOCATED(this%romSinusTable) )  DEALLOCATE(this%romSinusTable)
-           WRITE(*,*) 'DDS_t destructor завершил работу!'
+!           WRITE(*,*) 'DDS_t destructor завершил работу!'
     END SUBROUTINE
 
 END MODULE DDSModule

@@ -57,6 +57,16 @@ MODULE PayloadGeneratorMod
       END FUNCTION GeneratePayloadDataBitArrayWithCRC
 
 
+      FUNCTION CheckCRC(octetData)  RESULT(crcOk)
+         INTEGER(1),INTENT(IN) :: octetData(:)
+         LOGICAL               :: crcOk
+         INTEGER(2)            :: crc16
+
+         crcOk = .FALSE.
+         crc16 =  CRC16Compute(octetData, 4129,65535)
+         crc16=XOR(crc16,z'ffff')
+         IF (crc16 == z'1D0F') crcOk = .TRUE.
+      END FUNCTION CheckCRC
 
 
 END MODULE PayloadGeneratorMod

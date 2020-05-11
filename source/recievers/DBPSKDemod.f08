@@ -59,7 +59,7 @@ CONTAINS
         INTEGER(8)  , INTENT(IN)           :: impulseResponseArray(:)
         INTEGER(8)  , INTENT(IN)           :: outputShift
         INTEGER(8)  , INTENT(IN)           :: decimationCoeff
-        INTEGER(8)  , ALLOCATABLE          :: psnSignalArray(:)
+        INTEGER(1)  , ALLOCATABLE          :: psnSignalArray(:)
         this%baudRateInSamples              = baudRate
         this%centralFrequency               = centralFrequency
         this%initialPhase                   = initialPhase
@@ -132,38 +132,43 @@ CONTAINS
 
         CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
         cnt=0
-        WRITE(*,*) 'size module ', size(module)
+!        WRITE(*,*) 'size module ', size(module)
         DO i=1,size(module)
            IF (module(i)>=this%threshold) THEN
-               !WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i))
+!               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i))
                !Обработка созвездия ведется с учетом базиса [COS, -SIN]
                IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
                    cnt=cnt+1
                    bitBuffer(cnt)=1
-                   WRITE(*,*) 'принята 1 ', i , module(i), (realPart(i)) , (imagePart(i))
+!                   WRITE(*,*) 'принята 1 ', i , module(i), (realPart(i)) , (imagePart(i))
                END IF
                IF((realPart(i)<0).AND.(imagePart(i)>0)) THEN
                    cnt=cnt+1
                    bitBuffer(cnt)=0
-                   WRITE(*,*) 'принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
+!                   WRITE(*,*) 'принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
                END IF
 !
                 IF((realPart(i)<0).AND.(imagePart(i)<0)) THEN
                    cnt=cnt+1
                    bitBuffer(cnt)=0
-                   WRITE(*,*) 'НЕСТАНДАРТНО принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
+!                   WRITE(*,*) 'НЕСТАНДАРТНО принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
                END IF
 
                IF((realPart(i)>0).AND.(imagePart(i)>0)) THEN
                    cnt=cnt+1
                    bitBuffer(cnt)=1
-                   WRITE(*,*) 'НЕСТАНДАРТНО принята 1 ', i ,module(i), (realPart(i)) , (imagePart(i))
+!                   WRITE(*,*) 'НЕСТАНДАРТНО принята 1 ', i ,module(i), (realPart(i)) , (imagePart(i))
                END IF
 
            END IF
 
         END DO
-        WRITE(*,*) 'ВО ТУТ ПИЗДЕЦ '
+!        WRITE(*,*) 'ВО ТУТ ПИЗДЕЦ ', cnt
+       ! WRITE(*,*) 'статус  ', ALLOCATED(TresholdProcessing)
+        IF (cnt == 0) THEN
+             WRITE(*,*) 'ничего не принято'
+             cnt=1
+        END IF
         ALLOCATE(TresholdProcessing(1:cnt))
         TresholdProcessing = bitBuffer(1:cnt)
 

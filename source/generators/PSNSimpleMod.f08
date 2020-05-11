@@ -34,7 +34,7 @@ CONTAINS
         class(PSNSimple_t)     , intent(inOUT)     :: this
         INTEGER (8)            , intent(in)        :: lengthInBlocks
         CLASS(analyticSignal_t), allocatable       :: OutPutPsnAs
-        INTEGER(8)             , ALLOCATABLE       :: psnTmp(:)
+        INTEGER(1)             , ALLOCATABLE       :: psnTmp(:)
         INTEGER(8)                                 :: i
         INTEGER(8)                                 :: psnLen
         ALLOCATE(OutPutPsnAs)
@@ -52,7 +52,7 @@ CONTAINS
         class(PSNSimple_t)     , intent(inOUT)     :: this
         INTEGER (8)            , intent(in)        :: lengthInBlocks
 
-        INTEGER(8)             , ALLOCATABLE       :: OutPutPsnArray(:)
+        INTEGER(1)             , ALLOCATABLE       :: OutPutPsnArray(:)
         INTEGER(8)                                 :: i
         INTEGER(8)                                 :: psnLen
 

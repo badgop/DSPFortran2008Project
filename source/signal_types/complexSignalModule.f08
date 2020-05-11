@@ -166,10 +166,18 @@ CONTAINS
        CLASS(signumSignal_t) , INTENT(IN)    :: reference
        CLASS(complexSignal_t), ALLOCATABLE   :: ConvolveComplexSignum
        ALLOCATE(ConvolveComplexSignum)
+        !WRITE(*,*) 'CONVSIGN'
 
-       ConvolveComplexSignum%i= input%i.CONVSIGN.reference
-       ConvolveComplexSignum%q= input%q.CONVSIGN.reference
-
+  !    !$omp parallel
+      !    !$omp  single
+       !!$omp task
+        ConvolveComplexSignum%i= input%i.CONVSIGN.reference
+     !  !$omp END task
+      ! !$omp task
+        ConvolveComplexSignum%q= input%q.CONVSIGN.reference
+       !   !$omp end task
+      ! !$omp end single
+       !  !$omp END parallel
     END FUNCTION ConvolveComplexSignum
 
     ! Возвращает МАССИВ INT8 с модулем Комплексноого числа

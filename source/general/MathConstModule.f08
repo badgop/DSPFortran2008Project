@@ -21,7 +21,7 @@ MODULE MathConstModule
 
     ! Вспомогательные константы
     INTEGER(2),PRIVATE, PARAMETER :: int2 =-32768
-    INTEGER(4),PRIVATE, PARAMETER :: int4 =2**31-1
+    INTEGER(4),PRIVATE, PARAMETER :: int4 =2**30-1
     INTEGER(8),PRIVATE, PARAMETER :: int8 =2**63-1
     INTEGER(8), PARAMETER :: HUGE_Int1=HUGE(bitsInByte_const)
     INTEGER(8), PARAMETER :: HUGE_Int2=HUGE(int2)

@@ -66,12 +66,13 @@ CONTAINS
         CALL CheckNoiseIsLoaded(this)
 
         ALLOCATE(AddNoiseAnalytic)
-        WRITE (*,*) 'Извлекаю! '
-        Write (*,*) 'kind ' ,  inputSignal%GetSiGnalKind()
+!        WRITE (*,*) 'Извлекаю! '
+!        Write (*,*) 'kind ' ,  inputSignal%GetSiGnalKind()
         CALL inputSignal%ExtractSignalData(inputSignalArrayInt2)
         powerInput =  GetSignalRmsPowerINT2 (inputSignalArrayInt2,int(size(inputSignalArrayInt2),8))
+        !WRITE (*,*) 'powerInput ' ,powerInput
         koeff = CalculateNeededAmplitudeKoeff (powerInput,this%powerNoise,snrNeed)
-        WRITE(*,*) 'koeff ',koeff
+        !WRITE(*,*) 'koeff ',koeff
         ptr= this%ptr
         DO i=1, size (inputSignalArrayInt2)
            IF ((ptr)>size(this%noiseArray)) THEN
@@ -86,9 +87,9 @@ CONTAINS
            !WRITE(*,*) this%noiseArray(i+ptr)
         END DO
         CALL  AddNoiseAnalytic%Constructor(inputSignalArrayInt2)
-        WRITE (*,*) 'size ', size(inputSignalArrayInt2)
+!        WRITE (*,*) 'size ', size(inputSignalArrayInt2)
         DEALLOCATE(inputSignalArrayInt2)
-        WRITE (*,*) 'ВЫШЕЛ! '
+!        WRITE (*,*) 'ВЫШЕЛ! '
 
     END  FUNCTION AddNoiseAnalytic
 
