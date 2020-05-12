@@ -357,6 +357,7 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                      !!WRITE(*,*) 'DEBUG '
                  ELSE
 
+            ! распараллелить нахуй!
                     DO j=1,reference%signalSize
                        result= NOT(XOR(window(j),reference%signal(j)))
 

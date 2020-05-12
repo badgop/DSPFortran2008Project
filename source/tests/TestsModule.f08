@@ -977,7 +977,7 @@ call omp_set_num_threads( 4 )
                                    ,baudRateInSamples, chipRateInSamples&
                                    ,sampleRate,centralFrequency&
                                    ,initialPhase&
-                                   ,outPutSampleCapacity,outPutShift,decimationCoeff)
+                                   ,outPutSampleCapacity,outPutShift,decimationCoeff,ethalonCapacity)
 
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -1001,6 +1001,7 @@ call omp_set_num_threads( 4 )
          INTEGER(8)  , intent(in)           :: decimationCoeff
          INTEGER(1)  , ALLOCATABLE          :: psn(:)
          INTEGER(8)  , intent(in)           :: chipRateInSamples
+         INTEGER(1)  , INTENT(IN)           :: ethalonCapacity
          INTEGER(8), ALLOCATABLE            :: data(:)
          INTEGER(8), ALLOCATABLE            :: module(:)
          INTEGER(1), ALLOCATABLE            :: decodedData(:)
@@ -1031,7 +1032,8 @@ call omp_set_num_threads( 4 )
                                           ,psn=psn, chipRateInSamples=chipRateInSamples&
                                           ,impulseResponseArray= impulseResponse&
                                           ,outPutShift = int(outPutShift,8)&
-                                          ,decimationCoeff= decimationCoeff )
+                                          ,decimationCoeff= decimationCoeff&
+                                          ,ethalonCapacity = ethalonCapacity)
 
 !         sig = modulatorBPSK%Generate(data)
 !

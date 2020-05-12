@@ -42,8 +42,10 @@ MODULE BERTestMod
            INTEGER(8)               :: outputShiftPhaseDetector
            INTEGER(1)               :: outPutSampleCapacityDetector
            INTEGER(8)               :: demodTreshold
+           LOGICAL                  :: signumCompute = .TRUE.
            !*** Параметры приемника
            INTEGER(8)               :: sampleRateDeModulator
+           INTEGER(1)               :: ethalonCapacity
            LOGICAL                  :: fileExists
            INTEGER(8)               :: iostat_Num
            INTEGER(2),ALLOCATABLE   :: arrayInt2(:)
@@ -108,7 +110,9 @@ MODULE BERTestMod
            READ(10,*)  outputShiftPhaseDetector
            READ(10,*)  outPutSampleCapacityDetector
            READ(10,*)  decimationCoeff
+           READ(10,*)  ethalonCapacity
            READ(10,*)  demodTreshold
+           READ(10,*)  signumCompute
            CLOSE(10)
            WRITE(*,*) 'параметры модели прочитаны...'
 
@@ -157,7 +161,8 @@ MODULE BERTestMod
                                               ,chipRateInSamples       = chipRateInSamples&
                                               ,impulseResponseArray    = transcieverImpulseResponse&
                                               ,outPutShift             = outputShiftPhaseDetector&
-                                              ,decimationCoeff         = decimationCoeff                    )
+                                              ,decimationCoeff         = decimationCoeff &
+                                              ,ethalonCapacity         = ethalonCapacity )
           DEALLOCATE(transcieverImpulseResponse)
           CALL  DemodulatorBPSK%SetTreshold(demodTreshold)
 
@@ -188,10 +193,10 @@ MODULE BERTestMod
              DO j = 1,numberOfIterations
                   call cpu_time(start)
                   crcOk = AddNoiseRecievCheckCRC(bpskSignal     = bpskSignal &
-                                       ,DemodulatorBPSK = DemodulatorBPSK&
-                                       ,awgnChannel     = awgnChannel&
-                                       ,snr             = snrCurr&
-                                       ,capacity        = outPutSampleCapacityChannel)
+                                       ,DemodulatorBPSK         = DemodulatorBPSK&
+                                       ,awgnChannel             = awgnChannel&
+                                       ,snr                     = snrCurr&
+                                       ,capacity                = outPutSampleCapacityChannel)
 !                 !$omp critical
                   IF (crcOk) numOfsuccessRecieve = numOfsuccessRecieve +1
 

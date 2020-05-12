@@ -32,9 +32,11 @@
         PROCEDURE SetName
         PROCEDURE :: RShift
         PROCEDURE :: ConvolveComplexSignum
+        PROCEDURE :: ConvolveComplexAnalytic
         PROCEDURE :: GetModuleFast
         PROCEDURE :: Decimate
         generic :: operator   (.CONVSIGN.) =>  ConvolveComplexSignum
+       generic :: operator   (.CONV.)     =>  ConvolveComplexAnalytic
         FINAL :: destructor
 
     END TYPE complexSignal_t
@@ -179,6 +181,17 @@ CONTAINS
       ! !$omp end single
        !  !$omp END parallel
     END FUNCTION ConvolveComplexSignum
+
+    FUNCTION ConvolveComplexAnalytic(input,reference)
+      CLASS(complexSignal_t), INTENT(IN)    :: input
+      CLASS(analyticSignal_t), INTENT(IN)    :: reference
+      CLASS(complexSignal_t), ALLOCATABLE   :: ConvolveComplexAnalytic
+      ALLOCATE(ConvolveComplexAnalytic)
+
+           ConvolveComplexAnalytic%i= input%i.CONV.reference
+           ConvolveComplexAnalytic%q= input%q.CONV.reference
+
+    END FUNCTION ConvolveComplexAnalytic
 
     ! Возвращает МАССИВ INT8 с модулем Комплексноого числа
     FUNCTION GetModuleFast(this)
