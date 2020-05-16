@@ -35,6 +35,7 @@
         PROCEDURE :: ConvolveComplexAnalytic
         PROCEDURE :: GetModuleFast
         PROCEDURE :: Decimate
+        PROCEDURE :: ClipSignal
         generic :: operator   (.CONVSIGN.) =>  ConvolveComplexSignum
        generic :: operator   (.CONV.)     =>  ConvolveComplexAnalytic
         FINAL :: destructor
@@ -188,8 +189,12 @@ CONTAINS
       CLASS(complexSignal_t), ALLOCATABLE   :: ConvolveComplexAnalytic
       ALLOCATE(ConvolveComplexAnalytic)
 
+!      !$OMP parallel SECTIONS SHARED(reference) num_threads(2)
+!      !$omp section
            ConvolveComplexAnalytic%i= input%i.CONV.reference
+!      !$omp section
            ConvolveComplexAnalytic%q= input%q.CONV.reference
+!      !$omp end parallel sections
 
     END FUNCTION ConvolveComplexAnalytic
 
@@ -219,17 +224,25 @@ CONTAINS
        Decimate%q=(this%q%Decimate(r))
     END FUNCTION Decimate
 
+    FUNCTION ClipSignal (this, level,outLevel)
+        CLASS(complexSignal_t), INTENT(IN)  :: this
+        INTEGER(2)             , INTENT(IN)  :: level
+        INTEGER(2)             , INTENT(IN)  :: outLevel
+        CLASS(complexSignal_t), ALLOCATABLE :: ClipSignal
+
+        ALLOCATE(ClipSignal)
+        ClipSignal%i=this%i%ClipSignal(level,outLevel)
+        ClipSignal%q=this%q%ClipSignal(level,outLevel)
+    END  FUNCTION ClipSignal
+
 
 
     SUBROUTINE destructor(this)
         TYPE(complexSignal_t), INTENT(INOUT) :: this
-
         !**деструкторы комноментов вызывают сами
-
 !        DEALLOCATE(this%i%signal)
 !        DEALLOCATE(this%q%signal)
         this%isAllocated=.FALSE.
-
     END SUBROUTINE
 
 END MODULE complexSignalModule

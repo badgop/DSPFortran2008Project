@@ -14,6 +14,7 @@ MODULE analyticSignalModule
     USE ModuleExitProg
     USE MathConstModule
     USE RawCorrMod
+    USE ClippingMode
     IMPLICIT NONE
 
         INTERFACE
@@ -98,6 +99,7 @@ MODULE analyticSignalModule
         PROCEDURE,PASS(yOp) :: Multiplydonstant8AndAnalyticSignals
         ! простая децимация
         PROCEDURE :: Decimate
+
         ! далее выполняется перегрузка операторов
         ! умножения, вычитания, сложения и присваивания
         ! для типа данных analyticSignal_t
@@ -124,6 +126,8 @@ MODULE analyticSignalModule
         PROCEDURE GetValue
         PROCEDURE GetMaxAbs
         PROCEDURE GetSignalKind
+        ! выполняет функции ограничения сигнала по уровню
+        PROCEDURE :: ClipSignal
         FINAL :: destructor
 
     END TYPE analyticSignal_t
@@ -1222,6 +1226,30 @@ CONTAINS
           GetSignalKind = this%signalArrayKind
      END FUNCTION GetSignalKind
 
+     FUNCTION ClipSignal(this, level,outLevel)
+        CLASS(analyticSignal_t), INTENT(IN)  :: this
+        INTEGER(2)             , INTENT(IN)  :: level
+        INTEGER(2)             , INTENT(IN)  :: outLevel
+        CLASS(analyticSignal_t), ALLOCATABLE :: ClipSignal
+
+        ALLOCATE(ClipSignal)
+        SELECT CASE(this%signalArrayKind)
+               CASE(1)
+                    CALL ClipSignal%ConstructorInt1( ClipToLevelInt1(this%signalInt1,level,outLevel))
+                CASE(2)
+                    CALL ClipSignal%ConstructorInt2( ClipToLevelInt2(this%signalInt2,level,outLevel))
+                 CASE(4)
+                    CALL ClipSignal%ConstructorInt4( ClipToLevelInt4(this%signalInt4,level,outLevel))
+                 CASE(8)
+                    CALL ClipSignal%ConstructorInt8( ClipToLevelInt8(this%signalInt8,level,outLevel))
+                 CASE(0)
+                     WRITE(*,*) 'клипирование - сигнал не инициализирован'
+                    CALL ExitFromProgramNormal()
+                 CASE DEFAULT
+                    WRITE(*,*) 'Неправильно выбран тип целого для клиппирования'
+                    CALL ExitFromProgramNormal()
+         END SELECT
+     END FUNCTION ClipSignal
 
 
 

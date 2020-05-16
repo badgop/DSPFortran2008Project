@@ -1245,6 +1245,31 @@ call omp_set_num_threads( 4 )
 
        END SUBROUTINE AddNoiseTEst
 
+       SUBROUTINE ClipTest(inputSignalFileName,outPutFileName,level,outLevel)
+           USE analyticSignalModule
+           USE WriteReadAnalyticSignalToFromFile
+
+           CHARACTER(*), INTENT(IN)  :: inputSignalFileName
+           CHARACTER(*), INTENT(IN)  :: outPutFileName
+           INTEGER(2)  , INTENT(IN)  :: level
+           INTEGER(2)  , INTENT(IN)  :: outLevel
+
+           INTEGER(2)                :: array(1:1000)
+
+           TYPE(analyticSignal_t) ::input_sig
+           TYPE(analyticSignal_t) ::output_sig
+
+           array(1:500)    = 0
+           array(501:1000) = -1
+
+           !CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+
+           CALL input_sig%Constructor(array)
+           output_sig = input_sig%ClipSignal(level,outLevel)
+           CALL WriteAnalyticSignalToFile(output_sig,int(2,1),outPutFileName)
+       END SUBROUTINE ClipTest
+
+
 
 
 end module TestsModule

@@ -1,7 +1,7 @@
-15.0 !  snrStart
-16.0 ! snrEnd
-1.0  ! snrStep
-200 ! numberOfIterations
+20.0 !  snrStart
+21.0 ! snrEnd
+0.5  ! snrStep
+5 ! numberOfIterations
 184 ! messageLength
 20000000  !   sampleRateModulator
 3000000         !   centralFrequency
@@ -19,4 +19,6 @@ test_signals\input\20_mhz_1_25_cut_int.txt ! recieve Filter name
 26        !  outputShiftPhaseDetector
 12        !  outPutSampleCapacityDetector  
 5         !   decimationCoeff
+1        ! ethalonCapacity
 1600      ! demodTreshold
+.TRUE.    !signumCompute 

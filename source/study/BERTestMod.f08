@@ -164,7 +164,9 @@ MODULE BERTestMod
                                               ,decimationCoeff         = decimationCoeff &
                                               ,ethalonCapacity         = ethalonCapacity )
           DEALLOCATE(transcieverImpulseResponse)
+          CALL  DemodulatorBPSK%SetSignumComputeMode(signumCompute)
           CALL  DemodulatorBPSK%SetTreshold(demodTreshold)
+
 
 
           ! настройка генератора АБГШ
@@ -188,10 +190,11 @@ MODULE BERTestMod
           WRITE(*,*) 'SNR CURR ',snrCurr
           cnt=1
           DO WHILE(snrCurr<snrEnd)
+          call cpu_time(start)
 !          !$omp parallel
 !            !$omp  do PRIVATE(crcOk,numOfsuccessRecieve)
              DO j = 1,numberOfIterations
-                  call cpu_time(start)
+
                   crcOk = AddNoiseRecievCheckCRC(bpskSignal     = bpskSignal &
                                        ,DemodulatorBPSK         = DemodulatorBPSK&
                                        ,awgnChannel             = awgnChannel&
@@ -201,11 +204,13 @@ MODULE BERTestMod
                   IF (crcOk) numOfsuccessRecieve = numOfsuccessRecieve +1
 
 !                  !$omp end critical
-                  call cpu_time(finish)
-                  WRITE(*,*)' j= ', j, ' time = ', (finish-start)
+
+
              END DO
 !             !$omp end  do
 !             !$omp END parallel
+             call cpu_time(finish)
+             WRITE(*,*)' j= ', j, ' time = ', (finish-start)
              berPointsArray(cnt)= snrCurr
              merValueArray(cnt)=   float(numOfsuccessRecieve)/float(numberOfIterations)
              numOfsuccessRecieve = 0

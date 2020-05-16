@@ -123,7 +123,7 @@ PROGRAM main
 !      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
 !                                      ,lenInblocks = int(10,8))
 
-
+!
 !       CALL BPSKGeneratorTest(      pspFileName          = 'test_signals\input\psp_valera.txt'&
 !                                   ,dataFileName         = 'test_signals\input\data.txt'&
 !                                   ,outPutFileName       = 'test_signals\output\BPSKTest1.pcm'&
@@ -166,7 +166,8 @@ PROGRAM main
 !                                   ,initialPhase           = 0.3*PI&
 !                                   , outPutSampleCapacity  = int(14,1)&
 !                                   , outPutShift           = int(26,1)&
-!                                   , decimationCoeff       = int(5,8))
+!                                   , decimationCoeff       = int(5,8)&
+!                                   ,ethalonCapacity         = int(1,1))
 
 
 !              CALL OctetDataMaker(inputDataFileName  = 'test_signals\input\data.txt'&
@@ -222,6 +223,12 @@ PROGRAM main
 !                              ,initialPhase     = 0.3*PI&
 !                              ,outputShift      = int(28,8))
 
+
+!         CALL ClipTest(inputSignalFileName = 'test_signals\input\dds_test_output1.pcm'&
+!                                ,outPutFileName      = 'test_signals\output\clipped.pcm'&
+!                                ,level               = int(0,2)&
+!                                ,outLevel            = int(1,2))
+!
          CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
                                     , resultFileName = 'test\res2ult.txt' )
 

@@ -108,10 +108,22 @@ CONTAINS
 
         !CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
         ! согласованная фильтрация
+       ! WRITE (*,*) 'тип обрабоки'
+
         IF (this%signumCompute) THEN
-           Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
-        ELSE
+            ! согласованная фильтрация
+            !WRITE (*,*) 'свертка знаковая'
+
+           Demodulate = Demodulate%ClipSignal(int(0,2),int(1,2))
            Demodulate = Demodulate.CONV.this%currentPRSSignalAnalytic
+
+           !Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
+
+        ELSE
+            !WRITE (*,*) 'свертка полноразрядная'
+
+           Demodulate = Demodulate.CONV.this%currentPRSSignalAnalytic
+
         END IF
 
 

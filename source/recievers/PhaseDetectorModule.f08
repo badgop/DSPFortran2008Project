@@ -80,40 +80,40 @@ CONTAINS
         CALL this%iMixer%ComputeOutput(int(this%centralFrequency,8),(inputSignal%GetSignalSize()),iHeterodyne)
         CALL this%qMixer%ComputeOutput(int(this%centralFrequency,8),(inputSignal%GetSignalSize()),qHeterodyne)
         ! формирование квадратурных каналов
-        !$omp parallel
-          !$omp  single
-       !$omp task
+      !  !$omp parallel
+     !     !$omp  single
+     !  !$omp task
         iSignal = inputSignal*iHeterodyne
 
-        !$omp end task
+       ! !$omp end task
 
-         !$omp task
+      !   !$omp task
         !  -sin(wt)
         qHeterodyne=qHeterodyne*(int(-1,8))
 
         qSignal = inputSignal*qHeterodyne
- !$omp end task
-  !$omp end single
-         !$omp END parallel
+! !!$omp end task
+! ! !$omp end single
+!      !   !$omp END parallel
         DEALLOCATE(iHeterodyne)
         DEALLOCATE(qHeterodyne)
 
         !WRITE(*,*) 'FILTER BITCH!'
         ! Фильтрация каналов
-        !$omp parallel
-          !$omp  single
-       !$omp task
+!        !$omp parallel
+!          !$omp  single
+!       !$omp task
 
         iSignal = iSignal.CONV.this%lpf
 
-         !$omp end task
-          !$omp task
+!         !$omp end task
+!          !$omp task
 
         qSignal = qSignal.CONV.this%lpf
 
-       !$omp end task
-       !$omp end single
-         !$omp END parallel
+!       !$omp end task
+!       !$omp end single
+!         !$omp END parallel
         ! Берем старшие разряды
               !  WRITE(*,*) 'FILTER BITCH END!'
 

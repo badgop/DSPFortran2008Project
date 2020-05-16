@@ -385,7 +385,7 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                  result = PushPopBitSignumArrayInt_8(window,extractedBit,bitPushPos)
                  !!WRITE(*,*) 'AND THEN '
                  corrCnt=corrCnt+1
-                ! WRITE(*,*) 'corrCnt ',corrCnt,  omp_get_thread_num()
+                 !WRITE(*,*) 'corrCnt ',corrCnt,  omp_get_thread_num()
               END DO MAIN_CYCLE
               DEALLOCATE(window)
     END FUNCTION   Correlate

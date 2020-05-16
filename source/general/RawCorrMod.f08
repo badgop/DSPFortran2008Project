@@ -94,7 +94,7 @@ module RawCorrMod
           ! Выбрать пределы корреляции
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw82(i)=CorrelationRaw82(i)+input(i+j)**int(reference(j),8)
+                    CorrelationRaw82(i)=CorrelationRaw82(i)+input(i+j)*int(reference(j),8)
                 END DO
           END DO
     END FUNCTION   CorrelationRaw82
@@ -114,11 +114,13 @@ module RawCorrMod
           ! что бы не было мусора в элементах массива
           CorrelationRaw81=0
           ! Выбрать пределы корреляции
+         ! WRITE(*,*) 'RAW CORR 81 IN'
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw81(i)=CorrelationRaw81(i)+input(i+j)**int(reference(j),8)
+                    CorrelationRaw81(i)=CorrelationRaw81(i)+input(i+j)*int(reference(j),8)
                 END DO
           END DO
+         ! WRITE(*,*) 'RAW CORR 81 OUT'
     END FUNCTION   CorrelationRaw81
 
             ! Вычисление корр. функции (Raw-  англ. сырая.)
