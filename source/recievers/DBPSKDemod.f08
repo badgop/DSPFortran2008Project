@@ -11,6 +11,8 @@ MODULE DBPSKDemod
     USE  ModuleWriteReadArrayFromToFile
     USE ModuleWriteReadArrayFromToFile
     USE WriteReadComplexSignalToFromFile
+    USE FastModuleMod
+    USE ArrayFunctionsMod
     IMPLICIT NONE
     PRIVATE
 
@@ -25,6 +27,7 @@ MODULE DBPSKDemod
         INTEGER(8)                   :: outputShift
         INTEGER(8)                   :: threshold
         INTEGER(8)                   :: decimationCoeff
+        INTEGER(1)                   :: ethalonCapacity
         LOGICAL                      :: signumCompute
 
         TYPE(PSNSimple_t)            :: psnGnerator
@@ -64,6 +67,8 @@ CONTAINS
         INTEGER(8)  , INTENT(IN)           :: decimationCoeff
         INTEGER(1)  , INTENT(IN)           :: ethalonCapacity
         INTEGER(1)  , ALLOCATABLE          :: psnSignalArray(:)
+
+
         this%baudRateInSamples              = baudRate
         this%centralFrequency               = centralFrequency
         this%initialPhase                   = initialPhase
@@ -71,6 +76,8 @@ CONTAINS
         this%outPutSampleCapacity           = outPutSampleCapacity
         this%outputShift                    = outputShift
         this%decimationCoeff                = decimationCoeff
+        this%ethalonCapacity                = ethalonCapacity
+
         CALL this%psnGnerator%Constructor (psn, chipRateInSamples/this%decimationCoeff)
         CALL this%phaseDemodulator%Constructor(this%centralFrequency&
                                         ,this%initialPhase&
@@ -78,6 +85,11 @@ CONTAINS
                                         ,impulseResponseArray&
                                         ,int(outputShift,8))
        psnSignalArray=this%psnGnerator%OutPutPsnArray(int(1,8))
+
+       !CALL ReverseArrayInt1(psnSignalArray)
+
+
+
        CALL this%currentPRSSignal%Constructor(psnSignalArray)
 
        psnSignalArray = psnSignalArray*ethalonCapacity
@@ -104,28 +116,31 @@ CONTAINS
         ALLOCATE (Demodulate)
         ! преобразование вниз и разложение на квадратуры
         Demodulate = this%phaseDemodulator%Downconvert(inputSig)
+
+        CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Ipath.pcm','test_signals\output\Qpath.pcm')
         Demodulate = Demodulate%Decimate(this%decimationCoeff)
 
-        !CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
+
         ! согласованная фильтрация
        ! WRITE (*,*) 'тип обрабоки'
 
         IF (this%signumCompute) THEN
             ! согласованная фильтрация
-            !WRITE (*,*) 'свертка знаковая'
+            WRITE (*,*) 'свертка знаковая'
 
-           Demodulate = Demodulate%ClipSignal(int(0,2),int(1,2))
-           Demodulate = Demodulate.CONV.this%currentPRSSignalAnalytic
+!           Demodulate = Demodulate%ClipSignal(int(0,2),int(1,2))
+!           Demodulate = Demodulate.CONV.this%currentPRSSignalAnalytic
 
-           !Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
+           Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
 
         ELSE
-            !WRITE (*,*) 'свертка полноразрядная'
-
+            WRITE (*,*) 'свертка полноразрядная'
+           Demodulate = Demodulate%ClipSignal(int(this%ethalonCapacity,2),int(this%ethalonCapacity,2))
            Demodulate = Demodulate.CONV.this%currentPRSSignalAnalytic
 
         END IF
 
+      CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
 
      END FUNCTION Demodulate
 
@@ -138,53 +153,84 @@ CONTAINS
         CLASS(BPSKDemodulator_t), INTENT(in)  :: this
         CLASS(complexSignal_t)  , INTENT(inout)  :: matchedFilterOut
         INTEGER(1)              , ALLOCATABLE :: TresholdProcessing(:)
-        INTEGER(8)              , ALLOCATABLE :: module(:)
+        INTEGER(8),dimension(:) , ALLOCATABLE :: module
         !!!!!!!!!!!!!!!!!!!
         INTEGER(2)              , ALLOCATABLE :: module2(:)
         INTEGER(8), ALLOCATABLE               :: realPart(:)
         INTEGER(8), ALLOCATABLE               :: imagePart(:)
         INTEGER(8)                            :: i
+        INTEGER(8)                            :: lastI
         INTEGER(1)                            :: bitBuffer(1:32767)
         INTEGER(8)                            :: cnt
+        LOGICAL                               :: latchEarly = .FALSE.
+        LOGICAL                               :: latchLate  = .FALSE.
+        INTEGER(8)                            :: pointAccumulator = 0;
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
-!        ALLOCATE(module2(1:size(module)))
-!        module2 =  module
-!        CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
+        ALLOCATE(module2(1:size(module)))
+        module2 =  module
+        CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
 
 
-
+        lasti=0
         CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
         cnt=0
 !        WRITE(*,*) 'size module ', size(module)
         DO i=1,size(module)
-           IF (module(i)>=this%threshold) THEN
-!               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i))
+           IF (GetFastMouleFromComplexInt8(realPart(i),imagePart(i))>=this%threshold) THEN
+                latchEarly = .TRUE.
+               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
+               lasti=i
+!                pointAccumulator = pointAccumulator + 1
+
                !Обработка созвездия ведется с учетом базиса [COS, -SIN]
-               IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
-                   cnt=cnt+1
-                   bitBuffer(cnt)=1
+!               IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
+!                   cnt=cnt+1
+!                   bitBuffer(cnt)=1
 !                   WRITE(*,*) 'принята 1 ', i , module(i), (realPart(i)) , (imagePart(i))
+!               END IF
+!               IF((realPart(i)<0).AND.(imagePart(i)>0)) THEN
+!                   cnt=cnt+1
+!                   bitBuffer(cnt)=0
+!                   WRITE(*,*) 'принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
+!               END IF
+
+               IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
+                   pointAccumulator = pointAccumulator + 1
+                   !WRITE(*,*) '1'
                END IF
                IF((realPart(i)<0).AND.(imagePart(i)>0)) THEN
-                   cnt=cnt+1
-                   bitBuffer(cnt)=0
-!                   WRITE(*,*) 'принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
-               END IF
-!
-                IF((realPart(i)<0).AND.(imagePart(i)<0)) THEN
-                   cnt=cnt+1
-                   bitBuffer(cnt)=0
-!                   WRITE(*,*) 'НЕСТАНДАРТНО принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
+                   pointAccumulator = pointAccumulator - 1
+                   !WRITE(*,*) '0'
                END IF
 
-               IF((realPart(i)>0).AND.(imagePart(i)>0)) THEN
-                   cnt=cnt+1
-                   bitBuffer(cnt)=1
-!                   WRITE(*,*) 'НЕСТАНДАРТНО принята 1 ', i ,module(i), (realPart(i)) , (imagePart(i))
-               END IF
+
+           ELSE
+              IF(latchEarly) latchLate = .TRUE.
 
            END IF
+
+           IF(latchEarly.AND.latchLate) THEN
+              WRITE(*,*) 'поймали  ',pointAccumulator
+
+              IF (pointAccumulator>=1) THEN
+                 cnt=cnt+1
+                 bitBuffer(cnt)=1
+                  WRITE(*,*) '1'
+              END IF
+
+              IF (pointAccumulator<=-1) THEN
+                 cnt=cnt+1
+                 bitBuffer(cnt)=0
+                 WRITE(*,*) '0'
+              END IF
+
+
+              pointAccumulator = 0
+              latchEarly = .FALSE.
+              latchLate  = .FALSE.
+           END IF
+
 
         END DO
 !        WRITE(*,*) 'ВО ТУТ ПИЗДЕЦ ', cnt
@@ -193,6 +239,7 @@ CONTAINS
              WRITE(*,*) 'ничего не принято'
              cnt=1
         END IF
+        !WRITe(*,*) 'CNT ',cnt
         ALLOCATE(TresholdProcessing(1:cnt))
         TresholdProcessing = bitBuffer(1:cnt)
 

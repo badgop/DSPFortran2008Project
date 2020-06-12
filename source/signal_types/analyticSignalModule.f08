@@ -15,6 +15,7 @@ MODULE analyticSignalModule
     USE MathConstModule
     USE RawCorrMod
     USE ClippingMode
+    USE ArrayFunctionsMod
     IMPLICIT NONE
 
         INTERFACE
@@ -128,6 +129,7 @@ MODULE analyticSignalModule
         PROCEDURE GetSignalKind
         ! выполняет функции ограничения сигнала по уровню
         PROCEDURE :: ClipSignal
+        PROCEDURE :: MirorReflectSignal
         FINAL :: destructor
 
     END TYPE analyticSignal_t
@@ -1251,7 +1253,29 @@ CONTAINS
          END SELECT
      END FUNCTION ClipSignal
 
+    SUBROUTINE MirorReflectSignal (this)
+       CLASS(analyticSignal_t), INTENT(INOUT)  :: this
 
+
+       SELECT CASE(this%signalArrayKind)
+               CASE(1)
+                   CALL ReverseArrayInt( this%signalInt1(:) )
+               CASE(2)
+                  CALL ReverseArrayInt( this%signalInt2(:) )
+               CASE(4)
+                  CALL ReverseArrayInt( this%signalInt4(:) )
+               CASE(8)
+                  CALL ReverseArrayInt( this%signalInt8(:) )
+               CASE(0)
+                     WRITE(*,*) 'клипирование - сигнал не инициализирован'
+                    CALL ExitFromProgramNormal()
+               CASE DEFAULT
+                    WRITE(*,*) 'Неправильно выбран тип целого для клиппирования'
+                    CALL ExitFromProgramNormal()
+         END SELECT
+
+
+    END SUBROUTINE MirorReflectSignal
 
     SUBROUTINE destructor(this)
         TYPE(analyticSignal_t), INTENT(INOUT) :: this

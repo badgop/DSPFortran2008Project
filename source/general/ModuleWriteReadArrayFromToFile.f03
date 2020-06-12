@@ -556,7 +556,7 @@ CONTAINS
             CASE (0)
                 WRITE(*,*) 'Пишется файл  ', name_x
             CASE (1:)
-                WRITE(*,*) 'ОШИБКА при записи файла ', name_x
+                WRITE(*,*) 'ОШИБКА при записи файла1 ', name_x
                 CALL   ExitFromProgramNormal()
             ! НУЖНО ПРОВЕРИТЬ !!!!!
             CASE (:-1)
@@ -582,7 +582,7 @@ CONTAINS
             CASE (0)
                 WRITE(*,*) 'Пишется файл  ', name_x
             CASE (1:)
-                WRITE(*,*) 'ОШИБКА при записи файла ', name_x
+                WRITE(*,*) 'ОШИБКА при записи файла2 ', name_x
                 CALL   ExitFromProgramNormal()
             ! НУЖНО ПРОВЕРИТЬ !!!!!
             CASE (:-1)
@@ -612,7 +612,7 @@ CONTAINS
             CASE (0)
                 WRITE(*,*) 'Пишется файл  ', name_x
             CASE (1:)
-                WRITE(*,*) 'ОШИБКА при записи файла ', name_x
+                WRITE(*,*) 'ОШИБКА при записи файла4 ', name_x
                 CALL   ExitFromProgramNormal()
             ! НУЖНО ПРОВЕРИТЬ !!!!!
             CASE (:-1)
@@ -641,7 +641,7 @@ CONTAINS
             CASE (0)
                 WRITE(*,*) 'Пишется файл  ', name_x
             CASE (1:)
-                WRITE(*,*) 'ОШИБКА при записи файла ', name_x
+                WRITE(*,*) 'ОШИБКА при записи файла8 ', name_x
                 CALL   ExitFromProgramNormal()
             ! НУЖНО ПРОВЕРИТЬ !!!!!
             CASE (:-1)

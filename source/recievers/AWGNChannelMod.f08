@@ -45,7 +45,7 @@ CONTAINS
         CALL inputSignal%ExtractSignalData(tmpArray)
         ALLOCATE(this%noiseArray,source  =(tmpArray))
         DEALLOCATE(tmpArray)
-        this%powerNoise     = GetSignalRmsPowerINT2(this%noiseArray,int(900000,8))
+        this%powerNoise     = GetSignalRmsPowerINT2(this%noiseArray,int(size(this%noiseArray),8))
         this%noiseArraySize = size(this%noiseArray)
     END SUBROUTINE LoadNoiseInt2
     
@@ -57,10 +57,13 @@ CONTAINS
         CLASS (analyticSignal_t),ALLOCATABLE          :: AddNoiseAnalytic
         INTEGER(2)              ,ALLOCATABLE          :: inputSignalArrayInt2(:)
 
-        REAL(4)                                       :: powerInput
-        REAL(4)                                       :: koeff,x,y
+        REAL(8)                                       :: powerInput
+        REAL(8)                                       :: koeff,x,y
         INTEGER(8)                                    :: i,ptr
         integer(2)                                    :: z
+        REAL(8)                                       :: yy = 0
+        REAL(8)                                       :: summ
+        REAL(8)                                       :: scaler
 
 
         CALL CheckNoiseIsLoaded(this)
@@ -70,26 +73,50 @@ CONTAINS
 !        Write (*,*) 'kind ' ,  inputSignal%GetSiGnalKind()
         CALL inputSignal%ExtractSignalData(inputSignalArrayInt2)
         powerInput =  GetSignalRmsPowerINT2 (inputSignalArrayInt2,int(size(inputSignalArrayInt2),8))
-        !WRITE (*,*) 'powerInput ' ,powerInput
+        WRITE (*,*) 'powerInput ' ,powerInput
         koeff = CalculateNeededAmplitudeKoeff (powerInput,this%powerNoise,snrNeed)
-        !WRITE(*,*) 'koeff ',koeff
+        WRITE(*,*) 'koeff ',koeff
         ptr= this%ptr
+!        WRITE(*,*) this%ptr
+!        WRITE(*,*) size(this%noiseArray)
+
+        summ = 0
+        yy=0
         DO i=1, size (inputSignalArrayInt2)
            IF ((ptr)>size(this%noiseArray)) THEN
-              ptr = 1
+              DO WHILE(ptr>size(this%noiseArray))
+                  ptr = ptr-size(this%noiseArray)
+              END DO
+              ! WRITE(*,*) 'ptr ', ptr
               WRITE(*,*) 'ПЕРЕХОД'
            END IF
-           x= float(inputSignalArrayInt2(i))/32767.0
-           y = (float(this%noiseArray(ptr))/32767.0)*koeff
-           z = int((x+y)*float(2**(outCapacity-1)-1),2)
+           ! НОРМИРОВКА СИГНАЛА!!!!!
+
+           !koeff =4.0
+           x = float(inputSignalArrayInt2(i))/32767.0
+           y = float(this%noiseArray(ptr))/32767.0
+           x = x*koeff*2
+           summ = x+y
+           summ = summ*2
+          ! WRITE(*,*) 'summ, x, y ' , summ, x, y
+           scaler = float(2**(outCapacity-1)-1)
+          ! WRITE(*,*) 'scaler ',scaler
+           z = int(summ*scaler,2)
            inputSignalArrayInt2(i) = z
            ptr = ptr + 1
+
+           yy=yy+x**2
+
+           !WRITE(*,*) y,yy
            !WRITE(*,*) this%noiseArray(i+ptr)
         END DO
+
         CALL  AddNoiseAnalytic%Constructor(inputSignalArrayInt2)
 !        WRITE (*,*) 'size ', size(inputSignalArrayInt2)
         DEALLOCATE(inputSignalArrayInt2)
 !        WRITE (*,*) 'ВЫШЕЛ! '
+         yy=yy/float(size (inputSignalArrayInt2))
+         WRITE (*,*) 'нощность сигнала дБ ', ((20.0*log10(sqrt(yy)))-3.0)
 
     END  FUNCTION AddNoiseAnalytic
 
@@ -106,18 +133,26 @@ CONTAINS
 
     FUNCTION CalculateNeededAmplitudeKoeff(powerInput,powerNoise,snrNeed)
        REAL(4)                 , INTENT(IN)          :: snrNeed
-       REAL(4)                 , INTENT(IN)          :: powerInput
+       REAL(8)                 , INTENT(IN)          :: powerInput
        REAL(4)                 , INTENT(IN)          :: powerNoise
-       REAL(4)                           :: CalculateNeededAmplitudeKoeff
-       CalculateNeededAmplitudeKoeff = 10**(0.05*(powerInput-powerNoise-snrNeed))
+       REAL(8)                           :: CalculateNeededAmplitudeKoeff
+       REAL(8)                           :: coeff_dB,snrCurrent
+
+       snrCurrent =  powerInput-powerNoise
+       WRITE(*,*) 'ОСШ нынешнее ',snrCurrent
+
+       coeff_dB = -(snrCurrent - snrNeed)
+       WRITE(*,*) 'koeff amp noise dB ', coeff_dB
+
+       CalculateNeededAmplitudeKoeff = 10.0**(0.05*(coeff_dB))
     END  FUNCTION CalculateNeededAmplitudeKoeff
 
-     FUNCTION SetPtr(this,ptrValue)
+    SUBROUTINE SetPtr(this,ptrValue)
         CLASS(AWGNChannel_t)    , INTENT(inout)      :: this
         INTEGER(8)              , INTENT(inout)      :: ptrValue
-        INTEGER(8)                                   :: SetPtr
+
         this%ptr =   ptrValue
-    END  FUNCTION SetPtr
+    END  SUBROUTINE  SetPtr
 
 
     ! проверяет загружен ли шумовой сигнал

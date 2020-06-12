@@ -53,7 +53,7 @@ MODULE BERTestMod
            REAL(4)                  :: snrCurr
 
            TYPE(BPSKmodulator_t)  ,ALLOCATABLE    :: modulatorBPSK
-           TYPE(analyticSignal_t)                 :: bpskSignal
+           TYPE(analyticSignal_t)                  :: bpskSignal
            TYPE(BPSKDemodulator_t),ALLOCATABLE    :: DemodulatorBPSK
            TYPE(AWGNChannel_t)    ,ALLOCATABLE    :: awgnChannel
            TYPE(analyticSignal_t) ,aLLOCATABLE    :: noiseSignal
@@ -120,8 +120,10 @@ MODULE BERTestMod
            CALL ReadArrayFromFile (psn,pspFileName,'(I1)')
            ! формирование пакета данных без контрольной суммы
            payloadDataBitArray =  GenerateRandomPayloadBitArray(messageLength)
+           WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
            ! добавляем контрольную сумму
            payloadDataBitArrayWithCrc = GeneratePayloadDataBitArrayWithCRC(payloadDataBitArray)
+            WRITE(*,*) 'size payloadDataBitArrayWithCrc ',size(payloadDataBitArrayWithCrc)
            ! загрузка ИХ фильтра передатчика
            CALL ReadArrayFromFile (transcieverImpulseResponse,trancieverFilterName,'(I12)')
 
@@ -146,7 +148,13 @@ MODULE BERTestMod
            DEALLOCATE(arrayInt2)
 !           WRITE(*,*) 'kind ', bpskSignal%GetSiGnalKind()
 
+           CALL bpskSignal%ZeroesStuffing(int(10240*100,8),int(10240*100,8))
+
            CALL WriteAnalyticSignalToFile(bpskSignal,int(2,1),'bpskTest.pcm')
+
+
+!           CALL ReadAnalyticSignalFromFile(bpskSignal,int(2,1),'noise_0_1_2Mhz_test.pcm')
+!            WRITE(*,*) 'уровень шума в генераторе '
 
 
            ! загрузка ИХ фильтра приемника
@@ -164,6 +172,7 @@ MODULE BERTestMod
                                               ,decimationCoeff         = decimationCoeff &
                                               ,ethalonCapacity         = ethalonCapacity )
           DEALLOCATE(transcieverImpulseResponse)
+
           CALL  DemodulatorBPSK%SetSignumComputeMode(signumCompute)
           CALL  DemodulatorBPSK%SetTreshold(demodTreshold)
 
@@ -187,32 +196,36 @@ MODULE BERTestMod
 !          bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snrCurr,outPutSampleCapacityChannel)
 !          CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskTestNoise.pcm')
 !          DEALLOCATE(bpskSignalWithNoise)
+
+          CALL RanomGeneratorInit()
           WRITE(*,*) 'SNR CURR ',snrCurr
           cnt=1
           DO WHILE(snrCurr<snrEnd)
-          call cpu_time(start)
+
 !          !$omp parallel
 !            !$omp  do PRIVATE(crcOk,numOfsuccessRecieve)
              DO j = 1,numberOfIterations
-
+                call cpu_time(start)
                   crcOk = AddNoiseRecievCheckCRC(bpskSignal     = bpskSignal &
                                        ,DemodulatorBPSK         = DemodulatorBPSK&
                                        ,awgnChannel             = awgnChannel&
                                        ,snr                     = snrCurr&
                                        ,capacity                = outPutSampleCapacityChannel)
 !                 !$omp critical
-                  IF (crcOk) numOfsuccessRecieve = numOfsuccessRecieve +1
+
+                  IF ((crcOk)) numOfsuccessRecieve = numOfsuccessRecieve +1
+                  WRITE(*,*) 'crc ',crcOk
 
 !                  !$omp end critical
 
-
+                   call cpu_time(finish)
+             WRITE(*,*)' j= ', j, ' time = ', (finish-start)
              END DO
 !             !$omp end  do
 !             !$omp END parallel
-             call cpu_time(finish)
-             WRITE(*,*)' j= ', j, ' time = ', (finish-start)
+
              berPointsArray(cnt)= snrCurr
-             merValueArray(cnt)=   float(numOfsuccessRecieve)/float(numberOfIterations)
+             merValueArray(cnt)=   float(numberOfIterations-numOfsuccessRecieve)/float(numberOfIterations)
              numOfsuccessRecieve = 0
 
              WRITE (*,*) 'SNR ', berPointsArray(cnt), ' MER ',merValueArray(cnt)
@@ -247,17 +260,25 @@ MODULE BERTestMod
     FUNCTION AddNoiseRecievCheckCRC(bpskSignal,DemodulatorBPSK,awgnChannel,snr,capacity) RESULT (isCrcOk)
         CLASS(analyticSignal_t)  , INTENT(IN) :: bpskSignal
         CLASS(BPSKDemodulator_t) , INTENT(INOUT) :: DemodulatorBPSK
-        CLASS(AWGNChannel_t)     , INTENT(IN) :: awgnChannel
+        CLASS(AWGNChannel_t)     , INTENT(INOUT) :: awgnChannel
         REAL(4)                  , INTENT(IN) :: snr
         INTEGER(1)               , INTENT(IN) :: capacity
         LOGICAL                               :: isCrcOk
+        INTEGER(8)                            :: z
         TYPE(analyticSignal_t)                :: bpskSignalWithNoise
         INTEGER(1),ALLOCATABLE      :: decodedData(:)
         INTEGER(1),ALLOCATABLE      :: decodedDataOctets(:)
+
+
         !by default
         isCrcOk = .FALSE.
+        z= GetRandomInt(int(4,1))
+        CALL awgnChannel%SetPtr(z)
+
         bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snr,capacity)
+        CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskSignalWithNoise.pcm')
         deCodedData = DemodulatorBPSK%GetData(bpskSignalWithNoise)
+        WRITE(*,*) 'принято бит ', size(deCodedData)
         decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
         isCrcOk = CheckCRC(decodedDataOctets)
     END FUNCTION AddNoiseRecievCheckCRC

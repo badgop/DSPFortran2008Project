@@ -4,6 +4,7 @@ PROGRAM main
     USE ModuleWriteReadArrayFromToFile
     USE  ReadWriteArrayToFromTxt
     USE MathConstModule
+    USE RandomMod
     USE BERTestMod
 
 
@@ -88,7 +89,7 @@ PROGRAM main
 !                     ,outputSignalFileName = 'test_signals\output\convolve_test.pcm'&
 !                     ,shift = int(18,1))
 
-
+!
 !    CALL AutoConvolveTest(inputSignalFileName  = 'test_signals\input\noise_7897.pcm'&
 !                     ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
 !                     ,outputSignalFileName = 'test_signals\output\auto_convolve_test.pcm'&
@@ -130,8 +131,8 @@ PROGRAM main
 !                                   ,filterFileName       = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
 !                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
 !                                   ,baudRateInSamples    = int(10240,8), chipRateInSamples = int(10,8) &
-!                                   ,sampleRate           = int(20*MEGA,8)&
-!                                   ,centralFrequency     = int(3*MEGA,8)&
+!                                   ,sampleRate           = int(10*MEGA,8)&
+!                                   ,centralFrequency     = int(0*MEGA,8)&
 !                                   ,outPutSampleCapacity = int(14,1)&
 !                                   ,outPutShift          = int(17,1))
 !        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\BPSKTest1.pcm ' &
@@ -139,7 +140,7 @@ PROGRAM main
 !                              ,outPutFileNameQ  = 'test_signals\output\phaseDemodTestQ.pcm'&
 !                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
 !                              ,sampleRate       = int(20*MEGA,8)&
-!                              ,centralFrequency = int (3*MEGA+0,8)&
+!                              ,centralFrequency = int (0*MEGA+0,8)&
 !                              ,initialPhase     = 0.3*PI&
 !                              ,outputShift      = int(28,8))
 
@@ -151,7 +152,7 @@ PROGRAM main
 !                                         ,shift = int(0,1)&
 !                                         ,iterationCount=int(1,4))
 
-
+!
 !              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
 !                                   ,dataFileName           = 'test_signals\input\data.txt'&
 !                                   ,inPutFileName          = 'test_signals\output\BPSKTest1.pcm'&
@@ -161,13 +162,14 @@ PROGRAM main
 !                                   ,phaseDetectorQName     = 'test_signals\output\bpskDemodQ.pcm'&
 !                                   ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
 !                                   ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
-!                                   ,sampleRate             = int(20*MEGA,8)&
+!                                   ,sampleRate             = int(10*MEGA,8)&
 !                                   ,centralFrequency       = int (3*MEGA+0,8)&
 !                                   ,initialPhase           = 0.3*PI&
 !                                   , outPutSampleCapacity  = int(14,1)&
 !                                   , outPutShift           = int(26,1)&
 !                                   , decimationCoeff       = int(5,8)&
-!                                   ,ethalonCapacity         = int(1,1))
+!                                   ,ethalonCapacity         = int(1,1)&
+!                                   ,signumState = .TRUE.)
 
 
 !              CALL OctetDataMaker(inputDataFileName  = 'test_signals\input\data.txt'&
@@ -185,16 +187,16 @@ PROGRAM main
 
 
 !                 CALL NoiseMakerTest(inputSignalFileName  = 'noise\noise.pcm'&
-!                     ,inputRefFileName     = 'test_signals\input\20_mhz_bandpass_3Mhz_1_9_to_4_1_int.txt'&
-!                     ,outputSignalFileName = 'test_signals\output\noise_1_1Mhz.pcm'&
-!                     ,shift = int(31,1))
+!                     ,inputRefFileName     = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+!                     ,outputSignalFileName = 'test_signals\output\noise_0_1_2Mhz.pcm'&
+!                     ,shift = int(15,1))
 
 !                 CALL RandomGeneratorTest()
 !                CALL  AddNoiseTEst(inputNoiseFileName = 'test_signals\output\noise_1_1Mhz.pcm'&
 !                                  ,inputSignalFileName ='test_signals\output\BPSKTest1.pcm'&
 !                                  ,outputSignalFileName = 'test_signals\output\noiseAmpTEst.pcm'&
 !                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
-!                                  ,snr =  3.00 )
+!                                  ,snr =  60.0 )
 !
 !
 !              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
@@ -206,12 +208,14 @@ PROGRAM main
 !                                   ,phaseDetectorQName     = 'test_signals\output\bpskDemodQ.pcm'&
 !                                   ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
 !                                   ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
-!                                   ,sampleRate             = int(20*MEGA,8)&
+!                                   ,sampleRate             = int(10*MEGA,8)&
 !                                   ,centralFrequency       = int (3*MEGA+0,8)&
 !                                   ,initialPhase           = 0.3*PI&
 !                                   , outPutSampleCapacity  = int(14,1)&
 !                                   , outPutShift           = int(26,1)&
-!                                   , decimationCoeff       = int(5,8))
+!                                   , decimationCoeff       = int(5,8)&
+!                                   ,ethalonCapacity         = int(1,1)&
+!                                   ,signumState = .TRUE.)
 
 
 !        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\awgnTest.pcm' &
@@ -221,7 +225,7 @@ PROGRAM main
 !                              ,sampleRate       = int(20*MEGA,8)&
 !                              ,centralFrequency = int (3*MEGA+0,8)&
 !                              ,initialPhase     = 0.3*PI&
-!                              ,outputShift      = int(28,8))
+!                              ,outputShift      = int(14,8))
 
 
 !         CALL ClipTest(inputSignalFileName = 'test_signals\input\dds_test_output1.pcm'&
@@ -231,6 +235,14 @@ PROGRAM main
 !
          CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
                                     , resultFileName = 'test\res2ult.txt' )
+
+!           CALL  ArrayReverseTest()
+
+!         CALL SignumConvolveTestReversed(inputSignalFileName  = 'test_signals\input\impGenTest1.pcm'&
+!                    ,inputRefFileName     = 'test_signals\input\impGenTest1.pcm'&
+!                    ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig222.pcm'&
+!                    ,shift = int(0,1)&
+!                    ,iterationCount=int(2,4))
 
     CONTAINS
 

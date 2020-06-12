@@ -108,7 +108,7 @@ MODULE WriteReadAnalyticSignalToFromFile
         INTEGER(1)                           :: status
 
         CALL writedSignal%ExtractSignalData(arrayInt8)
-         WRITE(*,*) 'да ладно '
+
 
         SELECT CASE (intType)
 

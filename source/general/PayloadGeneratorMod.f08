@@ -38,8 +38,8 @@ MODULE PayloadGeneratorMod
       END FUNCTION  GeneratePayloadDataOctetsWithCRC
 
       FUNCTION GeneratePayloadDataBitArrayWithCRC(bitDataArary) RESULT(BitArrayWithCrc)
-          INTEGER(1)            ,INTENT(INOUT) :: bitDataArary(:)
-          INTEGER(1),ALLOCATABLE               :: OctetdataArary(:)
+          INTEGER(1) ,DIMENSION(:)       ,INTENT(INOUT) :: bitDataArary
+          INTEGER(1),DIMENSION(:),ALLOCATABLE            :: OctetdataArary
           INTEGER(1),ALLOCATABLE               :: dataOctetsWithCrc(:)
           INTEGER(1),ALLOCATABLE               :: BitArrayWithCrc(:)
 

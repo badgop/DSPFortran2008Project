@@ -683,6 +683,7 @@ call omp_set_num_threads( 4 )
          USE BitOpsMod
          USE analyticSignalModule
 
+
          INTEGER(8)             ::  input(1:200)
          INTEGER(8)             ::  ref(1:2)
          INTEGER(8),ALLOCATABLE ::  res(:)
@@ -713,6 +714,7 @@ call omp_set_num_threads( 4 )
          USE WriteReadAnalyticSignalToFromFile
          USE ReadWriteArrayToFromTxt
          USE signumSignalModule
+         USE ArrayFunctionsMod
 
          CHARACTER(*), INTENT(IN) :: inputSignalFileName
          CHARACTER(*), INTENT(IN) :: inputRefFileName
@@ -937,6 +939,7 @@ call omp_set_num_threads( 4 )
 
          CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
          CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
+
          CALL input_sig%ZeroesStuffing(int(10240,8),int(10240,8))
 
          CALL reference_sig%ExtractSignalData(extractedSignal)
@@ -977,7 +980,8 @@ call omp_set_num_threads( 4 )
                                    ,baudRateInSamples, chipRateInSamples&
                                    ,sampleRate,centralFrequency&
                                    ,initialPhase&
-                                   ,outPutSampleCapacity,outPutShift,decimationCoeff,ethalonCapacity)
+                                   ,outPutSampleCapacity,outPutShift,decimationCoeff,ethalonCapacity,&
+                                   signumState)
 
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -1008,6 +1012,7 @@ call omp_set_num_threads( 4 )
          INTEGER(8), ALLOCATABLE            :: impulseResponse(:)
          INTEGER(1)  , intent(in)           :: outPutShift
          REAL(8), intent(in)                :: initialPhase
+         LOGICAL, INTENT(IN)                :: signumState
          INTEGER(1), ALLOCATABLE            :: decodedDataOctets(:)
          INTEGER(2)                         :: crc16,i,errorCount
 
@@ -1040,6 +1045,8 @@ call omp_set_num_threads( 4 )
          CALL ReadAnalyticSignalFromFile(sig,int(2,1),inPutFileName)
 !
          CALL  DemodulatorBPSK%SetTreshold(int(1600,8))
+         CALL  DemodulatorBPSK%SetSignumComputeMode(signumState)
+
 !
          signal_1 =  DemodulatorBPSK%Demodulate(sig)
 !!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
@@ -1243,6 +1250,7 @@ call omp_set_num_threads( 4 )
 
             CALL WriteAnalyticSignalToFile(out_sig1,int(2,1),amplifiedNoise)
 
+
        END SUBROUTINE AddNoiseTEst
 
        SUBROUTINE ClipTest(inputSignalFileName,outPutFileName,level,outLevel)
@@ -1268,6 +1276,79 @@ call omp_set_num_threads( 4 )
            output_sig = input_sig%ClipSignal(level,outLevel)
            CALL WriteAnalyticSignalToFile(output_sig,int(2,1),outPutFileName)
        END SUBROUTINE ClipTest
+
+       SUBROUTINE ArrayReverseTest()
+          USE ArrayFunctionsMod
+          INTEGER(4)             ::  input(1:10)
+          INTEGER(1)             :: i
+
+
+          DO i=1,size(input)
+             input(i)=i
+          END DO
+
+          WRITE(*,'(I2.1)') input
+          CALL ReverseArrayInt(input)
+          WRITE(*,'(I2.1)') input
+
+       END SUBROUTINE ArrayReverseTest
+
+
+          SUBROUTINE SignumConvolveTestReversed(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,iterationCount)
+
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE signumSignalModule
+         USE ArrayFunctionsMod
+
+         CHARACTER(*), INTENT(IN) :: inputSignalFileName
+         CHARACTER(*), INTENT(IN) :: inputRefFileName
+         CHARACTER(*), INTENT(IN) :: outputSignalFileName
+         INTEGER(1)  , INTENT(IN) :: shift
+         INTEGER(4)  , INTENT(IN) ::  iterationCount
+
+         TYPE(analyticSignal_t) ::input_sig
+         TYPE(analyticSignal_t) ::reference_sig
+         TYPE(analyticSignal_t) ::conv_result
+
+
+         REAL(4) :: start, finish, mean,percents
+         INTEGER(8) :: i
+
+
+         CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName)
+         !CALL reference_sig%MirorReflectSignal()
+         CALL input_sig%ZeroesStuffing(input_sig%GetSignalSize(),input_sig%GetSignalSize())
+
+         mean=0
+         percents=0
+!         call omp_set_num_threads( 4 )
+        call cpu_time(start)
+     !$OMP PARALLEL DO SHARED (input_sig,reference_sig)
+         DO I=1,iterationCount
+             !WRITE(*,*) 'Cycle ', i
+
+            CALL conv_result%SetName('свертка')
+
+            conv_result = input_sig.CONVSIGN.reference_sig
+
+
+
+
+!            WRITE(*,*) 'execution time ', mean
+         END DO
+       !$OMP END PARALLEL DO
+        call cpu_time(finish)
+        mean=finish-start
+         mean=mean/iterationCount
+         WRITE(*,*)  'MEAN TIME ', mean
+         CALL conv_result%Rshift(shift)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
+
+     END SUBROUTINE SignumConvolveTestReversed
 
 
 
