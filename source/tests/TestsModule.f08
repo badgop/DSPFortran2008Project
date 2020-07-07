@@ -817,7 +817,7 @@ call omp_set_num_threads( 4 )
       SUBROUTINE BPSKGeneratorTest(pspFileName,  dataFileName, outPutFileName,filterFileName&
                                    , codedDataFileName&
                                    ,baudRateInSamples, chipRateInSamples&
-                                   ,sampleRate,centralFrequency,outPutSampleCapacity,outPutShift)
+                                   ,sampleRate,centralFrequency,outPutSampleCapacity,outPutShift,pauseLen)
 
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -833,6 +833,7 @@ call omp_set_num_threads( 4 )
          INTEGER(1)  , intent(in)           :: outPutSampleCapacity
          INTEGER(1)  , ALLOCATABLE          :: psn(:)
          INTEGER(8)  , intent(in)           :: chipRateInSamples
+         INTEGER(8)  , intent(in)           :: pauseLen
          INTEGER(1), ALLOCATABLE                         :: data(:)
          INTEGER(1), ALLOCATABLE                         :: dataOctets(:)
          INTEGER(1), ALLOCATABLE                         :: dataOctetsWithCrc(:)
@@ -880,6 +881,7 @@ call omp_set_num_threads( 4 )
 
 
          sig = modulatorBPSK%Generate(dataOctetsWithCrcBybit)
+         CALL sig%ZeroesStuffing(0*pauseLen,pauseLen)
          CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName)
          codedData = modulatorBPSK%GenerateDiffData(dataOctetsWithCrcBybit)
          CALL  WriteArrayToFileTxt(codedData,codedDataFileName,'(I1.1)')
@@ -980,8 +982,10 @@ call omp_set_num_threads( 4 )
                                    ,baudRateInSamples, chipRateInSamples&
                                    ,sampleRate,centralFrequency&
                                    ,initialPhase&
-                                   ,outPutSampleCapacity,outPutShift,decimationCoeff,ethalonCapacity,&
-                                   signumState)
+                                   ,outPutSampleCapacity,outPutShift,decimationCoeff,ethalonCapacity&
+                                   ,signumState&
+                                   ,threshold&
+                                   ,thresholdSumm)
 
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -1006,6 +1010,8 @@ call omp_set_num_threads( 4 )
          INTEGER(1)  , ALLOCATABLE          :: psn(:)
          INTEGER(8)  , intent(in)           :: chipRateInSamples
          INTEGER(1)  , INTENT(IN)           :: ethalonCapacity
+         INTEGER(8) , INTENT(IN)            :: thresholdSumm
+         INTEGER(8) , INTENT(IN)            :: threshold
          INTEGER(8), ALLOCATABLE            :: data(:)
          INTEGER(8), ALLOCATABLE            :: module(:)
          INTEGER(1), ALLOCATABLE            :: decodedData(:)
@@ -1044,29 +1050,10 @@ call omp_set_num_threads( 4 )
 !
          CALL ReadAnalyticSignalFromFile(sig,int(2,1),inPutFileName)
 !
-         CALL  DemodulatorBPSK%SetTreshold(int(1600,8))
+         CALL  DemodulatorBPSK%SetTreshold(int(threshold,8))
          CALL  DemodulatorBPSK%SetSignumComputeMode(signumState)
+         CALL  DemodulatorBPSK%SetTresholdSumm(thresholdSumm)
 
-!
-         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!!         signal_1 =  DemodulatorBPSK%Demodulate(sig)
-!
-!!!          signal_1 =  DemodulatorBPSK%Demodulate(sig)
-         CALL WriteComplexSignalToFile(signal_1,int(2,1),phaseDetectorIName,phaseDetectorQName)
-         module= signal_1%GetModuleFast()
-!!
-         CALL sig2%Constructor(module)
-         CALL WriteAnalyticSignalToFile(sig2,int(2,1),complexModuleCorrNAme)
           deCodedData = DemodulatorBPSK%GetData(sig)
           decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
           crc16 =  CRC16Compute(decodedDataOctets, 4129,65535)
@@ -1294,7 +1281,7 @@ call omp_set_num_threads( 4 )
        END SUBROUTINE ArrayReverseTest
 
 
-          SUBROUTINE SignumConvolveTestReversed(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,iterationCount)
+       SUBROUTINE SignumConvolveTestReversed(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,iterationCount)
 
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -1327,7 +1314,7 @@ call omp_set_num_threads( 4 )
          percents=0
 !         call omp_set_num_threads( 4 )
         call cpu_time(start)
-     !$OMP PARALLEL DO SHARED (input_sig,reference_sig)
+
          DO I=1,iterationCount
              !WRITE(*,*) 'Cycle ', i
 
@@ -1340,7 +1327,7 @@ call omp_set_num_threads( 4 )
 
 !            WRITE(*,*) 'execution time ', mean
          END DO
-       !$OMP END PARALLEL DO
+
         call cpu_time(finish)
         mean=finish-start
          mean=mean/iterationCount
@@ -1349,6 +1336,33 @@ call omp_set_num_threads( 4 )
          CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
      END SUBROUTINE SignumConvolveTestReversed
+
+     SUBROUTINE MakeGaussianNoiseByRandomGenerator(m,sigma,length,outputFileName)
+
+         USE RandomMod
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+
+         REAL       ,INTENT(IN)  :: m
+         REAL       ,INTENT(IN)  :: sigma
+         INTEGER(8) ,INTENT(IN)  :: length
+         INTEGER(8)              :: i
+         INTEGER(2),dimension(:),ALLOCATABLE :: noise
+         TYPE(analyticSignal_t) :: noiseSignal
+         CHARACTER(*),INTENT(IN) :: outputFileName
+
+         CALL RanomGeneratorInit()
+         ALLOCATE(noise(1:length))
+
+         DO i=1,length
+             noise(i) = GetRandomGaussianInt2(m,sigma)
+         END DO
+
+         CALL noiseSignal%Constructor(noise)
+         CALL WriteAnalyticSignalToFile(noiseSignal,int(2,1),outputFileName)
+
+     END SUBROUTINE  MakeGaussianNoiseByRandomGenerator
 
 
 

@@ -745,8 +745,8 @@ CONTAINS
 !
             inKind = input%GetSignalKind()
             refKind = reference%GetSignalKind()
-!            WRITE(*,*) 'inKind ', inKind
-!            WRITE(*,*) 'refKind ', refKind
+            WRITE(*,*) 'inKind ', inKind
+            WRITE(*,*) 'refKind ', refKind
 !            WRITE (*,*) 'input%signalInt2 ', ALLOCATED (input%signalInt2)
 !            WRITE (*,*) 'reference%signalInt2 ', ALLOCATED (reference%signalInt2)
 !

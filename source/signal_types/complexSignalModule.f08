@@ -3,6 +3,8 @@
     USE signumSignalModule
     USE FastModuleMod
     IMPLICIT NONE
+
+
     PRIVATE
 
     TYPE, PUBLIC :: complexSignal_t
@@ -171,16 +173,9 @@ CONTAINS
        ALLOCATE(ConvolveComplexSignum)
         !WRITE(*,*) 'CONVSIGN'
 
-  !    !$omp parallel
-      !    !$omp  single
-       !!$omp task
         ConvolveComplexSignum%i= input%i.CONVSIGN.reference
-     !  !$omp END task
-      ! !$omp task
         ConvolveComplexSignum%q= input%q.CONVSIGN.reference
-       !   !$omp end task
-      ! !$omp end single
-       !  !$omp END parallel
+
     END FUNCTION ConvolveComplexSignum
 
     FUNCTION ConvolveComplexAnalytic(input,reference)

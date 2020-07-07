@@ -1,4 +1,5 @@
 MODULE RandomMod
+    USE MathConstModule
     IMPLICIT NONE
 
 
@@ -34,6 +35,33 @@ MODULE RandomMod
              randomInt = randomInt*ii(i)
           END DO
     END FUNCTION
+
+    FUNCTION GetRandomGaussianInt1(m,sigma) RESULT (randomInt)
+          REAL       ,INTENT(IN) :: m,sigma
+          INTEGER (1) :: randomInt
+          REAL        :: x(1:2),y
+
+          CALL RANDOM_NUMBER(x)
+          randomInt=0
+          y = m +sigma*SQRT(-2*LOG(x(1)))**SIN(2*PI*x(2))
+          randomInt = int((y*127.0),1)
+
+    END FUNCTION
+
+    FUNCTION GetRandomGaussianInt2(m,sigma) RESULT (randomInt)
+          REAL       ,INTENT(IN) :: m,sigma
+          INTEGER (2) :: randomInt
+          REAL        :: x(1:2),y
+
+          CALL RANDOM_NUMBER(x)
+          randomInt=0
+          y = m +sigma*SQRT(-2*LOG(x(1)))*SIN(2*PI*x(2))
+
+          randomInt = int((y*32767.0),2)
+
+    END FUNCTION
+
+
 
 
 

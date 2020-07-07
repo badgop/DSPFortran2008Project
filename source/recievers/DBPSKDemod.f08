@@ -26,9 +26,11 @@ MODULE DBPSKDemod
         INTEGER(1)                   :: outPutSampleCapacity
         INTEGER(8)                   :: outputShift
         INTEGER(8)                   :: threshold
+        INTEGER(8)                   :: thresholdSumm
         INTEGER(8)                   :: decimationCoeff
         INTEGER(1)                   :: ethalonCapacity
         LOGICAL                      :: signumCompute
+
 
         TYPE(PSNSimple_t)            :: psnGnerator
         TYPE(PhaseDetector_t)        :: phaseDemodulator
@@ -42,6 +44,7 @@ MODULE DBPSKDemod
         ! Вычисление ВКФ
         PROCEDURE :: Demodulate
         PROCEDURE :: SetTreshold
+        PROCEDURE :: SetTresholdSumm
         ! Пороговая обработка сигнала после согласованного фильтра
         PROCEDURE :: TresholdProcessing
         PROCEDURE :: GetData
@@ -103,6 +106,13 @@ CONTAINS
         INTEGER(8)  , INTENT(IN)                :: threshold
         this%threshold   = threshold
      END SUBROUTINE
+
+       ! установка порогового значения решающего устройства
+     SUBROUTINE SetTresholdSumm(this,thresholdSumm)
+        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        INTEGER(8)  , INTENT(IN)                :: thresholdSumm
+        this%thresholdSumm   = thresholdSumm
+     END SUBROUTINE SetTresholdSumm
     
     !Осуществляет : преобразоваине по частоте вниз
     !               разложение на квадратуры
@@ -116,9 +126,9 @@ CONTAINS
         ALLOCATE (Demodulate)
         ! преобразование вниз и разложение на квадратуры
         Demodulate = this%phaseDemodulator%Downconvert(inputSig)
-
-        CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Ipath.pcm','test_signals\output\Qpath.pcm')
         Demodulate = Demodulate%Decimate(this%decimationCoeff)
+        CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Ipath.pcm','test_signals\output\Qpath.pcm')
+
 
 
         ! согласованная фильтрация
@@ -165,9 +175,11 @@ CONTAINS
         LOGICAL                               :: latchEarly = .FALSE.
         LOGICAL                               :: latchLate  = .FALSE.
         INTEGER(8)                            :: pointAccumulator = 0;
+        INTEGER(8)                            :: maxMod=0
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
         ALLOCATE(module2(1:size(module)))
+!        module2 =  SHIFTA(module,4)
         module2 =  module
         CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
 
@@ -181,6 +193,7 @@ CONTAINS
                 latchEarly = .TRUE.
                WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
                lasti=i
+               IF (module(i)>maxMod) maxMod = module(i)
 !                pointAccumulator = pointAccumulator + 1
 
                !Обработка созвездия ведется с учетом базиса [COS, -SIN]
@@ -207,22 +220,23 @@ CONTAINS
 
            ELSE
               IF(latchEarly) latchLate = .TRUE.
+              !WRITE(*,*) 'МЕНЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i
 
            END IF
 
            IF(latchEarly.AND.latchLate) THEN
               WRITE(*,*) 'поймали  ',pointAccumulator
 
-              IF (pointAccumulator>=1) THEN
+              IF (pointAccumulator>=this%thresholdSumm) THEN
                  cnt=cnt+1
                  bitBuffer(cnt)=1
-                  WRITE(*,*) '1'
+                  WRITE(*,*) 'приныто 1 ', pointAccumulator
               END IF
 
-              IF (pointAccumulator<=-1) THEN
+              IF (pointAccumulator<=-this%thresholdSumm) THEN
                  cnt=cnt+1
                  bitBuffer(cnt)=0
-                 WRITE(*,*) '0'
+                 WRITE(*,*) 'приныто 0 ',pointAccumulator
               END IF
 
 
@@ -242,6 +256,9 @@ CONTAINS
         !WRITe(*,*) 'CNT ',cnt
         ALLOCATE(TresholdProcessing(1:cnt))
         TresholdProcessing = bitBuffer(1:cnt)
+
+        WRITE(*,*) 'MAXIMUS ', maxMod
+
 
      END FUNCTION TresholdProcessing
 

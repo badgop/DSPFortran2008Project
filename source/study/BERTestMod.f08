@@ -9,6 +9,9 @@ MODULE BERTestMod
     USE WriteReadAnalyticSignalToFromFile
     USE DBPSKDemod
     USE AWGNChannelMod
+    USE  ModuleExitProg
+     USE ReadWriteArrayToFromTxt
+     USE ModuleWriteReadArrayFromToFile
     IMPLICIT NONE
 
     INTEGER(4), PARAMETER :: maximumMeasurePoints = 256
@@ -42,6 +45,7 @@ MODULE BERTestMod
            INTEGER(8)               :: outputShiftPhaseDetector
            INTEGER(1)               :: outPutSampleCapacityDetector
            INTEGER(8)               :: demodTreshold
+           INTEGER(8)               :: thresholdSumm
            LOGICAL                  :: signumCompute = .TRUE.
            !*** Параметры приемника
            INTEGER(8)               :: sampleRateDeModulator
@@ -112,6 +116,7 @@ MODULE BERTestMod
            READ(10,*)  decimationCoeff
            READ(10,*)  ethalonCapacity
            READ(10,*)  demodTreshold
+           READ(10,*)  thresholdSumm
            READ(10,*)  signumCompute
            CLOSE(10)
            WRITE(*,*) 'параметры модели прочитаны...'
@@ -124,6 +129,7 @@ MODULE BERTestMod
            ! добавляем контрольную сумму
            payloadDataBitArrayWithCrc = GeneratePayloadDataBitArrayWithCRC(payloadDataBitArray)
             WRITE(*,*) 'size payloadDataBitArrayWithCrc ',size(payloadDataBitArrayWithCrc)
+
            ! загрузка ИХ фильтра передатчика
            CALL ReadArrayFromFile (transcieverImpulseResponse,trancieverFilterName,'(I12)')
 
@@ -140,15 +146,18 @@ MODULE BERTestMod
 
            DEALLOCATE(transcieverImpulseResponse)
 
+           CALL  WriteArrayToFileTxt(payloadDataBitArrayWithCrc,'test_signals\output\codedDataBertTest.txt','(I1.1)')
+
            bpskSignal = modulatorBPSK%Generate(payloadDataBitArrayWithCrc)
            DEALLOCATE(modulatorBPSK)
            ! что бы уменьшить размер файла
            CALL  bpskSignal%ExtractSignalData2(arrayInt2)
+           !arrayInt2=1
            CALL  bpskSignal%Constructor(arrayInt2)
            DEALLOCATE(arrayInt2)
 !           WRITE(*,*) 'kind ', bpskSignal%GetSiGnalKind()
 
-           CALL bpskSignal%ZeroesStuffing(int(10240*100,8),int(10240*100,8))
+           CALL bpskSignal%ZeroesStuffing(int(0,8),int(0,8))
 
            CALL WriteAnalyticSignalToFile(bpskSignal,int(2,1),'bpskTest.pcm')
 
@@ -175,6 +184,8 @@ MODULE BERTestMod
 
           CALL  DemodulatorBPSK%SetSignumComputeMode(signumCompute)
           CALL  DemodulatorBPSK%SetTreshold(demodTreshold)
+          WRITE(*,*) 'thresholdSumm ' ,thresholdSumm
+          CALL  DemodulatorBPSK%SetTresholdSumm(thresholdSumm)
 
 
 
@@ -215,6 +226,13 @@ MODULE BERTestMod
 
                   IF ((crcOk)) numOfsuccessRecieve = numOfsuccessRecieve +1
                   WRITE(*,*) 'crc ',crcOk
+
+                  IF (.NOT.crcOk) THEN
+                     WRITE(*,*) 'ERRROR CRC  ',crcOk
+                     CALL ExitFromProgramNormal()
+
+                  END IF
+
 
 !                  !$omp end critical
 
@@ -278,6 +296,7 @@ MODULE BERTestMod
         bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snr,capacity)
         CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskSignalWithNoise.pcm')
         deCodedData = DemodulatorBPSK%GetData(bpskSignalWithNoise)
+        CALL  WriteArrayToFileTxt(deCodedData,'test_signals\output\deCodedDataBertTest.txt','(I1.1)')
         WRITE(*,*) 'принято бит ', size(deCodedData)
         decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
         isCrcOk = CheckCRC(decodedDataOctets)

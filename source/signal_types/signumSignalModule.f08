@@ -257,6 +257,7 @@ CONTAINS
          INTEGER(8)              :: arrayPtr   = 0
          INTEGER(8)              :: regPtr     = 0
          INTEGER(1)              :: extractedBit = 0
+         INTEGER(4)              :: summ=0
          CHARACTER(10)           :: fmt="(I64.1)"
 
 
@@ -302,8 +303,7 @@ CONTAINS
          !длительность опорного сигнала в отсчетах
          IF (input%signalSize==1) THEN
              referenceSignalLength =reference%trailLen
-         ELSE
-                                                      ! - 1
+         ELSE                                                      ! - 1
              referenceSignalLength =(reference%signalSize)*(registerKind*bitsInByte_const)+reference%trailLen
          END IF
 
@@ -343,8 +343,14 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                        !!WRITE(*,*) j
                        result= NOT(XOR(window(j),reference%signal(j)))
                       ! WRITE(*,*) SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
-                       Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
+                       summ = summ +  SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
+                       !Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
                     END DO
+
+                    Correlate(corrCnt)=summ
+                    summ=0
+
+
 
                     ! последний элемент массива содержит хвост, его обработка ведется отдельно с маской
                     !!WRITE(*,*) 'И ПОСЛЕДНЕЕ'
@@ -358,13 +364,20 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                  ELSE
 
             ! распараллелить нахуй!
+
                     DO j=1,reference%signalSize
                        result= NOT(XOR(window(j),reference%signal(j)))
 
-                       Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result)&
+
+
+                       summ = summ + SumOnesInInt_8(result)&
                                            -(64-SumOnesInInt_8(result))
 
                     END DO
+
+
+                      Correlate(corrCnt)=summ
+                    summ=0
 
                  END IF
 
@@ -387,6 +400,8 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                  corrCnt=corrCnt+1
                  !WRITE(*,*) 'corrCnt ',corrCnt,  omp_get_thread_num()
               END DO MAIN_CYCLE
+
+
               DEALLOCATE(window)
     END FUNCTION   Correlate
 

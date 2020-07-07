@@ -56,6 +56,7 @@ CONTAINS
         INTEGER(1)              , INTENT(IN)          :: outCapacity
         CLASS (analyticSignal_t),ALLOCATABLE          :: AddNoiseAnalytic
         INTEGER(2)              ,ALLOCATABLE          :: inputSignalArrayInt2(:)
+        INTEGER(2)              ,ALLOCATABLE          :: noiseSignalArrayInt2(:)
 
         REAL(8)                                       :: powerInput
         REAL(8)                                       :: koeff,x,y
@@ -63,6 +64,7 @@ CONTAINS
         integer(2)                                    :: z
         REAL(8)                                       :: yy = 0
         REAL(8)                                       :: summ
+        REAL(8)                                       :: summ2
         REAL(8)                                       :: scaler
 
 
@@ -81,31 +83,52 @@ CONTAINS
 !        WRITE(*,*) size(this%noiseArray)
 
         summ = 0
+        summ2 = 0
         yy=0
+        ALLOCATE(noiseSignalArrayInt2(1:size(inputSignalArrayInt2)))
+        WRITE(*,*) 'длина noiseSignalArrayInt2 ',size(noiseSignalArrayInt2)
         DO i=1, size (inputSignalArrayInt2)
            IF ((ptr)>size(this%noiseArray)) THEN
               DO WHILE(ptr>size(this%noiseArray))
                   ptr = ptr-size(this%noiseArray)
               END DO
-              ! WRITE(*,*) 'ptr ', ptr
+               WRITE(*,*) 'ptr ', ptr
               WRITE(*,*) 'ПЕРЕХОД'
            END IF
+
+            noiseSignalArrayInt2(i)=this%noiseArray(ptr)
+            ptr = ptr + 1
+
+       END DO
+
+
+
+        DO i=1, size (inputSignalArrayInt2)
+!           IF ((ptr)>size(this%noiseArray)) THEN
+!              DO WHILE(ptr>size(this%noiseArray))
+!                  ptr = ptr-size(this%noiseArray)
+!              END DO
+!               WRITE(*,*) 'ptr ', ptr
+!              WRITE(*,*) 'ПЕРЕХОД'
+!           END IF
            ! НОРМИРОВКА СИГНАЛА!!!!!
 
            !koeff =4.0
            x = float(inputSignalArrayInt2(i))/32767.0
-           y = float(this%noiseArray(ptr))/32767.0
+          ! y = float(this%noiseArray(ptr))/32767.0
+        y = float( noiseSignalArrayInt2(i))/32767.0
+          !
+           ! на 3дБ по напряжениб больше
            x = x*koeff*2
            summ = x+y
            summ = summ*2
-          ! WRITE(*,*) 'summ, x, y ' , summ, x, y
            scaler = float(2**(outCapacity-1)-1)
-          ! WRITE(*,*) 'scaler ',scaler
            z = int(summ*scaler,2)
            inputSignalArrayInt2(i) = z
-           ptr = ptr + 1
+          ! ptr = ptr + 1
 
-           yy=yy+x**2
+           yy=yy+y**2
+           summ2=summ2+x**2
 
            !WRITE(*,*) y,yy
            !WRITE(*,*) this%noiseArray(i+ptr)
@@ -116,7 +139,11 @@ CONTAINS
         DEALLOCATE(inputSignalArrayInt2)
 !        WRITE (*,*) 'ВЫШЕЛ! '
          yy=yy/float(size (inputSignalArrayInt2))
-         WRITE (*,*) 'нощность сигнала дБ ', ((20.0*log10(sqrt(yy)))-3.0)
+         summ2=summ2/float(size (inputSignalArrayInt2))
+         WRITE (*,*) 'нощность ШУМА дБ ',   ((20.0*log10(sqrt(yy   )))-3.0)
+         yy =  GetSignalRmsPowerINT2(noiseSignalArrayInt2, int(size(noiseSignalArrayInt2),8))
+         WRITE (*,*) 'нощность ШУМА2 дБ ',  yy
+         WRITE (*,*) 'нощность сигнла дБ ', ((20.0*log10(sqrt(summ2)))-3.0)
 
     END  FUNCTION AddNoiseAnalytic
 

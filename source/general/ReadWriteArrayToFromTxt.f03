@@ -65,6 +65,7 @@ INTERFACE WriteArrayToFileTxt
     !======================================================
 
     MODULE PROCEDURE       WriteArrayFromTxtInt8
+    MODULE PROCEDURE       WriteArrayFromTxtInt1
 
 
 END INTERFACE
@@ -153,5 +154,37 @@ END INTERFACE
 
 
     END SUBROUTINE WriteArrayFromTxtInt8
+
+    SUBROUTINE WriteArrayFromTxtInt1(x, name_x,fmt)
+
+        IMPLICIT NONE
+
+        INTEGER(1), PARAMETER ::INT_KIND = 1
+
+        !Входные параметры
+        INTEGER(INT_KIND), INTENT(IN) :: x(:)
+        CHARACTER(*), INTENT(IN) :: name_x
+        CHARACTER(*), INTENT(IN) :: fmt
+        INTEGER(4):: iostat_Num=0
+
+        OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE",ASYNCHRONOUS="YES", FORM="FORMATTED",IOSTAT=iostat_Num)
+        SELECT CASE (iostat_Num)
+            CASE (0)
+                WRITE(*,*) 'Пишется файл  ', name_x
+            CASE (1:)
+                WRITE(*,*) 'ОШИБКА при записи файла ', name_x
+                CALL   ExitFromProgramNormal()
+            ! НУЖНО ПРОВЕРИТЬ !!!!!
+            CASE (:-1)
+                WRITE(*,*) 'End of file ', name_x
+        END SELECT
+
+        WRITE(10,fmt) x
+        CLOSE(10)
+
+
+
+
+    END SUBROUTINE WriteArrayFromTxtInt1
 
 END MODULE ReadWriteArrayToFromTxt

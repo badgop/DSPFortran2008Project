@@ -107,6 +107,8 @@ module RawCorrMod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw81(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
+
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
@@ -117,8 +119,10 @@ module RawCorrMod
          ! WRITE(*,*) 'RAW CORR 81 IN'
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw81(i)=CorrelationRaw81(i)+input(i+j)*int(reference(j),8)
+                   summ=summ+input(i+j)*int(reference(j),8)
                 END DO
+                CorrelationRaw81(i)=summ
+                summ=0
           END DO
          ! WRITE(*,*) 'RAW CORR 81 OUT'
     END FUNCTION   CorrelationRaw81

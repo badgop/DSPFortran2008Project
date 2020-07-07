@@ -1,7 +1,7 @@
 -20.0 !  snrStart
 -19.0 ! snrEnd
 1.0  ! snrStep
-100 ! numberOfIterations
+10 ! numberOfIterations
 176 ! messageLength - длина сообщения + 16 бит должно быть кратно 16
 20000000  !   sampleRateModulator
 0         !   centralFrequency
@@ -10,15 +10,16 @@
 10240     !baudeRateInSamples
 10        ! chipRateInSamples
 test_signals\input\psp_valera.txt ! pspFileName
-test_signals\input\20_mhz_1_25_cut_int.txt ! trancieverFilterName
-test_signals\output\noise_0_1_2Mhz.pcm !inputNoiseFileName
+test_signals\input\10_1_25_int.txt ! trancieverFilterName
+test_signals\output\selfMadeNoise.pcm  !test_signals\output\noise_0_1_2Mhz.pcm      ! !                !noise\noise.pcm !inputNoiseFileName
 12         !  outPutSampleCapacityChannel
 20000000  !sampleRateDeModulator
-test_signals\input\20_mhz_1_25_cut_int.txt ! recieve Filter name
+test_signals\input\10_1_25_int.txt  ! recieve Filter name
 0.3       ! initialPhase
 23        !  outputShiftPhaseDetector
 14       !  outPutSampleCapacityDetector  
-2        !   decimationCoeff 2
-4        ! ethalonCapacity 4
-15000 ! demodTreshold
+1        !   decimationCoeff 2
+2        ! ethalonCapacity 4
+4500 ! demodTreshold
+7         !thresholdSumm
 .FALSE.    !signumCompute 
