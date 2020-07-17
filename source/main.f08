@@ -256,6 +256,10 @@ PROGRAM main
 !                                                 ,length = int(20*1000*1000,8)&
 !                                                 ,outputFileName ='test_signals\output\selfMadeNoise.pcm' )
 
+!           CALL ImpulseGenetatorTestOOP(osr = int(10,2)&
+!                                       ,inputPspFileName = 'test_signals\input\psp_valera.txt'&
+!                                       ,outputfileName   = 'test_signals\output\oopGentest.pcm')
+
     CONTAINS
 
 

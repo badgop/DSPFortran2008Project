@@ -14,6 +14,24 @@ MODULE BERTestMod
      USE ModuleWriteReadArrayFromToFile
     IMPLICIT NONE
 
+
+     INTERFACE
+            REAL(8) FUNCTION omp_get_wtime()
+            END FUNCTION
+    END INTERFACE
+
+!    As cpu_time adds up the time spent by all the threads, this time will almost
+!    certainly increase with number of threads. You would use system_clock or o
+!    mp_get_wtime to test the effectiveness of threaded parallelism.
+!    https://community.intel.com/t5/Intel-Fortran-Compiler/slow-openMP-matrix-multiplication/td-p/826153
+
+!These two intrinsics report different types of time. system_clock reports "wall time" or
+!elapsed time. cpu_time reports time used by the CPU. On a multi-tasking machine these c
+!ould be very different, e.g., if your process shared the CPU equally with three other processes
+!and therefore received 25% of the CPU and used 10 cpu seconds, it would take about 40 seconds of
+! actual elapsed or wall clock time
+!https://stackoverflow.com/questions/6878246/fortran-intrinsic-timing-routines-which-is-better-cpu-time-or-system-clock
+
     INTEGER(4), PARAMETER :: maximumMeasurePoints = 256
 
     CONTAINS
@@ -73,7 +91,8 @@ MODULE BERTestMod
            REAL(4)                     :: berPointsArray(1:maximumMeasurePoints) = 0.0
            REAL(4)                     :: merValueArray (1:maximumMeasurePoints) = 0.0
            INTEGER(4)                  :: numOfsuccessRecieve = 0
-           REAL(4) :: start, finish
+           REAL(8) :: start, finish
+           REAL(8) :: startAll, finishAll
 
 
 
@@ -211,12 +230,13 @@ MODULE BERTestMod
           CALL RanomGeneratorInit()
           WRITE(*,*) 'SNR CURR ',snrCurr
           cnt=1
+          startAll = omp_get_wtime()
           DO WHILE(snrCurr<snrEnd)
 
 !          !$omp parallel
 !            !$omp  do PRIVATE(crcOk,numOfsuccessRecieve)
              DO j = 1,numberOfIterations
-                call cpu_time(start)
+                start=omp_get_wtime()
                   crcOk = AddNoiseRecievCheckCRC(bpskSignal     = bpskSignal &
                                        ,DemodulatorBPSK         = DemodulatorBPSK&
                                        ,awgnChannel             = awgnChannel&
@@ -227,16 +247,16 @@ MODULE BERTestMod
                   IF ((crcOk)) numOfsuccessRecieve = numOfsuccessRecieve +1
                   WRITE(*,*) 'crc ',crcOk
 
-                  IF (.NOT.crcOk) THEN
-                     WRITE(*,*) 'ERRROR CRC  ',crcOk
-                     CALL ExitFromProgramNormal()
-
-                  END IF
+!                  IF (.NOT.crcOk) THEN
+!                     WRITE(*,*) 'ERRROR CRC  ',crcOk
+!                     CALL ExitFromProgramNormal()
+!
+!                  END IF
 
 
 !                  !$omp end critical
 
-                   call cpu_time(finish)
+                   finish=omp_get_wtime()
              WRITE(*,*)' j= ', j, ' time = ', (finish-start)
              END DO
 !             !$omp end  do
@@ -251,9 +271,12 @@ MODULE BERTestMod
              snrCurr = snrCurr + snrStep
           END DO
 
+            finishAll = omp_get_wtime()
+
 
             OPEN(11, FILE = resultFileName, ACCESS="STREAM",ACTION= "WRITE", FORM="FORMATTED", IOSTAT=iostat_Num)
 
+            WRITE(*,*)'all time = ', (finishAll-startAll)/numberOfIterations
 
             WRITE(11,*)  'SNR           MER '
             DO i=1,cnt-1
@@ -294,9 +317,9 @@ MODULE BERTestMod
         CALL awgnChannel%SetPtr(z)
 
         bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snr,capacity)
-        CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskSignalWithNoise.pcm')
+       ! CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskSignalWithNoise.pcm')
         deCodedData = DemodulatorBPSK%GetData(bpskSignalWithNoise)
-        CALL  WriteArrayToFileTxt(deCodedData,'test_signals\output\deCodedDataBertTest.txt','(I1.1)')
+        !CALL  WriteArrayToFileTxt(deCodedData,'test_signals\output\deCodedDataBertTest.txt','(I1.1)')
         WRITE(*,*) 'принято бит ', size(deCodedData)
         decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
         isCrcOk = CheckCRC(decodedDataOctets)

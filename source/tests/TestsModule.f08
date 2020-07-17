@@ -1338,7 +1338,6 @@ call omp_set_num_threads( 4 )
      END SUBROUTINE SignumConvolveTestReversed
 
      SUBROUTINE MakeGaussianNoiseByRandomGenerator(m,sigma,length,outputFileName)
-
          USE RandomMod
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
@@ -1354,15 +1353,94 @@ call omp_set_num_threads( 4 )
 
          CALL RanomGeneratorInit()
          ALLOCATE(noise(1:length))
-
          DO i=1,length
              noise(i) = GetRandomGaussianInt2(m,sigma)
          END DO
-
          CALL noiseSignal%Constructor(noise)
          CALL WriteAnalyticSignalToFile(noiseSignal,int(2,1),outputFileName)
 
      END SUBROUTINE  MakeGaussianNoiseByRandomGenerator
+
+
+     SUBROUTINE ImpulseGenetatorTestOOP(osr,inputPspFileName,outputfileName)
+
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE ImpulseGeneratorModuleOOP
+
+         INTEGER(2)  ,INTENT(IN)              :: osr
+         CHARACTER(*),INTENT(IN)              :: inputPspFileName
+         CHARACTER(*),INTENT(IN)              :: outputfileName
+         INTEGER(1),ALLOCATABLE,DIMENSION(:)  :: prbs
+         INTEGER(2),ALLOCATABLE,DIMENSION(:)  :: signalOut
+         TYPE(analyticSignal_t)               :: sig
+         INTEGER(8)                           :: i,j
+         INTEGER(8)                           :: length
+         LOGICAL                              :: isReady =.FALSE.
+
+         TYPE(impulseGeretator_t) :: generator
+
+
+
+         CALL ReadArrayFromFile (prbs,inputPspFileName,'(I1)')
+
+         CALL generator%SetOverSampleRate(osr)
+
+         length = size(prbs)*osr
+         ALLOCATE(signalOut(1:length))
+
+         j=1
+         DO i=1,length
+            IF(generator%GetReadyForData()) THEN
+               WRITE(*,*) 'Данные готовы!'
+               CALL generator%PutData(prbs(j))
+               j = j + 1
+            END IF
+         signalOut(i)= generator%GetOutputSample()
+         END DO
+
+         CALL sig%Constructor(signalOut)
+         CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName)
+
+     END SUBROUTINE  ImpulseGenetatorTestOOP
+
+
+     SUBROUTINE RandomPsnMakerTest(inputFileName,outputfileName,psnLength)
+         USE  RandomMod
+         USE  PSNMakerMod
+         USE ModuleWriteReadArrayFromToFile
+         USE ImpulseGeneratorModuleOOP
+
+         CHARACTER(*),INTENT(IN)                     :: outputfileName
+         CHARACTER(*),INTENT(IN)                     :: inputFileName
+         INTEGER(2),INTENT(IN)                       :: psnLength
+         INTEGER(1), ALLOCATABLE, DIMENSION(:)       :: psn
+         INTEGER(1), ALLOCATABLE, DIMENSION(:)       :: psnBase
+         INTEGER(2)                                  :: osr
+
+         TYPE(impulseGeretator_t) :: generator
+
+
+
+
+         CALL RanomGeneratorInit()
+
+         CALL ReadArrayFromFile (psnBase,inputFileName,'(I1)')
+         psn = MakePSN(psnLength)
+
+
+         CALL generator%SetOverSampleRate(osr)
+         length = size(prbs)*osr
+
+
+
+
+
+
+     END SUBROUTINE RandomPsnMakerTest
+
 
 
 

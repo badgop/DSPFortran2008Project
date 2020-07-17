@@ -92,8 +92,8 @@ CONTAINS
               DO WHILE(ptr>size(this%noiseArray))
                   ptr = ptr-size(this%noiseArray)
               END DO
-               WRITE(*,*) 'ptr ', ptr
-              WRITE(*,*) 'ПЕРЕХОД'
+               !WRITE(*,*) 'ptr ', ptr
+              !WRITE(*,*) 'ПЕРЕХОД'
            END IF
 
             noiseSignalArrayInt2(i)=this%noiseArray(ptr)
@@ -116,7 +116,7 @@ CONTAINS
            !koeff =4.0
            x = float(inputSignalArrayInt2(i))/32767.0
           ! y = float(this%noiseArray(ptr))/32767.0
-        y = float( noiseSignalArrayInt2(i))/32767.0
+           y = float( noiseSignalArrayInt2(i))/32767.0
           !
            ! на 3дБ по напряжениб больше
            x = x*koeff*2

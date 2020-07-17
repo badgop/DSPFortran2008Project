@@ -127,7 +127,7 @@ CONTAINS
         ! преобразование вниз и разложение на квадратуры
         Demodulate = this%phaseDemodulator%Downconvert(inputSig)
         Demodulate = Demodulate%Decimate(this%decimationCoeff)
-        CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Ipath.pcm','test_signals\output\Qpath.pcm')
+       ! CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Ipath.pcm','test_signals\output\Qpath.pcm')
 
 
 
@@ -150,7 +150,7 @@ CONTAINS
 
         END IF
 
-      CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
+    !  CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
 
      END FUNCTION Demodulate
 
@@ -179,7 +179,7 @@ CONTAINS
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
         ALLOCATE(module2(1:size(module)))
-!        module2 =  SHIFTA(module,4)
+        !module2 =  SHIFTA(module,4)
         module2 =  module
         CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
 
@@ -191,7 +191,7 @@ CONTAINS
         DO i=1,size(module)
            IF (GetFastMouleFromComplexInt8(realPart(i),imagePart(i))>=this%threshold) THEN
                 latchEarly = .TRUE.
-               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
+               !WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
                lasti=i
                IF (module(i)>maxMod) maxMod = module(i)
 !                pointAccumulator = pointAccumulator + 1
@@ -225,18 +225,18 @@ CONTAINS
            END IF
 
            IF(latchEarly.AND.latchLate) THEN
-              WRITE(*,*) 'поймали  ',pointAccumulator
+            !  WRITE(*,*) 'поймали  ',pointAccumulator
 
               IF (pointAccumulator>=this%thresholdSumm) THEN
                  cnt=cnt+1
                  bitBuffer(cnt)=1
-                  WRITE(*,*) 'приныто 1 ', pointAccumulator
+                  !WRITE(*,*) 'приныто 1 ', pointAccumulator
               END IF
 
               IF (pointAccumulator<=-this%thresholdSumm) THEN
                  cnt=cnt+1
                  bitBuffer(cnt)=0
-                 WRITE(*,*) 'приныто 0 ',pointAccumulator
+               !  WRITE(*,*) 'приныто 0 ',pointAccumulator
               END IF
 
 

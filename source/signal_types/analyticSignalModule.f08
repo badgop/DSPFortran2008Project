@@ -16,6 +16,7 @@ MODULE analyticSignalModule
     USE RawCorrMod
     USE ClippingMode
     USE ArrayFunctionsMod
+    USE RawCorrOpenMPmod
     IMPLICIT NONE
 
         INTERFACE
@@ -764,21 +765,36 @@ CONTAINS
 !                END DO
 !             END DO
 
-            IF ((inKind == 1).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt1)
-            IF ((inKind == 1).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt2)
-            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt4)
-            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt8)
-            IF ((inKind == 8).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt4)
-            IF ((inKind == 8).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt2)
-            IF ((inKind == 8).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt1)
-            IF ((inKind == 2).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt1)
-            IF ((inKind == 2).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt2)
-            IF ((inKind == 2).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt4)
-            IF ((inKind == 2).AND.(refKind== 8)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt8)
-            IF ((inKind == 4).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt1)
-            IF ((inKind == 4).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt2)
-            IF ((inKind == 4).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt4)
-            IF ((inKind == 4).AND.(refKind== 8)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt8)
+!            IF ((inKind == 1).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt1)
+!            IF ((inKind == 1).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt2)
+!            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt4)
+!            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt1,reference%signalInt8)
+!            IF ((inKind == 8).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt4)
+!            IF ((inKind == 8).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt2)
+!            IF ((inKind == 8).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt8,reference%signalInt1)
+!            IF ((inKind == 2).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt1)
+!            IF ((inKind == 2).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt2)
+!            IF ((inKind == 2).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt4)
+!            IF ((inKind == 2).AND.(refKind== 8)) tempArray=CorrelationRaw (input%signalInt2,reference%signalInt8)
+!            IF ((inKind == 4).AND.(refKind== 1)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt1)
+!            IF ((inKind == 4).AND.(refKind== 2)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt2)
+!            IF ((inKind == 4).AND.(refKind== 4)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt4)
+!            IF ((inKind == 4).AND.(refKind== 8)) tempArray=CorrelationRaw (input%signalInt4,reference%signalInt8)
+            IF ((inKind == 1).AND.(refKind== 1)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt1)
+            IF ((inKind == 1).AND.(refKind== 2)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt2)
+            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt4)
+            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt8)
+            IF ((inKind == 8).AND.(refKind== 4)) tempArray=CorrelationRawOpemMP (input%signalInt8,reference%signalInt4)
+            IF ((inKind == 8).AND.(refKind== 2)) tempArray=CorrelationRawOpemMP (input%signalInt8,reference%signalInt2)
+            IF ((inKind == 8).AND.(refKind== 1)) tempArray=CorrelationRawOpemMP (input%signalInt8,reference%signalInt1)
+            IF ((inKind == 2).AND.(refKind== 1)) tempArray=CorrelationRawOpemMP (input%signalInt2,reference%signalInt1)
+            IF ((inKind == 2).AND.(refKind== 2)) tempArray=CorrelationRawOpemMP (input%signalInt2,reference%signalInt2)
+            IF ((inKind == 2).AND.(refKind== 4)) tempArray=CorrelationRawOpemMP (input%signalInt2,reference%signalInt4)
+            IF ((inKind == 2).AND.(refKind== 8)) tempArray=CorrelationRawOpemMP (input%signalInt2,reference%signalInt8)
+            IF ((inKind == 4).AND.(refKind== 1)) tempArray=CorrelationRawOpemMP (input%signalInt4,reference%signalInt1)
+            IF ((inKind == 4).AND.(refKind== 2)) tempArray=CorrelationRawOpemMP (input%signalInt4,reference%signalInt2)
+            IF ((inKind == 4).AND.(refKind== 4)) tempArray=CorrelationRawOpemMP (input%signalInt4,reference%signalInt4)
+            IF ((inKind == 4).AND.(refKind== 8)) tempArray=CorrelationRawOpemMP (input%signalInt4,reference%signalInt8)
 
               !WRITE(*,*) 'обычн свертка, нить №  ',  omp_get_thread_num()
              CALL convolve%Constructor(tempArray)
