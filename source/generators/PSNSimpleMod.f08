@@ -24,8 +24,15 @@ CONTAINS
         class(PSNSimple_t), intent(inOUT) :: this
         INTEGER (1)       , intent(in)    :: input_psn(:)
         INTEGER(8)        , intent(in)    :: osr
+
+        IF(ALLOCATED(this%psn)) THEN
+            DEALLOCATE(this%psn)
+            WRITE(*,*) 'пямть под псп выделена, обнулил - генератор ПСП'
+        END IF
         ALLOCATE (this%psn, source = input_psn )
         this%osr = osr
+
+
         this%psn =  GenerateImpluseSequence(osr,input_psn)
 !        WRITE (*,*) 'psn lrn ',size(this%psn)
     END SUBROUTINE

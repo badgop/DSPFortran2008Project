@@ -783,7 +783,8 @@ CONTAINS
             IF ((inKind == 1).AND.(refKind== 1)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt1)
             IF ((inKind == 1).AND.(refKind== 2)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt2)
             IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt4)
-            IF ((inKind == 1).AND.(refKind== 4)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt8)
+            IF ((inKind == 1).AND.(refKind== 8)) tempArray=CorrelationRawOpemMP (input%signalInt1,reference%signalInt8)
+
             IF ((inKind == 8).AND.(refKind== 4)) tempArray=CorrelationRawOpemMP (input%signalInt8,reference%signalInt4)
             IF ((inKind == 8).AND.(refKind== 2)) tempArray=CorrelationRawOpemMP (input%signalInt8,reference%signalInt2)
             IF ((inKind == 8).AND.(refKind== 1)) tempArray=CorrelationRawOpemMP (input%signalInt8,reference%signalInt1)

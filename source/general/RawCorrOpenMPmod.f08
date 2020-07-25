@@ -154,6 +154,8 @@ module RawCorrOpenMPmod
                  !CorrelationRaw81(i)=CorrelationRaw81(i)+int(input(i+j),8)*reference(j)
 
                 summ=summ+input(i+j)*int(reference(j),8)
+              !   WRITE(*,*) input(i+j),reference(j)
+
                  !summMatrix(j) =  input(i+j)*int(reference(j),8)
 
                 END DO
@@ -171,7 +173,7 @@ module RawCorrOpenMPmod
           END DO
  !$omp end parallel do
 
-         ! WRITE(*,*) 'RAW CORR 81 OUT'
+          WRITE(*,*) 'RAW CORR 81 OUT'
     END FUNCTION   CorrelationRaw81
 
             ! Вычисление корр. функции (Raw-  англ. сырая.)
@@ -246,7 +248,7 @@ module RawCorrOpenMPmod
           END DO
     END FUNCTION   CorrelationRaw14
 
-        PURE FUNCTION CorrelationRaw18(input,reference)
+        FUNCTION CorrelationRaw18(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=1
           INTEGER(1),PARAMETER                       :: arrayKindReference=8
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -254,18 +256,31 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw18(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
           ! длительность выходного сигнала в отсчетах
+          WRITE(*,*) 'CorrelationRaw18(input,reference)'
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
           ALLOCATE (CorrelationRaw18(1:inputLen))
+          summ = 0
           ! что бы не было мусора в элементах массива
           CorrelationRaw18=0
           ! Выбрать пределы корреляции
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw18(i)=CorrelationRaw18(i)+int(input(i+j),8)*int(reference(j),8)
+
+                    summ = summ +CorrelationRaw18(i)+int(input(i+j),8)*reference(j)
+                  ! WRITE(*,*) summ , int(input(i+j),8),reference(j)
+                   ! CorrelationRaw18(i)=CorrelationRaw18(i)+int(input(i+j),8)*reference(j)
+
+                    !CorrelationRaw28(i)=CorrelationRaw28(i)+int(input(i+j),8)*int(reference(j),8)
                 END DO
+                   CorrelationRaw18(i) = summ
+
+                   summ = 0
           END DO
+
+          WRITE (*,*) 'max coorr ',maxVal(CorrelationRaw18)
     END FUNCTION   CorrelationRaw18
 
 

@@ -239,8 +239,8 @@ PROGRAM main
 !                                ,level               = int(0,2)&
 !                                ,outLevel            = int(1,2))
 !
-         CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
-                                    , resultFileName = 'test\res2ult.txt' )
+!         CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
+!                                    , resultFileName = 'test\res2ult.txt' )
 
 !           CALL  ArrayReverseTest()
 
@@ -250,17 +250,68 @@ PROGRAM main
 !                    ,shift = int(0,1)&
 !                    ,iterationCount=int(2,4))
 
-!
-!          CALL MakeGaussianNoiseByRandomGenerator(m    = 0.0&
-!                                                 ,sigma = 0.08&
-!                                                 ,length = int(20*1000*1000,8)&
-!                                                 ,outputFileName ='test_signals\output\selfMadeNoise.pcm' )
 
-!           CALL ImpulseGenetatorTestOOP(osr = int(10,2)&
-!                                       ,inputPspFileName = 'test_signals\input\psp_valera.txt'&
-!                                       ,outputfileName   = 'test_signals\output\oopGentest.pcm')
+!         CALL MakeGaussianNoiseByRandomGenerator(m    = 0.0&
+!                                                ,sigma = 0.2&
+!                                                ,length = int(20*1000*1000,8)&
+!                                                ,outputFileName ='test_signals\output\selfMadeNoise.pcm' )
+!
+!!           CALL ImpulseGenetatorTestOOP(osr = int(10,2)&
+!!                                       ,inputPspFileName = 'test_signals\input\psp_valera.txt'&
+!!                                       ,outputfileName   = 'test_signals\output\oopGentest.pcm')
+!
+!!            CALL RandomPsnMakerTest(inputFileName            = 'test_signals\input\psp_valera.txt'&
+!!
+!!                                   ,outputfileNameCrossCorr  = 'test_signals\output\psp2.pcm'&
+!!                                   ,outputfileName           = 'test_signals\output\psp2.txt')
+!!!
+!       CALL BPSKGenerator2PSNTest(  psp0FileName         = 'test_signals\input\psp_valera.txt'&
+!                                   ,psp1FileName         = 'test_signals\output\psp2.txt'&
+!                                   ,dataFileName         = 'test_signals\input\data.txt'&
+!                                   ,outPutFileName       = 'test_signals\output\BPSKTest2.pcm'&
+!                                   ,filterFileName       = 'test_signals\input\10_1_25_int.txt'&
+!                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
+!                                   ,baudRateInSamples    = int(10240,8), chipRateInSamples = int(10,8) &
+!                                   ,sampleRate           = int(10*MEGA,8)&
+!                                   ,centralFrequency     = int(0*MEGA,8)&
+!                                   ,outPutSampleCapacity = int(14,1)&
+!                                   ,outPutShift          = int(1,1)&
+!                                   ,pauseLen             = int(10240*0,8))
+!!!
+!!!
+                CALL  AddNoiseTEst(inputNoiseFileName = 'test_signals\output\noise_0_1_2Mhz.pcm'&
+                                  ,inputSignalFileName ='test_signals\output\BPSKTest2.pcm'&
+                                  ,outputSignalFileName = 'test_signals\output\noiseAmpTEst.pcm'&
+                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
+                                  ,snr =  -20.0 )
+!!!
+!!!
+          CALL  BPSKDemodulator2PSNTest(          psp0FileName          = 'test_signals\input\psp_valera.txt'&
+                                                 ,psp1FileName          = 'test_signals\output\psp2.txt'&
+                                                 ,dataFileName          = 'test_signals\input\data.txt'&
+                                                ,inPutFileName          = 'test_signals\output\awgnTest.pcm'&
+                                                ,filterFileName         = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+                                                ,deCodedDataFileName    = 'test_signals\output\decodedData.txt'&
+                                                ,phaseDetectorIName     = 'test_signals\output\bpskDemodI.pcm'&
+                                                ,phaseDetectorQName     = 'test_signals\output\bpskDemodQ.pcm'&
+                                                ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
+                                                ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
+                                                ,sampleRate             = int(10*MEGA,8)&
+                                                ,centralFrequency       = int (0*MEGA+0,8)&
+                                                ,initialPhase           = 0.3*PI&
+                                                ,outPutSampleCapacity   = int(24,1)&
+                                                ,outPutShift            = int(20,1)&
+                                                ,decimationCoeff        = int(1,8)&
+                                                ,ethalonCapacity        = int(2,1)&
+                                                ,signumState            = .FALSE.&
+                                                ,threshold              = int(2500,8)&
+                                                ,thresholdSumm          = int(5,8))
+!!!!
+
+
 
     CONTAINS
+
 
 
     FUNCTION qq(a)

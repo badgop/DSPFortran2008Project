@@ -17,10 +17,13 @@
         INTEGER(8)             :: signalSize = 0
 
     CONTAINS
-        PROCEDURE ConstructorFromArrays
+        PROCEDURE ConstructorFromArrays_int8
+        PROCEDURE ConstructorFromArrays_int4
+        PROCEDURE ConstructorFromArrays_int2
         PROCEDURE ConstructorFromAnalyticSignals
         ! через 2 массива и через 2 сигнала аналитических
-        GENERIC :: Constructor => ConstructorFromArrays,ConstructorFromAnalyticSignals
+        GENERIC :: Constructor => ConstructorFromArrays_int8,ConstructorFromArrays_int4&
+                                 ,ConstructorFromArrays_int2,ConstructorFromAnalyticSignals
         PROCEDURE AssignDataComplex
         generic :: assignment(=) => AssignDataComplex
 
@@ -39,7 +42,7 @@
         PROCEDURE :: Decimate
         PROCEDURE :: ClipSignal
         generic :: operator   (.CONVSIGN.) =>  ConvolveComplexSignum
-       generic :: operator   (.CONV.)     =>  ConvolveComplexAnalytic
+        generic :: operator   (.CONV.)     =>  ConvolveComplexAnalytic
         FINAL :: destructor
 
     END TYPE complexSignal_t
@@ -65,10 +68,11 @@ CONTAINS
 
     END SUBROUTINE AssignDataComplex
 
-    SUBROUTINE ConstructorFromArrays(this,componentI,componentQ)
+    SUBROUTINE ConstructorFromArrays_int8(this,componentI,componentQ)
         CLASS(complexSignal_t), INTENT(INOUT)  :: this
-        INTEGER(8), INTENT(IN)                 :: componentI(:)
-        INTEGER(8), INTENT(IN)                 :: componentQ(:)
+        INTEGER(1),PARAMETER                   :: arrayKind=8
+        INTEGER(arrayKind), INTENT(IN)                 :: componentI(:)
+        INTEGER(arrayKind), INTENT(IN)                 :: componentQ(:)
         INTEGER(8) :: fileSizeI
 
         !что если обьект уже проинициализирован - проверить!!!
@@ -82,7 +86,47 @@ CONTAINS
 
         this%isAllocated=.TRUE.
 
-    END SUBROUTINE ConstructorFromArrays
+    END SUBROUTINE ConstructorFromArrays_int8
+
+    SUBROUTINE ConstructorFromArrays_int4(this,componentI,componentQ)
+        CLASS(complexSignal_t), INTENT(INOUT)  :: this
+        INTEGER(1),PARAMETER                   :: arrayKind=4
+        INTEGER(arrayKind), INTENT(IN)                 :: componentI(:)
+        INTEGER(arrayKind), INTENT(IN)                 :: componentQ(:)
+        INTEGER(8) :: fileSizeI
+
+        !что если обьект уже проинициализирован - проверить!!!
+
+
+        fileSizeI=size(componentI)
+        this%signalSize=fileSizeI
+
+        CALL this%i%Constructor(componentI)
+        CALL this%q%Constructor(componentQ)
+
+        this%isAllocated=.TRUE.
+
+    END SUBROUTINE ConstructorFromArrays_int4
+
+        SUBROUTINE ConstructorFromArrays_int2(this,componentI,componentQ)
+        CLASS(complexSignal_t), INTENT(INOUT)  :: this
+        INTEGER(1),PARAMETER                   :: arrayKind=2
+        INTEGER(arrayKind), INTENT(IN)                 :: componentI(:)
+        INTEGER(arrayKind), INTENT(IN)                 :: componentQ(:)
+        INTEGER(8) :: fileSizeI
+
+        !что если обьект уже проинициализирован - проверить!!!
+
+
+        fileSizeI=size(componentI)
+        this%signalSize=fileSizeI
+
+        CALL this%i%Constructor(componentI)
+        CALL this%q%Constructor(componentQ)
+
+        this%isAllocated=.TRUE.
+
+    END SUBROUTINE ConstructorFromArrays_int2
 
      SUBROUTINE ConstructorFromAnalyticSignals(this,iSig_t,qSig_t)
         USE analyticSignalModule

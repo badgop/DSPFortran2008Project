@@ -190,7 +190,7 @@ MODULE BERTestMod
            ALLOCATE(DemodulatorBPSK)
            CALL DemodulatorBPSK%Constructor( baudRate                  = baudrateModulator&
                                               ,SampleRate              = sampleRateDeModulator&
-                                              ,centralFrequency        = centralFrequency&
+                                              ,centralFrequency        = (centralFrequency)&
                                               ,initialPhase            = initialPhase&
                                               ,outPutSampleCapacity    = outPutSampleCapacityDetector &
                                               ,psn                     = psn&
@@ -221,11 +221,11 @@ MODULE BERTestMod
 !          decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
 !          IF (CheckCRC(decodedDataOctets))  WRITE(*,*) 'CRC OK'
           snrCurr = snrStart
-!          ALLOCATE(bpskSignalWithNoise)
-!          WRITE(*,*) 'outPutSampleCapacityChannel ',outPutSampleCapacityChannel
-!          bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snrCurr,outPutSampleCapacityChannel)
-!          CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskTestNoise.pcm')
-!          DEALLOCATE(bpskSignalWithNoise)
+          ALLOCATE(bpskSignalWithNoise)
+          WRITE(*,*) 'outPutSampleCapacityChannel ',outPutSampleCapacityChannel
+          bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snrCurr,outPutSampleCapacityChannel)
+          CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskTestNoise.pcm')
+          DEALLOCATE(bpskSignalWithNoise)
 
           CALL RanomGeneratorInit()
           WRITE(*,*) 'SNR CURR ',snrCurr

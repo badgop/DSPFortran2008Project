@@ -1,4 +1,5 @@
-MODULE DBPSKDemod
+MODULE DPSK2PSnDeMod
+
     USE PSNSimpleMod
     USE impulseGeneratorModule
     USE complexSignalModule
@@ -13,10 +14,16 @@ MODULE DBPSKDemod
     USE WriteReadComplexSignalToFromFile
     USE FastModuleMod
     USE ArrayFunctionsMod
+    USE WriteReadAnalyticSignalToFromFile
+
     IMPLICIT NONE
+
+
+
+
     PRIVATE
 
-    TYPE, PUBLIC :: BPSKDemodulator_t
+    TYPE, PUBLIC :: BPSK2PSNDemodulator_t
         PRIVATE
         INTEGER(8)                   :: baudRateInSamples
         INTEGER(8)                   :: SampleRate
@@ -35,8 +42,15 @@ MODULE DBPSKDemod
         TYPE(PSNSimple_t)            :: psnGnerator
         TYPE(PhaseDetector_t)        :: phaseDemodulator
         TYPE(DiffCodeGenerator_t)    :: deCoder
-        TYPE(signumSignal_t)         :: currentPRSSignal
-        TYPE(analyticSignal_t)       :: currentPRSSignalAnalytic
+
+
+        TYPE(signumSignal_t)         :: psn0_signum
+        TYPE(signumSignal_t)         :: psn1_signum
+        TYPE(analyticSignal_t)       :: psn0
+        TYPE(analyticSignal_t)       :: psn1
+
+
+
     CONTAINS
         PROCEDURE :: Constructor
         ! преобразование по частоте вниз
@@ -50,26 +64,28 @@ MODULE DBPSKDemod
         PROCEDURE :: GetData
         PROCEDURE :: SetSignumComputeMode
         FINAL     :: destructor
-    END TYPE BPSKDemodulator_t
+    END TYPE BPSK2PSNDemodulator_t
 
 CONTAINS
 
     SUBROUTINE Constructor(this,baudRate,sampleRate,centralFrequency,initialPhase&
-                               ,outPutSampleCapacity,psn,chipRateInSamples&
+                               ,outPutSampleCapacity,psn0,psn1,chipRateInSamples&
                                ,impulseResponseArray,outputShift,decimationCoeff,ethalonCapacity)
-        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        CLASS(BPSK2PSNDemodulator_t), INTENT(inout) :: this
         INTEGER(8)  , INTENT(IN)           :: baudRate
         INTEGER(8)  , INTENT(IN)           :: SampleRate
         INTEGER(8)  , INTENT(IN)           :: centralFrequency
         REAL(8)     , INTENT(IN)           :: initialPhase
         INTEGER(1)  , INTENT(IN)           :: outPutSampleCapacity
-        INTEGER(1)  , INTENT(IN)           :: psn(:)
+        INTEGER(1)  , INTENT(IN)           :: psn0(:)
+        INTEGER(1)  , INTENT(IN)           :: psn1(:)
         INTEGER(8)  , INTENT(IN)           :: chipRateInSamples
         INTEGER(8)  , INTENT(IN)           :: impulseResponseArray(:)
         INTEGER(8)  , INTENT(IN)           :: outputShift
         INTEGER(8)  , INTENT(IN)           :: decimationCoeff
         INTEGER(1)  , INTENT(IN)           :: ethalonCapacity
         INTEGER(1)  , ALLOCATABLE          :: psnSignalArray(:)
+
 
 
         this%baudRateInSamples              = baudRate
@@ -81,55 +97,73 @@ CONTAINS
         this%decimationCoeff                = decimationCoeff
         this%ethalonCapacity                = ethalonCapacity
 
-        CALL this%psnGnerator%Constructor (psn, chipRateInSamples/this%decimationCoeff)
+
+        CALL this%psnGnerator%Constructor (psn0, chipRateInSamples/this%decimationCoeff)
+        psnSignalArray=this%psnGnerator%OutPutPsnArray(int(1,8))
+        CALL this%psn0_signum%Constructor(psnSignalArray)
+        psnSignalArray = psnSignalArray*ethalonCapacity
+        CALL this%psn0%Constructor(psnSignalArray)
+        DEALLOCATE(psnSignalArray)
+
+        CALL this%psnGnerator%Constructor (psn1, chipRateInSamples/this%decimationCoeff)
+        psnSignalArray=this%psnGnerator%OutPutPsnArray(int(1,8))
+        CALL this%psn1_signum%Constructor(psnSignalArray)
+        psnSignalArray = psnSignalArray*ethalonCapacity
+        CALL this%psn1%Constructor(psnSignalArray)
+        DEALLOCATE(psnSignalArray)
+
+
+        CALL WriteAnalyticSignalToFile(this%psn1,int(2,1),'test_signals\output\psn1.pcm')
+        CALL WriteAnalyticSignalToFile(this%psn0,int(2,1),'test_signals\output\psn0.pcm')
+
+
         CALL this%phaseDemodulator%Constructor(this%centralFrequency&
                                         ,this%initialPhase&
                                         ,this%sampleRate&
                                         ,impulseResponseArray&
                                         ,int(outputShift,8))
-       psnSignalArray=this%psnGnerator%OutPutPsnArray(int(1,8))
 
-       !CALL ReverseArrayInt1(psnSignalArray)
-
-
-
-       CALL this%currentPRSSignal%Constructor(psnSignalArray)
-
-       psnSignalArray = psnSignalArray*ethalonCapacity
-       CALL this%currentPRSSignalAnalytic%Constructor(psnSignalArray)
-       DEALLOCATE(psnSignalArray)
      END SUBROUTINE
 
      ! установка порогового значения решающего устройства
      SUBROUTINE SetTreshold(this,threshold)
-        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        CLASS(BPSK2PSNDemodulator_t), INTENT(inout) :: this
         INTEGER(8)  , INTENT(IN)                :: threshold
         this%threshold   = threshold
      END SUBROUTINE
 
        ! установка порогового значения решающего устройства
      SUBROUTINE SetTresholdSumm(this,thresholdSumm)
-        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        CLASS(BPSK2PSNDemodulator_t), INTENT(inout) :: this
         INTEGER(8)  , INTENT(IN)                :: thresholdSumm
         this%thresholdSumm   = thresholdSumm
      END SUBROUTINE SetTresholdSumm
-    
+
     !Осуществляет : преобразоваине по частоте вниз
     !               разложение на квадратуры
     !               Согласованную фильтрацию знаковую
     ! Возвращает выходной сигнал согласованного фильтра
-    FUNCTION Demodulate (this, inputSig)
-        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+    FUNCTION Demodulate (this, inputSig) RESULT (twoModules)
+        CLASS(BPSK2PSNDemodulator_t), INTENT(inout) :: this
         CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
-        CLASS(complexSignal_t)  , ALLOCATABLE   :: Demodulate
-
-        ALLOCATE (Demodulate)
-        ! преобразование вниз и разложение на квадратуры
-        Demodulate = this%phaseDemodulator%Downconvert(inputSig)
-        Demodulate = Demodulate%Decimate(this%decimationCoeff)
-        CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Ipath.pcm','test_signals\output\Qpath.pcm')
+        CLASS(complexSignal_t)  , ALLOCATABLE   :: twoModules
+        CLASS(complexSignal_t)  , ALLOCATABLE   :: phaseDemOutPut
+        CLASS(complexSignal_t)  , ALLOCATABLE   :: DemodulatePsn0
+        CLASS(complexSignal_t)  , ALLOCATABLE   :: DemodulatePsn1
+        INTEGER(2),dimension(:) , ALLOCATABLE   :: module0, module1
 
 
+        ALLOCATE (twoModules)
+        ALLOCATE(phaseDemOutPut)
+        ALLOCATE(DemodulatePsn0)
+        ALLOCATE(DemodulatePsn1)
+
+        ! преобразование по частоте вниз и разложение на квадратуры
+        phaseDemOutPut = this%phaseDemodulator%Downconvert(inputSig)
+        IF(this%decimationCoeff/=1) phaseDemOutPut = phaseDemOutPut%Decimate(this%decimationCoeff)
+
+        CALL WriteComplexSignalToFile(phaseDemOutPut,int(2,1),'test_signals\output\Ipath2PSN.pcm'&
+                                                             ,'test_signals\output\Qpath2PSN.pcm')
 
         ! согласованная фильтрация
        ! WRITE (*,*) 'тип обрабоки'
@@ -137,21 +171,41 @@ CONTAINS
         IF (this%signumCompute) THEN
             ! согласованная фильтрация
             WRITE (*,*) 'свертка знаковая'
-
-!           Demodulate = Demodulate%ClipSignal(int(0,2),int(1,2))
-!           Demodulate = Demodulate.CONV.this%currentPRSSignalAnalytic
-
-           Demodulate = Demodulate.CONVSIGN.this%currentPRSSignal
-
+            DemodulatePsn0 = phaseDemOutPut.CONVSIGN.this%psn0_signum
+            DemodulatePsn1 = phaseDemOutPut.CONVSIGN.this%psn1_signum
         ELSE
             WRITE (*,*) 'свертка полноразрядная'
-           Demodulate = Demodulate%ClipSignal(int(this%ethalonCapacity,2),int(this%ethalonCapacity,2))
-           Demodulate = Demodulate.CONV.this%currentPRSSignalAnalytic
+            WRITE(*,*) ' this%ethalonCapacity ' ,this%ethalonCapacity
+           DemodulatePsn0 = phaseDemOutPut%ClipSignal(int(this%ethalonCapacity,2),int(this%ethalonCapacity,2))
+           DemodulatePsn1 = phaseDemOutPut%ClipSignal(int(this%ethalonCapacity,2),int(this%ethalonCapacity,2))
 
+           DemodulatePsn0 = DemodulatePsn0.CONV.this%psn0
+           DemodulatePsn1 = DemodulatePsn1.CONV.this%psn1
         END IF
 
-    !  CALL WriteComplexSignalToFile(Demodulate,int(2,1),'test_signals\output\Icorr.pcm','test_signals\output\Qcorr.pcm')
+          DEALLOCATE(phaseDemOutPut)
 
+
+         CALL WriteComplexSignalToFile(DemodulatePsn0,int(2,1),'test_signals\output\Demodulate0PsnI.pcm'&
+                                                       , 'test_signals\output\DemodulatePsn0Q.pcm')
+
+
+
+
+
+
+          module0 = DemodulatePsn0%GetModuleFast()
+          module1 = DemodulatePsn1%GetModuleFast()
+
+          CALL WriteArrayToFile (module0, 'test_signals\output\last_module0.pcm')
+
+          CALL twoModules%Constructor(module0,module1)
+          DEALLOCATE(module0)
+          DEALLOCATE(module1)
+          DEALLOCATE(DemodulatePsn0)
+          DEALLOCATE(DemodulatePsn1)
+      CALL WriteComplexSignalToFile(twoModules,int(2,1),'test_signals\output\zeroesModules.pcm'&
+                                                       , 'test_signals\output\onesModule.pcm')
      END FUNCTION Demodulate
 
      ! Осуществляет пороговую обработку выходного сигнала
@@ -160,7 +214,7 @@ CONTAINS
      ! Ождиается что на один импульс приходиться не более 3 отсчетов
      FUNCTION TresholdProcessing(this, matchedFilterOut)
         USE WriteReadAnalyticSignalToFromFile
-        CLASS(BPSKDemodulator_t), INTENT(in)  :: this
+        CLASS(BPSK2PSNDemodulator_t), INTENT(in)  :: this
         CLASS(complexSignal_t)  , INTENT(inout)  :: matchedFilterOut
         INTEGER(1)              , ALLOCATABLE :: TresholdProcessing(:)
         INTEGER(8),dimension(:) , ALLOCATABLE :: module
@@ -179,9 +233,12 @@ CONTAINS
         bitBuffer=0
         module = matchedFilterOut%GetModuleFast()
         ALLOCATE(module2(1:size(module)))
-        !module2 =  SHIFTA(module,4)
-        module2 =  module
-        CALL WriteArrayToFile (module2, 'test_signals\output\last_modulesinglePSN.pcm')
+        WRITE(*,*) 'maxVAL1 ', maxval(module)
+
+        module2 = module
+         WRITE(*,*) 'maxVAL2 ', maxval(module2)
+
+        CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
 
 
         lasti=0
@@ -248,7 +305,7 @@ CONTAINS
 
         END DO
 !        WRITE(*,*) 'ВО ТУТ ПИЗДЕЦ ', cnt
-       ! WRITE(*,*) 'статус  ', ALLOCATED(TresholdProcessing)
+        WRITE(*,*) 'статус  ', ALLOCATED(TresholdProcessing)
         IF (cnt == 0) THEN
              WRITE(*,*) 'ничего не принято'
              cnt=1
@@ -263,7 +320,7 @@ CONTAINS
      END FUNCTION TresholdProcessing
 
      FUNCTION GetData(this, inputSig)
-        CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+        CLASS(BPSK2PSNDemodulator_t), INTENT(inout) :: this
         CLASS(analyticSignal_t) , INTENT(in)    :: inputSig
         INTEGER(1)              , ALLOCATABLE   :: GetData(:)
         INTEGER(1)              , ALLOCATABLE   :: demodulatedData(:)
@@ -277,12 +334,13 @@ CONTAINS
      END FUNCTION GetData
 
     SUBROUTINE  SetSignumComputeMode(this,signumCompute)
-         CLASS(BPSKDemodulator_t), INTENT(inout) :: this
+         CLASS(BPSK2PSNDemodulator_t), INTENT(inout) :: this
          LOGICAL, INTENT(IN)                     :: signumCompute
          this%signumCompute = signumCompute
     END SUBROUTINE SetSignumComputeMode
     SUBROUTINE destructor(this)
-        type(BPSKDemodulator_t), INTENT(IN) :: this
+        type(BPSK2PSNDemodulator_t), INTENT(IN) :: this
     END SUBROUTINE
 
-END MODULE DBPSKDemod
+
+END MODULE DPSK2PSnDeMod

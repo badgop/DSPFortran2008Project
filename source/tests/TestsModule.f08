@@ -1407,39 +1407,298 @@ call omp_set_num_threads( 4 )
      END SUBROUTINE  ImpulseGenetatorTestOOP
 
 
-     SUBROUTINE RandomPsnMakerTest(inputFileName,outputfileName,psnLength)
+     SUBROUTINE RandomPsnMakerTest(inputFileName,outputfileNameCrossCorr,outputfileName)
          USE  RandomMod
          USE  PSNMakerMod
          USE ModuleWriteReadArrayFromToFile
          USE ImpulseGeneratorModuleOOP
+         USE analyticSignalModule
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
 
+         CHARACTER(*),INTENT(IN)                     :: outputfileNameCrossCorr
          CHARACTER(*),INTENT(IN)                     :: outputfileName
          CHARACTER(*),INTENT(IN)                     :: inputFileName
-         INTEGER(2),INTENT(IN)                       :: psnLength
+         INTEGER(2)                                  :: psnLength
          INTEGER(1), ALLOCATABLE, DIMENSION(:)       :: psn
          INTEGER(1), ALLOCATABLE, DIMENSION(:)       :: psnBase
          INTEGER(2)                                  :: osr
+         INTEGER(8)                                  :: length,i,j,k
 
-         TYPE(impulseGeretator_t) :: generator
+         INTEGER(1), ALLOCATABLE, DIMENSION(:)       :: psnSampled
+         INTEGER(1), ALLOCATABLE, DIMENSION(:)       :: psnBaseSampled
+
+         TYPE(impulseGeretator_t) :: generatorPsn0
+         TYPE(impulseGeretator_t) :: generatorPsn1
+         TYPE(analyticSignal_t)   :: sigBase
+         TYPE(analyticSignal_t)   :: sig
+         TYPE(analyticSignal_t)   :: crossCorrelation
 
 
 
+        osr=10
 
          CALL RanomGeneratorInit()
 
          CALL ReadArrayFromFile (psnBase,inputFileName,'(I1)')
+
+         psnLength = size(psnBase)
+
          psn = MakePSN(psnLength)
 
 
-         CALL generator%SetOverSampleRate(osr)
-         length = size(prbs)*osr
+         CALL generatorPsn0%SetOverSampleRate(osr)
+         CALL generatorPsn1%SetOverSampleRate(osr)
+
+         length = size(psn)*osr
+
+         ALLOCATE(psnSampled(1:length))
+         ALLOCATE(psnBaseSampled(1:length))
+
+         j=1
+         k=1
+         DO i=1,length
+            IF(generatorPsn0%GetReadyForData()) THEN
+               WRITE(*,*) 'Данные готовы!'
+               CALL generatorPsn0%PutData(psnBase(j))
+               j = j + 1
+            END IF
+
+            IF(generatorPsn1%GetReadyForData()) THEN
+               WRITE(*,*) 'Данные готовы!'
+               CALL generatorPsn1%PutData(psn(k))
+               k = k + 1
+            END IF
+
+         psnBaseSampled(i) = generatorPsn0%GetOutputSample()
+         psnSampled(i)     = generatorPsn1%GetOutputSample()
+
+         END DO
+
+         psnBaseSampled = psnBaseSampled*4
+         psnSampled     = psnSampled*4
+
+         CALL sigBase%Constructor(psnBaseSampled)
+         CALL sig%Constructor    (psnSampled    )
+
+         CALL sigBase%ZeroesStuffing(length,length)
 
 
+         crossCorrelation = sigBase.CONV.sig
 
+         CALL WriteAnalyticSignalToFile(crossCorrelation,int(2,1),outputfileNameCrossCorr)
 
+          CALL WriteArrayToFileTxt(psn,outputfileName,'(I1.1)' )
 
 
      END SUBROUTINE RandomPsnMakerTest
+
+
+      SUBROUTINE BPSKGenerator2PSNTest(psp0FileName,psp1FileName,  dataFileName, outPutFileName,filterFileName&
+                                   , codedDataFileName&
+                                   ,baudRateInSamples, chipRateInSamples&
+                                   ,sampleRate,centralFrequency,outPutSampleCapacity,outPutShift,pauseLen)
+
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE DBPSK2PSNmod
+         USE OctetDataModule
+         USE CRC16Mod
+         CHARACTER(*), intent(in)           :: psp0FileName,psp1FileName,dataFileName
+         CHARACTER(*), intent(in)           :: outPutFileName,filterFileName,codedDataFileName
+         INTEGER(8)  , intent(in)           :: baudRateInSamples
+         INTEGER(8)  , intent(in)           :: SampleRate
+         INTEGER(8)  , intent(in)           :: centralFrequency
+         INTEGER(1)  , intent(in)           :: outPutSampleCapacity
+         INTEGER(1)  , ALLOCATABLE          :: psn1(:),psn0(:)
+         INTEGER(8)  , intent(in)           :: chipRateInSamples
+         INTEGER(8)  , intent(in)           :: pauseLen
+         INTEGER(1), ALLOCATABLE                         :: data(:)
+         INTEGER(1), ALLOCATABLE                         :: dataOctets(:)
+         INTEGER(1), ALLOCATABLE                         :: dataOctetsWithCrc(:)
+          INTEGER(1), ALLOCATABLE                         :: dataOctetsWithCrcBybit(:)
+
+         INTEGER(2)                                      :: CRC16
+
+         INTEGER(8), ALLOCATABLE                         :: codedData(:)
+         INTEGER(8), ALLOCATABLE                         :: impulseResponse(:)
+         INTEGER(1)  , intent(in)           :: outPutShift
+         TYPE(BPSK2PSNmodulator_t)               :: modulatorBPSK
+         TYPE(analyticSignal_t)  :: sig
+         !!!!!!!!!!!!!!!!!!
+         CALL ReadArrayFromFile (psn1,psp1FileName,'(I1)')
+         CALL ReadArrayFromFile (psn0,psp0FileName,'(I1)')
+
+         CALL ReadArrayFromFile (data,dataFileName,'(I1)')
+         CALL ReadArrayFromFile (impulseResponse,filterFileName,'(I10)')
+
+         WRITE(*,'(I1)') data
+         dataOctets = BitsToOctets(data,.TRUE.)
+         WRITE(*,*) 'data Octets-----------'
+         WRITE(*,'(z4)') dataOctets
+         WRITE(*,*) '-----------'
+         dataOctets = ReverseBitOrderINT1(dataOctets)
+         WRITE(*,*) 'data Octets- reverse----------'
+         WRITE(*,'(z4)') dataOctets
+          WRITE(*,*) 'data Octets- reverse END----------'
+
+         CRC16 = CRC16Compute(dataOctets, 4129,65535)
+
+         ALLOCATE(dataOctetsWithCrc(1:(size(dataOctets)+2)))
+         dataOctetsWithCrc(1:size(dataOctets))= dataOctets
+         dataOctetsWithCrc(size(dataOctets)+1) = int(SHIFTR(crc16,8),1)
+         dataOctetsWithCrc(size(dataOctets)+2) = int(crc16,1)
+         WRITE(*,*) 'size(dataOctets)',size(dataOctets)
+         WRITE(*,*) 'dataOctetsWithCrc size',size(dataOctetsWithCrc)
+         WRITE(*,*) 'dataOctetsWithCrc- reverse----------'
+         WRITE(*,'(z4)')  dataOctetsWithCrc
+
+         dataOctetsWithCrcBybit = OctetsToBits(dataOctetsWithCrc,.TRUE.)
+
+
+         WRITE(*,*) 'Constructor bpskmod start'
+         CALL modulatorBPSK%Constructor(baudRateInSamples, SampleRate, centralFrequency, outPutSampleCapacity&
+                                      , psn0,psn1, chipRateInSamples,impulseResponse,outPutShift)
+
+
+        !sig = modulatorBPSK%Generate(data)
+         sig = modulatorBPSK%Generate(dataOctetsWithCrcBybit)
+
+         CALL sig%ZeroesStuffing(pauseLen,pauseLen)
+         CALL WriteAnalyticSignalToFile(sig,int(2,1),outPutFileName)
+         codedData = modulatorBPSK%GenerateDiffData(dataOctetsWithCrcBybit)
+         CALL  WriteArrayToFileTxt(codedData,codedDataFileName,'(I1.1)')
+
+      END SUBROUTINE BPSKGenerator2PSNTest
+
+      SUBROUTINE BPSKDemodulator2PSNTest(psp0FileName,psp1FileName,  dataFileName, inPutFileName,filterFileName&
+                                   , deCodedDataFileName&
+                                   , phaseDetectorIName&
+                                   , phaseDetectorQName&
+                                   ,complexModuleCorrNAme&
+                                   ,baudRateInSamples, chipRateInSamples&
+                                   ,sampleRate,centralFrequency&
+                                   ,initialPhase&
+                                   ,outPutSampleCapacity,outPutShift,decimationCoeff,ethalonCapacity&
+                                   ,signumState&
+                                   ,threshold&
+                                   ,thresholdSumm)
+
+         USE analyticSignalModule
+         USE ModuleWriteReadArrayFromToFile
+         USE WriteReadAnalyticSignalToFromFile
+         USE ReadWriteArrayToFromTxt
+         USE BPSKmod
+         USE DPSK2PSnDeMod
+         USE WriteReadComplexSignalToFromFile
+         USE complexSignalModule
+         USE OctetDataModule
+         USE CRC16Mod
+
+         CHARACTER(*), intent(in)           :: psp0FileName, psp1FileName
+         CHARACTER(*), intent(in)           :: dataFileName, inPutFileName,filterFileName
+         CHARACTER(*), intent(in)           :: phaseDetectorIName, phaseDetectorQName
+         CHARACTER(*), intent(in)           :: complexModuleCorrNAme
+         CHARACTER(*), intent(in)           :: deCodedDataFileName
+         INTEGER(8)  , intent(in)           :: baudRateInSamples
+         INTEGER(8)  , intent(in)           :: SampleRate
+         INTEGER(8)  , intent(in)           :: centralFrequency
+         INTEGER(1)  , intent(in)           :: outPutSampleCapacity
+         INTEGER(8)  , intent(in)           :: decimationCoeff
+         INTEGER(1)  , ALLOCATABLE          :: psn0(:)
+         INTEGER(1)  , ALLOCATABLE          :: psn1(:)
+         INTEGER(8)  , intent(in)           :: chipRateInSamples
+         INTEGER(1)  , INTENT(IN)           :: ethalonCapacity
+         INTEGER(8) , INTENT(IN)            :: thresholdSumm
+         INTEGER(8) , INTENT(IN)            :: threshold
+         INTEGER(8), ALLOCATABLE            :: data(:)
+         INTEGER(8), ALLOCATABLE            :: module(:)
+         INTEGER(1), ALLOCATABLE            :: decodedData(:)
+         INTEGER(8), ALLOCATABLE            :: impulseResponse(:)
+         INTEGER(1)  , intent(in)           :: outPutShift
+         REAL(8), intent(in)                :: initialPhase
+         LOGICAL, INTENT(IN)                :: signumState
+         INTEGER(1), ALLOCATABLE            :: decodedDataOctets(:)
+         INTEGER(2)                         :: crc16,i,errorCount
+
+
+         TYPE(BPSK2PSNDemodulator_t)               :: DemodulatorBPSK
+         TYPE(analyticSignal_t)  :: sig
+         TYPE(analyticSignal_t)  :: sig2
+         TYPE(complexSignal_t) ::  signal_1
+
+
+
+         !!!!!!!!!!!
+         CALL ReadArrayFromFile (psn0,psp0FileName,'(I1)' )
+         CALL ReadArrayFromFile (psn1,psp1FileName,'(I1)' )
+         CALL ReadArrayFromFile (data,dataFileName,'(I1)'  )
+         CALL ReadArrayFromFile (impulseResponse,filterFileName,'(I10)'  )
+
+         CALL DemodulatorBPSK%Constructor( baudRate = baudRateInSamples&
+                                          ,SampleRate =SampleRate&
+                                          ,centralFrequency = centralFrequency &
+                                          ,initialPhase = initialPhase&
+                                          ,outPutSampleCapacity=outPutSampleCapacity &
+                                          ,psn0=psn0&
+                                          ,psn1=psn1&
+                                          ,chipRateInSamples=chipRateInSamples&
+                                          ,impulseResponseArray= impulseResponse&
+                                          ,outPutShift = int(outPutShift,8)&
+                                          ,decimationCoeff= decimationCoeff&
+                                          ,ethalonCapacity = ethalonCapacity)
+
+
+
+!          SUBROUTINE Constructor(this,baudRate,sampleRate,centralFrequency,initialPhase&
+!                               ,outPutSampleCapacity,psn0,psn1,chipRateInSamples&
+!                               ,impulseResponseArray,outputShift,decimationCoeff,ethalonCapacity)
+
+!         sig = modulatorBPSK%Generate(data)
+!
+         CALL ReadAnalyticSignalFromFile(sig,int(2,1),inPutFileName)
+!
+         CALL  DemodulatorBPSK%SetTreshold(int(threshold,8))
+         CALL  DemodulatorBPSK%SetSignumComputeMode(signumState)
+         CALL  DemodulatorBPSK%SetTresholdSumm(thresholdSumm)
+
+          deCodedData = DemodulatorBPSK%GetData(sig)
+          decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
+          crc16 =  CRC16Compute(decodedDataOctets, 4129,65535)
+          crc16=XOR(crc16,z'ffff')
+           WRITE (*,*) 'А ПРИЕМЕ!'
+           WRITE (*,'(Z4)') CRC16
+           IF (crc16 ==z'1D0F' ) WRITE(*,*)'CRC is ok!!!!'
+
+           decodedDataOctets= ReverseBitOrderINT1(decodedDataOctets)
+           DEALLOCATE(deCodedData)
+           deCodedData = OctetsToBits (decodedDataOctets,.TRUE.)
+
+          CALL  WriteArrayToFileTxt(int(deCodedData,8),deCodedDataFileName,'(I1.1)')
+
+          errorCount = 0
+          DO i=1,size(data)
+             IF(data(i).NE.deCodedData(i)) THEN
+                  errorCount=errorCount+1
+                   WRITE(*,*) 'i тый бит ', i
+             END IF
+          END DO
+          WRITE(*,*) '********************** '
+          WRITE(*,*) 'число ошибок ', errorCount
+           WRITE(*,*) '********************** '
+
+
+!           CALL ReadAnalyticSignalFromFile(inI,int(2,1),'test_signals\output\Icorr.pcm')
+!           CALL ReadAnalyticSignalFromFile(inQ,int(2,1),'test_signals\output\Qcorr.pcm')
+!           inI= inI*inI
+!           inQ = inQ*inQ
+!           summ = inI+inQ
+!           CALL summ%Rshift(int(10,1))
+!            CALL WriteAnalyticSignalToFile(summ,int(2,1),'test_signals\output\summ.pcm')
+
+      END SUBROUTINE BPSKDemodulator2PSNTest
 
 
 

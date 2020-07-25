@@ -16,7 +16,12 @@ MODULE PSNMakerMod
          psn=0
          DO i=1,psnLength
             randomValue = GetRandomInt(volume)-64
-            IF (randomValue>64) psn(i) = 1
+            IF (randomValue>0) THEN
+               psn(i) = 1
+
+            END IF
+         !WRITE(*,*)  randomValue, i , psn(i)
+
          END DO
 
     END FUNCTION
