@@ -113,8 +113,8 @@ CONTAINS
         DEALLOCATE(psnSignalArray)
 
 
-        CALL WriteAnalyticSignalToFile(this%psn1,int(2,1),'test_signals\output\psn1.pcm')
-        CALL WriteAnalyticSignalToFile(this%psn0,int(2,1),'test_signals\output\psn0.pcm')
+!        CALL WriteAnalyticSignalToFile(this%psn1,int(2,1),'test_signals\output\psn1.pcm')
+!        CALL WriteAnalyticSignalToFile(this%psn0,int(2,1),'test_signals\output\psn0.pcm')
 
 
         CALL this%phaseDemodulator%Constructor(this%centralFrequency&
@@ -150,7 +150,10 @@ CONTAINS
         CLASS(complexSignal_t)  , ALLOCATABLE   :: phaseDemOutPut
         CLASS(complexSignal_t)  , ALLOCATABLE   :: DemodulatePsn0
         CLASS(complexSignal_t)  , ALLOCATABLE   :: DemodulatePsn1
-        INTEGER(2),dimension(:) , ALLOCATABLE   :: module0, module1
+
+        CLASS(analyticSignal_t) , ALLOCATABLE    :: diffSig
+
+        INTEGER(2),dimension(:) , ALLOCATABLE   :: module0, module1,diffMod
 
 
         ALLOCATE (twoModules)
@@ -158,12 +161,14 @@ CONTAINS
         ALLOCATE(DemodulatePsn0)
         ALLOCATE(DemodulatePsn1)
 
+
+
         ! преобразование по частоте вниз и разложение на квадратуры
         phaseDemOutPut = this%phaseDemodulator%Downconvert(inputSig)
         IF(this%decimationCoeff/=1) phaseDemOutPut = phaseDemOutPut%Decimate(this%decimationCoeff)
 
-        CALL WriteComplexSignalToFile(phaseDemOutPut,int(2,1),'test_signals\output\Ipath2PSN.pcm'&
-                                                             ,'test_signals\output\Qpath2PSN.pcm')
+      !  CALL WriteComplexSignalToFile(phaseDemOutPut,int(2,1),'test_signals\output\Ipath2PSN.pcm'&
+      !                                                       ,'test_signals\output\Qpath2PSN.pcm')
 
         ! согласованная фильтрация
        ! WRITE (*,*) 'тип обрабоки'
@@ -186,26 +191,35 @@ CONTAINS
           DEALLOCATE(phaseDemOutPut)
 
 
-         CALL WriteComplexSignalToFile(DemodulatePsn0,int(2,1),'test_signals\output\Demodulate0PsnI.pcm'&
-                                                       , 'test_signals\output\DemodulatePsn0Q.pcm')
-
-
-
-
-
-
+         CALL WriteComplexSignalToFile(DemodulatePsn1,int(2,1),'test_signals\output\Demodulate1PsnI.pcm'&
+                                                       , 'test_signals\output\DemodulatePsn1Q.pcm')
           module0 = DemodulatePsn0%GetModuleFast()
           module1 = DemodulatePsn1%GetModuleFast()
 
-          CALL WriteArrayToFile (module0, 'test_signals\output\last_module0.pcm')
+
+          ALLOCATE(diffMod,source =module1 )
+          diffMod =diffMod-module0
+
+!          ALLOCATE(diffSig)
+!          CALL diffSig%Constructor(diffMod)
+!          DEALLOCATE(diffMod)
+!
+!
+!          CALL WriteAnalyticSignalToFile(diffSig,int(2,1),'test_signals\output\diffSIG.pcm')
+
+        !  CALL WriteArrayToFile (module0, 'test_signals\output\last_module0.pcm')
+
 
           CALL twoModules%Constructor(module0,module1)
+
+
           DEALLOCATE(module0)
           DEALLOCATE(module1)
+!          DEALLOCATE(diffSig)
           DEALLOCATE(DemodulatePsn0)
           DEALLOCATE(DemodulatePsn1)
-      CALL WriteComplexSignalToFile(twoModules,int(2,1),'test_signals\output\zeroesModules.pcm'&
-                                                       , 'test_signals\output\onesModule.pcm')
+    !  CALL WriteComplexSignalToFile(twoModules,int(2,1),'test_signals\output\zeroesModules.pcm'&
+    !                                                   , 'test_signals\output\onesModule.pcm')
      END FUNCTION Demodulate
 
      ! Осуществляет пороговую обработку выходного сигнала
@@ -226,8 +240,10 @@ CONTAINS
         INTEGER(8)                            :: lastI
         INTEGER(1)                            :: bitBuffer(1:32767)
         INTEGER(8)                            :: cnt
-        LOGICAL                               :: latchEarly = .FALSE.
-        LOGICAL                               :: latchLate  = .FALSE.
+        LOGICAL                               :: latchEarly0 = .FALSE.
+        LOGICAL                               :: latchLate0  = .FALSE.
+         LOGICAL                               :: latchEarly1 = .FALSE.
+        LOGICAL                               :: latchLate1  = .FALSE.
         INTEGER(8)                            :: pointAccumulator = 0;
         INTEGER(8)                            :: maxMod=0
         bitBuffer=0
@@ -235,10 +251,12 @@ CONTAINS
         ALLOCATE(module2(1:size(module)))
         WRITE(*,*) 'maxVAL1 ', maxval(module)
 
-        module2 = module
+          module2 = module
          WRITE(*,*) 'maxVAL2 ', maxval(module2)
 
-        CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
+     !   CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
+
+        DEALLOCATE(module2)
 
 
         lasti=0
@@ -246,65 +264,61 @@ CONTAINS
         cnt=0
 !        WRITE(*,*) 'size module ', size(module)
         DO i=1,size(module)
-           IF (GetFastMouleFromComplexInt8(realPart(i),imagePart(i))>=this%threshold) THEN
-                latchEarly = .TRUE.
-               !WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
+           IF (realPart(i)>=this%threshold) THEN
+               latchEarly0 = .TRUE.
+               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
                lasti=i
                IF (module(i)>maxMod) maxMod = module(i)
-!                pointAccumulator = pointAccumulator + 1
-
-               !Обработка созвездия ведется с учетом базиса [COS, -SIN]
-!               IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
-!                   cnt=cnt+1
-!                   bitBuffer(cnt)=1
-!                   WRITE(*,*) 'принята 1 ', i , module(i), (realPart(i)) , (imagePart(i))
-!               END IF
-!               IF((realPart(i)<0).AND.(imagePart(i)>0)) THEN
-!                   cnt=cnt+1
-!                   bitBuffer(cnt)=0
-!                   WRITE(*,*) 'принята 0 ', i ,module(i), (realPart(i)) , (imagePart(i))
-!               END IF
-
-               IF((realPart(i)>0).AND.(imagePart(i)<0)) THEN
-                   pointAccumulator = pointAccumulator + 1
-                   !WRITE(*,*) '1'
-               END IF
-               IF((realPart(i)<0).AND.(imagePart(i)>0)) THEN
-                   pointAccumulator = pointAccumulator - 1
-                   !WRITE(*,*) '0'
-               END IF
-
-
+               pointAccumulator = pointAccumulator + 1
            ELSE
-              IF(latchEarly) latchLate = .TRUE.
+              IF(latchEarly0) latchLate0 = .TRUE.
               !WRITE(*,*) 'МЕНЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i
 
            END IF
 
-           IF(latchEarly.AND.latchLate) THEN
-            !  WRITE(*,*) 'поймали  ',pointAccumulator
+           IF(latchEarly0.AND.latchLate0) THEN
+              WRITE(*,*) 'поймали  ',pointAccumulator
+
+              IF (pointAccumulator>=this%thresholdSumm) THEN
+                 cnt=cnt+1
+                 bitBuffer(cnt)=0
+                  WRITE(*,*) 'приныто 0 ', pointAccumulator
+              END IF
+
+              pointAccumulator = 0
+              latchEarly0 = .FALSE.
+              latchLate0  = .FALSE.
+           END IF
+           !=====================================================================================
+            IF (imagePart(i)>=this%threshold) THEN
+               latchEarly1 = .TRUE.
+               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
+               lasti=i
+               IF (module(i)>maxMod) maxMod = module(i)
+               pointAccumulator = pointAccumulator + 1
+           ELSE
+              IF(latchEarly1) latchLate1 = .TRUE.
+              !WRITE(*,*) 'МЕНЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i
+
+           END IF
+
+           IF(latchEarly1.AND.latchLate1) THEN
+              WRITE(*,*) 'поймали  ',pointAccumulator
 
               IF (pointAccumulator>=this%thresholdSumm) THEN
                  cnt=cnt+1
                  bitBuffer(cnt)=1
-                  !WRITE(*,*) 'приныто 1 ', pointAccumulator
+                WRITE(*,*) 'приныто 1 ', pointAccumulator
               END IF
-
-              IF (pointAccumulator<=-this%thresholdSumm) THEN
-                 cnt=cnt+1
-                 bitBuffer(cnt)=0
-               !  WRITE(*,*) 'приныто 0 ',pointAccumulator
-              END IF
-
 
               pointAccumulator = 0
-              latchEarly = .FALSE.
-              latchLate  = .FALSE.
+              latchEarly1 = .FALSE.
+              latchLate1  = .FALSE.
            END IF
 
-
         END DO
-!        WRITE(*,*) 'ВО ТУТ ПИЗДЕЦ ', cnt
+!
+   WRITE(*,*) 'ВО ТУТ ПИЗДЕЦ ', cnt
         WRITE(*,*) 'статус  ', ALLOCATED(TresholdProcessing)
         IF (cnt == 0) THEN
              WRITE(*,*) 'ничего не принято'

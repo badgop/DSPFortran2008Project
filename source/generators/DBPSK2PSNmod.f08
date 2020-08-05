@@ -142,8 +142,10 @@ CONTAINS
 
           IF(this%dataSignalGen%GetOutputSample()>0) THEN
                   outputDataSig(i)=this%psnGen1%GetOutputSample()
+                  !outputDataSig(i) = 0
           ELSE
                   outputDataSig(i)=this%psnGen0%GetOutputSample()
+                  !outputDataSig(i)=0
           END IF
 
 
@@ -156,7 +158,7 @@ CONTAINS
 
         CALL OutPutModulationSig%Constructor(outputDataSig)
 
-       ! CALL OutPutModulationSig%ZeroesStuffing(this%baudRateInSamples,this%baudRateInSamples)
+        CALL OutPutModulationSig%ZeroesStuffing(this%baudRateInSamples,this%baudRateInSamples)
 
         OutPutModulationSig = OutPutModulationSig.CONV.this%impluseResponse
 

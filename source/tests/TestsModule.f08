@@ -23,6 +23,12 @@ module TestsModule
     USE PrefixModule
     implicit none
 
+   INTERFACE
+            REAL(8) FUNCTION omp_get_wtime()
+            END FUNCTION
+    END INTERFACE
+
+
 
     CONTAINS
 
@@ -1407,7 +1413,7 @@ call omp_set_num_threads( 4 )
      END SUBROUTINE  ImpulseGenetatorTestOOP
 
 
-     SUBROUTINE RandomPsnMakerTest(inputFileName,outputfileNameCrossCorr,outputfileName)
+     SUBROUTINE RandomPsnMakerTest(inputFileName,outputfileNameCrossCorr,outputfileNameAutoCorr,outputfileName)
          USE  RandomMod
          USE  PSNMakerMod
          USE ModuleWriteReadArrayFromToFile
@@ -1417,6 +1423,7 @@ call omp_set_num_threads( 4 )
          USE ReadWriteArrayToFromTxt
 
          CHARACTER(*),INTENT(IN)                     :: outputfileNameCrossCorr
+         CHARACTER(*),INTENT(IN)                     :: outputfileNameAutoCorr
          CHARACTER(*),INTENT(IN)                     :: outputfileName
          CHARACTER(*),INTENT(IN)                     :: inputFileName
          INTEGER(2)                                  :: psnLength
@@ -1433,6 +1440,9 @@ call omp_set_num_threads( 4 )
          TYPE(analyticSignal_t)   :: sigBase
          TYPE(analyticSignal_t)   :: sig
          TYPE(analyticSignal_t)   :: crossCorrelation
+         TYPE(analyticSignal_t)   :: autoCorrelation
+          TYPE(analyticSignal_t)   :: sig2
+
 
 
 
@@ -1475,8 +1485,8 @@ call omp_set_num_threads( 4 )
 
          END DO
 
-         psnBaseSampled = psnBaseSampled*4
-         psnSampled     = psnSampled*4
+         psnBaseSampled = psnBaseSampled*1
+         psnSampled     = psnSampled*1
 
          CALL sigBase%Constructor(psnBaseSampled)
          CALL sig%Constructor    (psnSampled    )
@@ -1485,10 +1495,16 @@ call omp_set_num_threads( 4 )
 
 
          crossCorrelation = sigBase.CONV.sig
+         sig2=sig
+         CALL sig%ZeroesStuffing(length,length)
+         autoCorrelation = sig.CONV.sig2
 
          CALL WriteAnalyticSignalToFile(crossCorrelation,int(2,1),outputfileNameCrossCorr)
+         CALL WriteAnalyticSignalToFile(autoCorrelation,int(2,1),outputfileNameAutoCorr)
 
-          CALL WriteArrayToFileTxt(psn,outputfileName,'(I1.1)' )
+         CALL WriteArrayToFileTxt(psn,outputfileName,'(I1.1)' )
+
+
 
 
      END SUBROUTINE RandomPsnMakerTest
@@ -1623,6 +1639,9 @@ call omp_set_num_threads( 4 )
          INTEGER(1), ALLOCATABLE            :: decodedDataOctets(:)
          INTEGER(2)                         :: crc16,i,errorCount
 
+         REAL(8) :: start, finish
+         REAL(8) :: startAll, finishAll
+
 
          TYPE(BPSK2PSNDemodulator_t)               :: DemodulatorBPSK
          TYPE(analyticSignal_t)  :: sig
@@ -1663,8 +1682,10 @@ call omp_set_num_threads( 4 )
          CALL  DemodulatorBPSK%SetTreshold(int(threshold,8))
          CALL  DemodulatorBPSK%SetSignumComputeMode(signumState)
          CALL  DemodulatorBPSK%SetTresholdSumm(thresholdSumm)
-
+           start=omp_get_wtime()
           deCodedData = DemodulatorBPSK%GetData(sig)
+           finish=omp_get_wtime()
+          WRITE(*,*)'time = ', (finish-start)
           decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
           crc16 =  CRC16Compute(decodedDataOctets, 4129,65535)
           crc16=XOR(crc16,z'ffff')

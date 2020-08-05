@@ -6,10 +6,11 @@
 20000000  !   sampleRateModulator
 0         !   centralFrequency
 16        !   outPutSampleCapacityModulator
-17        !  outputShiftModulator
+1        !  outputShiftModulator
 10240     !baudeRateInSamples
 10        ! chipRateInSamples
 test_signals\input\psp_valera.txt ! pspFileName
+test_signals\output\psp2.txt ! pspFileName
 test_signals\input\10_1_25_int.txt ! trancieverFilterName
 test_signals\output\noise_0_1_2Mhz.pcm  !test_signals\output\selfMadeNoise.pcm  !     ! !                !noise\noise.pcm !inputNoiseFileName
 12         !  outPutSampleCapacityChannel
@@ -20,6 +21,6 @@ test_signals\input\10_1_25_int.txt  ! recieve Filter name
 14       !  outPutSampleCapacityDetector  
 1        !   decimationCoeff 2
 2        ! ethalonCapacity 4
-4500 ! demodTreshold
-7         !thresholdSumm
+6000 ! demodTreshold
+2         !thresholdSumm
 .FALSE.    !signumCompute 

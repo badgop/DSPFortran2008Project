@@ -1,13 +1,15 @@
-MODULE BERTestMod
+MODULE Bert2PsnMod
+
+
     USE ModuleWriteReadArrayFromToFile
     USE ModuleExitProg
-    USE BPSKmod
+   USE DBPSK2PSNmod
     USE OctetDataModule
     USE CRC16Mod
     USE PayloadGeneratorMod
     USE analyticSignalModule
     USE WriteReadAnalyticSignalToFromFile
-    USE DBPSKDemod
+     USE DPSK2PSnDeMod
     USE AWGNChannelMod
     USE  ModuleExitProg
     USE ReadWriteArrayToFromTxt
@@ -37,7 +39,7 @@ MODULE BERTestMod
     CONTAINS
 
 
-    SUBROUTINE BERTestSignumCorrelation (parameterFileName, resultFileName)
+    SUBROUTINE BERTestSignumCorrelation2PSN (parameterFileName, resultFileName)
            CHARACTER(*), INTENT(IN) :: parameterFileName
            CHARACTER(*), INTENT(IN) :: resultFileName
            !***********************************
@@ -54,7 +56,8 @@ MODULE BERTestMod
            INTEGER(1)               :: outputShiftModulator
            INTEGER(1)               :: outPutSampleCapacityChannel
            INTEGER(8)               :: chipRateInSamples
-           CHARACTER(50)            :: pspFileName
+           CHARACTER(50)            :: psp0FileName
+           CHARACTER(50)            :: psp1FileName
            CHARACTER(50)            :: trancieverFilterName
            CHARACTER(50)            :: inputNoiseFileName
            CHARACTER(50)            :: recievFilterName
@@ -74,14 +77,15 @@ MODULE BERTestMod
            INTEGER(8)               :: i,j,cnt
            REAL(4)                  :: snrCurr
 
-           TYPE(BPSKmodulator_t)  ,ALLOCATABLE    :: modulatorBPSK
+           TYPE(BPSK2PSNmodulator_t)  ,ALLOCATABLE    :: modulatorBPSK
            TYPE(analyticSignal_t)                  :: bpskSignal
-           TYPE(BPSKDemodulator_t),ALLOCATABLE    :: DemodulatorBPSK
+           TYPE(BPSK2PSNDemodulator_t),ALLOCATABLE    :: DemodulatorBPSK
            TYPE(AWGNChannel_t)    ,ALLOCATABLE    :: awgnChannel
            TYPE(analyticSignal_t) ,aLLOCATABLE    :: noiseSignal
            TYPE(analyticSignal_t) ,aLLOCATABLE    :: bpskSignalWithNoise
 
-           INTEGER(1),ALLOCATABLE      :: psn(:)
+           INTEGER(1),ALLOCATABLE      :: psn0(:)
+           INTEGER(1),ALLOCATABLE      :: psn1(:)
            INTEGER(1),ALLOCATABLE      :: payloadDataBitArray(:)
            INTEGER(1),ALLOCATABLE      :: payloadDataBitArrayWithCrc(:)
            INTEGER(8),ALLOCATABLE      :: transcieverImpulseResponse(:)
@@ -121,7 +125,8 @@ MODULE BERTestMod
            READ(10,*)  outputShiftModulator
            READ(10,*)  baudrateModulator
            READ(10,*)  chipRateInSamples
-           READ(10,*)  pspFileName
+           READ(10,*)  psp0FileName
+           READ(10,*)  psp1FileName
            READ(10,*)  trancieverFilterName
            !генератор ШУМА
            READ(10,*)  inputNoiseFileName
@@ -141,7 +146,8 @@ MODULE BERTestMod
            WRITE(*,*) 'параметры модели прочитаны...'
 
            ! загрузка ПСП
-           CALL ReadArrayFromFile (psn,pspFileName,'(I1)')
+           CALL ReadArrayFromFile (psn0,psp0FileName,'(I1)')
+           CALL ReadArrayFromFile (psn1,psp1FileName,'(I1)')
            ! формирование пакета данных без контрольной суммы
            payloadDataBitArray =  GenerateRandomPayloadBitArray(messageLength)
            WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
@@ -157,7 +163,8 @@ MODULE BERTestMod
                                           ,SampleRate           = sampleRateModulator&
                                           ,centralFrequency     = centralFrequency&
                                           ,outPutSampleCapacity = outPutSampleCapacityModulator&
-                                          ,psn                  = psn&
+                                          ,psn0                  = psn0&
+                                          ,psn1                  = psn1&
                                           ,chipRateInSamples    = chipRateInSamples&
                                           ,impulseResponseArray = transcieverImpulseResponse&
                                           ,outputShift          = outputShiftModulator&
@@ -165,7 +172,7 @@ MODULE BERTestMod
 
            DEALLOCATE(transcieverImpulseResponse)
 
-           CALL  WriteArrayToFileTxt(payloadDataBitArrayWithCrc,'test_signals\output\codedDataBertTest.txt','(I1.1)')
+          ! CALL  WriteArrayToFileTxt(payloadDataBitArrayWithCrc,'test_signals\output\codedDataBertTest.txt','(I1.1)')
 
            bpskSignal = modulatorBPSK%Generate(payloadDataBitArrayWithCrc)
            DEALLOCATE(modulatorBPSK)
@@ -176,9 +183,9 @@ MODULE BERTestMod
            DEALLOCATE(arrayInt2)
 !           WRITE(*,*) 'kind ', bpskSignal%GetSiGnalKind()
 
-           CALL bpskSignal%ZeroesStuffing(int(0,8),int(0,8))
+           CALL bpskSignal%ZeroesStuffing(int(baudrateModulator,8),int(baudrateModulator,8))
 
-           CALL WriteAnalyticSignalToFile(bpskSignal,int(2,1),'bpskTest.pcm')
+          ! CALL WriteAnalyticSignalToFile(bpskSignal,int(2,1),'bpskTest2psn.pcm')
 
 
 !           CALL ReadAnalyticSignalFromFile(bpskSignal,int(2,1),'noise_0_1_2Mhz_test.pcm')
@@ -193,7 +200,8 @@ MODULE BERTestMod
                                               ,centralFrequency        = (centralFrequency)&
                                               ,initialPhase            = initialPhase&
                                               ,outPutSampleCapacity    = outPutSampleCapacityDetector &
-                                              ,psn                     = psn&
+                                              ,psn0                    = psn0&
+                                              ,psn1                    = psn1&
                                               ,chipRateInSamples       = chipRateInSamples&
                                               ,impulseResponseArray    = transcieverImpulseResponse&
                                               ,outPutShift             = outputShiftPhaseDetector&
@@ -221,11 +229,11 @@ MODULE BERTestMod
 !          decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
 !          IF (CheckCRC(decodedDataOctets))  WRITE(*,*) 'CRC OK'
           snrCurr = snrStart
-          ALLOCATE(bpskSignalWithNoise)
-          WRITE(*,*) 'outPutSampleCapacityChannel ',outPutSampleCapacityChannel
-          bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snrCurr,outPutSampleCapacityChannel)
-          CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskTestNoise.pcm')
-          DEALLOCATE(bpskSignalWithNoise)
+!          ALLOCATE(bpskSignalWithNoise)
+!          WRITE(*,*) 'outPutSampleCapacityChannel ',outPutSampleCapacityChannel
+!          bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snrCurr,outPutSampleCapacityChannel)
+!          CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskTestNoise.pcm')
+!          DEALLOCATE(bpskSignalWithNoise)
 
           CALL RanomGeneratorInit()
           WRITE(*,*) 'SNR CURR ',snrCurr
@@ -296,11 +304,11 @@ MODULE BERTestMod
 
         END SUBROUTINE BerTestSignumCorrelationInt
 
-    END SUBROUTINE BERTestSignumCorrelation
+    END SUBROUTINE BERTestSignumCorrelation2PSN
 
     FUNCTION AddNoiseRecievCheckCRC(bpskSignal,DemodulatorBPSK,awgnChannel,snr,capacity) RESULT (isCrcOk)
         CLASS(analyticSignal_t)  , INTENT(IN) :: bpskSignal
-        CLASS(BPSKDemodulator_t) , INTENT(INOUT) :: DemodulatorBPSK
+        CLASS(BPSK2PSNDemodulator_t) , INTENT(INOUT) :: DemodulatorBPSK
         CLASS(AWGNChannel_t)     , INTENT(INOUT) :: awgnChannel
         REAL(4)                  , INTENT(IN) :: snr
         INTEGER(1)               , INTENT(IN) :: capacity
@@ -317,11 +325,12 @@ MODULE BERTestMod
         CALL awgnChannel%SetPtr(z)
 
         bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snr,capacity)
-       ! CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskSignalWithNoise.pcm')
+        !CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskSignalWithNoise.pcm')
         deCodedData = DemodulatorBPSK%GetData(bpskSignalWithNoise)
-        !CALL  WriteArrayToFileTxt(deCodedData,'test_signals\output\deCodedDataBertTest.txt','(I1.1)')
+       ! CALL  WriteArrayToFileTxt(deCodedData,'test_signals\output\deCodedDataBertTest.txt','(I1.1)')
         WRITE(*,*) 'принято бит ', size(deCodedData)
         decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
         isCrcOk = CheckCRC(decodedDataOctets)
     END FUNCTION AddNoiseRecievCheckCRC
-END MODULE BERTestMod
+
+END MODULE Bert2PsnMod
