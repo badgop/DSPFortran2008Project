@@ -1,6 +1,6 @@
 -20.0 !  snrStart
--19.0 ! snrEnd
-1.0  ! snrStep
+-17.0 ! snrEnd
+3.0  ! snrStep
 1 ! numberOfIterations
 176 ! messageLength - длина сообщения + 16 бит должно быть кратно 16
 20000000  !   sampleRateModulator

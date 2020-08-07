@@ -173,7 +173,7 @@ module RawCorrOpenMPmod
           END DO
  !$omp end parallel do
 
-          WRITE(*,*) 'RAW CORR 81 OUT'
+        !  WRITE(*,*) 'RAW CORR 81 OUT'
     END FUNCTION   CorrelationRaw81
 
             ! Вычисление корр. функции (Raw-  англ. сырая.)

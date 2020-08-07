@@ -75,9 +75,9 @@ CONTAINS
 !        Write (*,*) 'kind ' ,  inputSignal%GetSiGnalKind()
         CALL inputSignal%ExtractSignalData(inputSignalArrayInt2)
         powerInput =  GetSignalRmsPowerINT2 (inputSignalArrayInt2,int(size(inputSignalArrayInt2),8))
-        WRITE (*,*) 'powerInput ' ,powerInput
+       ! WRITE (*,*) 'powerInput ' ,powerInput
         koeff = CalculateNeededAmplitudeKoeff (powerInput,this%powerNoise,snrNeed)
-        WRITE(*,*) 'koeff ',koeff
+       ! WRITE(*,*) 'koeff ',koeff
         ptr= this%ptr
 !        WRITE(*,*) this%ptr
 !        WRITE(*,*) size(this%noiseArray)
@@ -86,7 +86,7 @@ CONTAINS
         summ2 = 0
         yy=0
         ALLOCATE(noiseSignalArrayInt2(1:size(inputSignalArrayInt2)))
-        WRITE(*,*) 'длина noiseSignalArrayInt2 ',size(noiseSignalArrayInt2)
+       ! WRITE(*,*) 'длина noiseSignalArrayInt2 ',size(noiseSignalArrayInt2)
         DO i=1, size (inputSignalArrayInt2)
            IF ((ptr)>size(this%noiseArray)) THEN
               DO WHILE(ptr>size(this%noiseArray))
@@ -140,10 +140,10 @@ CONTAINS
 !        WRITE (*,*) 'ВЫШЕЛ! '
          yy=yy/float(size (inputSignalArrayInt2))
          summ2=summ2/float(size (inputSignalArrayInt2))
-         WRITE (*,*) 'нощность ШУМА дБ ',   ((20.0*log10(sqrt(yy   )))-3.0)
+       !  WRITE (*,*) 'нощность ШУМА дБ ',   ((20.0*log10(sqrt(yy   )))-3.0)
          yy =  GetSignalRmsPowerINT2(noiseSignalArrayInt2, int(size(noiseSignalArrayInt2),8))
-         WRITE (*,*) 'нощность ШУМА2 дБ ',  yy
-         WRITE (*,*) 'нощность сигнла дБ ', ((20.0*log10(sqrt(summ2)))-3.0)
+       !  WRITE (*,*) 'нощность ШУМА2 дБ ',  yy
+       !  WRITE (*,*) 'нощность сигнла дБ ', ((20.0*log10(sqrt(summ2)))-3.0)
 
     END  FUNCTION AddNoiseAnalytic
 
@@ -166,10 +166,10 @@ CONTAINS
        REAL(8)                           :: coeff_dB,snrCurrent
 
        snrCurrent =  powerInput-powerNoise
-       WRITE(*,*) 'ОСШ нынешнее ',snrCurrent
+      ! WRITE(*,*) 'ОСШ нынешнее ',snrCurrent
 
        coeff_dB = -(snrCurrent - snrNeed)
-       WRITE(*,*) 'koeff amp noise dB ', coeff_dB
+      ! WRITE(*,*) 'koeff amp noise dB ', coeff_dB
 
        CalculateNeededAmplitudeKoeff = 10.0**(0.05*(coeff_dB))
     END  FUNCTION CalculateNeededAmplitudeKoeff

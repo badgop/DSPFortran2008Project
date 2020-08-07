@@ -179,8 +179,8 @@ CONTAINS
             DemodulatePsn0 = phaseDemOutPut.CONVSIGN.this%psn0_signum
             DemodulatePsn1 = phaseDemOutPut.CONVSIGN.this%psn1_signum
         ELSE
-            WRITE (*,*) 'свертка полноразрядная'
-            WRITE(*,*) ' this%ethalonCapacity ' ,this%ethalonCapacity
+           ! WRITE (*,*) 'свертка полноразрядная'
+           ! WRITE(*,*) ' this%ethalonCapacity ' ,this%ethalonCapacity
            DemodulatePsn0 = phaseDemOutPut%ClipSignal(int(this%ethalonCapacity,2),int(this%ethalonCapacity,2))
            DemodulatePsn1 = phaseDemOutPut%ClipSignal(int(this%ethalonCapacity,2),int(this%ethalonCapacity,2))
 
@@ -218,8 +218,8 @@ CONTAINS
 !          DEALLOCATE(diffSig)
           DEALLOCATE(DemodulatePsn0)
           DEALLOCATE(DemodulatePsn1)
-    !  CALL WriteComplexSignalToFile(twoModules,int(2,1),'test_signals\output\zeroesModules.pcm'&
-    !                                                   , 'test_signals\output\onesModule.pcm')
+!      CALL WriteComplexSignalToFile(twoModules,int(2,1),'test_signals\output\zeroesModules.pcm'&
+!                                                       , 'test_signals\output\onesModule.pcm')
      END FUNCTION Demodulate
 
      ! Осуществляет пороговую обработку выходного сигнала
@@ -240,81 +240,104 @@ CONTAINS
         INTEGER(8)                            :: lastI
         INTEGER(1)                            :: bitBuffer(1:32767)
         INTEGER(8)                            :: cnt
-        LOGICAL                               :: latchEarly0 = .FALSE.
-        LOGICAL                               :: latchLate0  = .FALSE.
-         LOGICAL                               :: latchEarly1 = .FALSE.
-        LOGICAL                               :: latchLate1  = .FALSE.
+        LOGICAL                               :: latchEarly0       = .FALSE.
+        LOGICAL                               :: latchLate0        = .FALSE.
+        LOGICAL                               :: latchEarly1       = .FALSE.
+        LOGICAL                               :: latchLate1        = .FALSE.
+        LOGICAL                               :: isFindingMessage  = .TRUE.
+        INTEGER(8)                            :: timeStampLast     = 0
+        INTEGER(8)                            :: timeStampCurr     = 0
+
+
         INTEGER(8)                            :: pointAccumulator = 0;
         INTEGER(8)                            :: maxMod=0
         bitBuffer=0
-        module = matchedFilterOut%GetModuleFast()
-        ALLOCATE(module2(1:size(module)))
-        WRITE(*,*) 'maxVAL1 ', maxval(module)
 
-          module2 = module
-         WRITE(*,*) 'maxVAL2 ', maxval(module2)
 
-     !   CALL WriteArrayToFile (module2, 'test_signals\output\last_module.pcm')
-
-        DEALLOCATE(module2)
 
 
         lasti=0
         CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
         cnt=0
-!        WRITE(*,*) 'size module ', size(module)
-        DO i=1,size(module)
-           IF (realPart(i)>=this%threshold) THEN
-               latchEarly0 = .TRUE.
-               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
-               lasti=i
-               IF (module(i)>maxMod) maxMod = module(i)
-               pointAccumulator = pointAccumulator + 1
-           ELSE
-              IF(latchEarly0) latchLate0 = .TRUE.
-              !WRITE(*,*) 'МЕНЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i
+        isFindingMessage  = .TRUE.
+        timeStampCurr=0
+        timeStampLast=0
+        DO i=1,size(realPart)
 
-           END IF
 
-           IF(latchEarly0.AND.latchLate0) THEN
-              WRITE(*,*) 'поймали  ',pointAccumulator
 
-              IF (pointAccumulator>=this%thresholdSumm) THEN
-                 cnt=cnt+1
+             IF ((realPart(i)>=this%threshold).AND.(.NOT.latchEarly0)) THEN
+                latchEarly0 = .TRUE.
+                timeStampCurr = i
+              !  WRITE(*,*) 'поймал начало 0 ',i
+
+             END IF
+
+              IF (imagePart(i)>=this%threshold.AND.(.NOT.latchEarly1)) THEN
+                latchEarly1 = .TRUE.
+                timeStampCurr = i
+              !  WRITE(*,*) 'поймал начало 1 ',i
+             END IF
+
+             IF (realPart(i)<=this%threshold.AND.(latchEarly0)) THEN
+                latchLate0 = .TRUE.
+               !  WRITE(*,*) 'поймал конец 0 ',i
+             END IF
+
+             IF (imagePart(i)<=this%threshold.AND.(latchEarly1)) THEN
+                latchLate1 = .TRUE.
+              ! WRITE(*,*) 'поймал конец 1 ',i
+             END IF
+
+             IF(latchEarly0.AND.latchLate0) THEN
+!                 WRITE(*,*)' пик 0 обработан'
+!                 WRITE(*,*)'diff ', timeStampCurr-timeStampLast
+                 latchEarly0 = .FALSE.
+                 latchLate0 = .FALSE.
+               !  IF((timeStampCurr-timeStampLast)<6000)  WRITE(*,*) '-----ЭРОР!!"!!'
+
+
+                  IF((timeStampCurr-timeStampLast)<8000) THEN
+                   !     WRITE(*,*) '-----ЭРОР!!"!!'
+                  ELSE
+
+                    cnt=cnt+1
+
                  bitBuffer(cnt)=0
-                  WRITE(*,*) 'приныто 0 ', pointAccumulator
-              END IF
+                timeStampLast = timeStampCurr
 
-              pointAccumulator = 0
-              latchEarly0 = .FALSE.
-              latchLate0  = .FALSE.
-           END IF
-           !=====================================================================================
-            IF (imagePart(i)>=this%threshold) THEN
-               latchEarly1 = .TRUE.
-               WRITE(*,*) 'БОЛЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i-lasti
-               lasti=i
-               IF (module(i)>maxMod) maxMod = module(i)
-               pointAccumulator = pointAccumulator + 1
-           ELSE
-              IF(latchEarly1) latchLate1 = .TRUE.
-              !WRITE(*,*) 'МЕНЬШЕ i',i , (realPart(i)) , (imagePart(i)), module(i),i
 
-           END IF
 
-           IF(latchEarly1.AND.latchLate1) THEN
-              WRITE(*,*) 'поймали  ',pointAccumulator
 
-              IF (pointAccumulator>=this%thresholdSumm) THEN
-                 cnt=cnt+1
+                  END IF
+
+
+
+
+             END IF
+             IF(latchEarly1.AND.latchLate1) THEN
+!                 WRITE(*,*)' пик 1 обработан'
+                 latchEarly1 = .FALSE.
+!                 WRITE(*,*)'diff ', timeStampCurr-timeStampLast
+                 latchLate1 = .FALSE.
+
+                !  IF((timeStampCurr-timeStampLast)<6000)  WRITE(*,*) '-----ЭРОР!!"!!'
+
+
+                IF((timeStampCurr-timeStampLast)<8000) THEN
+                  !    WRITE(*,*) '-----ЭРОР!!"!!'
+                  ELSE
+
+                    cnt=cnt+1
+
                  bitBuffer(cnt)=1
-                WRITE(*,*) 'приныто 1 ', pointAccumulator
-              END IF
+                timeStampLast = timeStampCurr
 
-              pointAccumulator = 0
-              latchEarly1 = .FALSE.
-              latchLate1  = .FALSE.
-           END IF
+                  END IF
+
+
+             END IF
+
 
         END DO
 !

@@ -172,7 +172,7 @@ MODULE Bert2PsnMod
 
            DEALLOCATE(transcieverImpulseResponse)
 
-          ! CALL  WriteArrayToFileTxt(payloadDataBitArrayWithCrc,'test_signals\output\codedDataBertTest.txt','(I1.1)')
+           CALL  WriteArrayToFileTxt(payloadDataBitArrayWithCrc,'test_signals\output\codedDataBertTest.txt','(I1.1)')
 
            bpskSignal = modulatorBPSK%Generate(payloadDataBitArrayWithCrc)
            DEALLOCATE(modulatorBPSK)
@@ -327,7 +327,7 @@ MODULE Bert2PsnMod
         bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snr,capacity)
         !CALL WriteAnalyticSignalToFile(bpskSignalWithNoise,int(2,1),'bpskSignalWithNoise.pcm')
         deCodedData = DemodulatorBPSK%GetData(bpskSignalWithNoise)
-       ! CALL  WriteArrayToFileTxt(deCodedData,'test_signals\output\deCodedDataBertTest.txt','(I1.1)')
+        CALL  WriteArrayToFileTxt(deCodedData,'test_signals\output\deCodedDataBertTest.txt','(I1.1)')
         WRITE(*,*) 'принято бит ', size(deCodedData)
         decodedDataOctets = BitsToOctets(deCodedData, .TRUE.)
         isCrcOk = CheckCRC(decodedDataOctets)

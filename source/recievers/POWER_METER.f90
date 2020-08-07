@@ -47,7 +47,7 @@ SUBROUTINE  POWER_METER_REAL(signal,fd,power,period)
         tmpArray = float(signal(1:length))/32767.0
         tmpArray = (tmpArray*tmpArray)
         summ = sum(tmpArray)/float(length)
-        WRITE(*,*) 'длина ', length, float(length)
+       ! WRITE(*,*) 'длина ', length, float(length)
         GetSignalRmsPowerINT2 =20*log10(sqrt(summ)) - FullScaleSinusRmsdB
         DEALLOCATE(tmpArray)
    END FUNCTION GetSignalRmsPowerINT2
