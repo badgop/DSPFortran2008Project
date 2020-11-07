@@ -93,6 +93,7 @@ CONTAINS
         CALL this%mixer%SetPhase(PI/2)
         CALL this%mixer%ComputeOutput(int(this%centralFrequency,8),(Generate%GetSignalSize()),heterodyneSignal)
         Generate = Generate*heterodyneSignal
+        !WRITE(*,*) 'СДВИГ В МОДЕЛЯТУРЕ  ', this%outputShift
         CALL Generate%RShift(this%outputShift)
 
         DEALLOCATE(OutPutPsn)

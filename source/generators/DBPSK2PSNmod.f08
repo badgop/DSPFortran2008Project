@@ -167,7 +167,7 @@ CONTAINS
 
         Generate = OutPutModulationSig
 
-          WRITE(*,*)' пищлец'
+          WRITE(*,*)' пищлец this%outputShift',this%outputShift
         WRITE(*,*)' уровень' ,Generate%GetSignalKind() ,Generate%GetMax()
         DeALLOCATE(OutPutModulationSig)
 

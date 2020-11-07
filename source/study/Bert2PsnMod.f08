@@ -185,7 +185,7 @@ MODULE Bert2PsnMod
 
            CALL bpskSignal%ZeroesStuffing(int(baudrateModulator,8),int(baudrateModulator,8))
 
-          ! CALL WriteAnalyticSignalToFile(bpskSignal,int(2,1),'bpskTest2psn.pcm')
+           CALL WriteAnalyticSignalToFile(bpskSignal,int(2,1),'bpskTest2psn.pcm')
 
 
 !           CALL ReadAnalyticSignalFromFile(bpskSignal,int(2,1),'noise_0_1_2Mhz_test.pcm')

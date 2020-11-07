@@ -101,6 +101,8 @@ MODULE analyticSignalModule
         PROCEDURE,PASS(yOp) :: Multiplydonstant8AndAnalyticSignals
         ! простая децимация
         PROCEDURE :: Decimate
+        ! интерполяция путем повторения отсчетов
+        PROCEDURE :: Interpolate
 
         ! далее выполняется перегрузка операторов
         ! умножения, вычитания, сложения и присваивания
@@ -1158,6 +1160,57 @@ CONTAINS
 
 
      END FUNCTION Decimate
+
+
+      FUNCTION Interpolate(this,r)
+         CLASS(analyticSignal_t), INTENT(IN)  :: this
+         CLASS(analyticSignal_t), allocatable :: Interpolate
+         INTEGER(8) , INTENT(IN)              :: r
+         INTEGER(2), ALLOCATABLE              :: arrayInt1(:)
+         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
+         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
+         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+         INTEGER(8)                           :: i,j
+         ALLOCATE(Interpolate)
+
+          SELECT CASE(this%signalArrayKind)
+                CASE(1)
+                   ALLOCATE (arrayInt1(1:(this%GetSignalSize()*r)))
+                   DO i=1,this%GetSignalSize()
+                      arrayInt1(i)   = this%signalInt1(i)
+                      arrayInt1(i+1) = this%signalInt1(i)
+                   END DO
+                   CALL Interpolate%Constructor(arrayInt1)
+                   DEALLOCATE(arrayInt1)
+                CASE(2)
+                   ALLOCATE (arrayInt2(1:(this%GetSignalSize()*r)))
+                   DO i=1,this%GetSignalSize()
+                      arrayInt1(i)   = this%signalInt1(i)
+                      arrayInt1(i+1) = this%signalInt1(i)
+                   END DO
+                   CALL Interpolate%Constructor(arrayInt2)
+                   DEALLOCATE(arrayInt2)
+                CASE(4)
+                   ALLOCATE (arrayInt4(1:(this%GetSignalSize()*r)))
+                   DO i=1,this%GetSignalSize()
+                      arrayInt1(i)   = this%signalInt1(i)
+                      arrayInt1(i+1) = this%signalInt1(i)
+                   END DO
+                   CALL Interpolate%Constructor(arrayInt4)
+                   DEALLOCATE(arrayInt4)
+                CASE(8)
+                  ALLOCATE (arrayInt1(8:(this%GetSignalSize()*r)))
+                  DO i=1,this%GetSignalSize()
+                      arrayInt1(i)   = this%signalInt1(i)
+                      arrayInt1(i+1) = this%signalInt1(i)
+                   END DO
+                   CALL Interpolate%Constructor(arrayInt8)
+                   DEALLOCATE(arrayInt8)
+
+         END SELECT
+
+
+     END FUNCTION Interpolate
 
 
      FUNCTION GetMax (this)

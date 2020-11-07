@@ -37,11 +37,16 @@ MODULE PayloadGeneratorMod
           dataOctetsWithCrc(size(OctetdataArary)+2) = int(crc16,1)
       END FUNCTION  GeneratePayloadDataOctetsWithCRC
 
+      ! формирует битовый массив с контрольной суммой
+      ! передача данных ведется со СТАРШЕГО БИТА (старший это, например, самый младший),
+      ! см. ниже
+      ! |7| |6| |5| |4| |3| |2| |1| |0|  - разряды числа
+      ! |1| |2| |3| |4| |5| |6| |7| |8|  - разряды сообщения в пакете
       FUNCTION GeneratePayloadDataBitArrayWithCRC(bitDataArary) RESULT(BitArrayWithCrc)
-          INTEGER(1) ,DIMENSION(:)       ,INTENT(INOUT) :: bitDataArary
+          INTEGER(1) ,DIMENSION(:)       ,INTENT(IN) :: bitDataArary
           INTEGER(1),DIMENSION(:),ALLOCATABLE            :: OctetdataArary
-          INTEGER(1),ALLOCATABLE               :: dataOctetsWithCrc(:)
-          INTEGER(1),ALLOCATABLE               :: BitArrayWithCrc(:)
+          INTEGER(1),DIMENSION(:),ALLOCATABLE               :: dataOctetsWithCrc
+          INTEGER(1),DIMENSION(:),ALLOCATABLE               :: BitArrayWithCrc
 
           INTEGER(2)                           :: CRC16
 

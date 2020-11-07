@@ -191,8 +191,8 @@ CONTAINS
           DEALLOCATE(phaseDemOutPut)
 
 
-         CALL WriteComplexSignalToFile(DemodulatePsn1,int(2,1),'test_signals\output\Demodulate1PsnI.pcm'&
-                                                       , 'test_signals\output\DemodulatePsn1Q.pcm')
+         CALL WriteComplexSignalToFile(DemodulatePsn0,int(2,1),'test_signals\output\Demodulate0PsnI.pcm'&
+                                                       , 'test_signals\output\DemodulatePsn0Q.pcm')
           module0 = DemodulatePsn0%GetModuleFast()
           module1 = DemodulatePsn1%GetModuleFast()
 
