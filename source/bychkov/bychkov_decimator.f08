@@ -6,7 +6,7 @@ module bychkov_decimator
 
 
          ! Тест оператора свертки (классический)
-     SUBROUTINE  DecimateByTwoFir(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,multiplier)
+     SUBROUTINE  DecimateByTwoFir(inputSignalFileName,inputRefFileName,outputSignalFileName,shift)
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
          USE WriteReadAnalyticSignalToFromFile
@@ -17,21 +17,26 @@ module bychkov_decimator
          CHARACTER(*), INTENT(IN) :: inputRefFileName
          CHARACTER(*), INTENT(IN) :: outputSignalFileName
          INTEGER(1)  , INTENT(IN) :: shift
-         REAL(4)     , INTENT(IN) :: multiplier
+
 
          TYPE(analyticSignal_t) :: input_sig
          TYPE(analyticSignal_t) :: reference_sig
          TYPE(analyticSignal_t) :: conv_result
-         INTEGER(4)             :: multiplier_int
+
 
 
          CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)         !!!!!!
-         CALL ReadAnalyticSignalFromFile(reference_sig,int(4,1),inputRefFileName,'(I10)')
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,'(I10)')
+
+!         WRITE(*,*) ' input_sig max ', input_sig%GetMax()
+!         WRITE(*,*) ' reference_sig max ', reference_sig%GetMax()
 
 
 
          conv_result= input_sig.CONV.reference_sig
+!          WRITE(*,*) 'max ', conv_result%GetMax()
          conv_result=  conv_result%Decimate(int(2,8))
+
          CALL conv_result%Rshift(shift)
          CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
@@ -39,7 +44,7 @@ module bychkov_decimator
 
 
           ! Тест оператора свертки (классический)
-     SUBROUTINE  DecimateByThreeFir(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,multiplier)
+     SUBROUTINE  DecimateByThreeFir(inputSignalFileName,inputRefFileName,outputSignalFileName,shift)
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
          USE WriteReadAnalyticSignalToFromFile
@@ -50,12 +55,12 @@ module bychkov_decimator
          CHARACTER(*), INTENT(IN) :: inputRefFileName
          CHARACTER(*), INTENT(IN) :: outputSignalFileName
          INTEGER(1)  , INTENT(IN) :: shift
-         REAL(4)     , INTENT(IN) :: multiplier
+
 
          TYPE(analyticSignal_t) :: input_sig
          TYPE(analyticSignal_t) :: reference_sig
          TYPE(analyticSignal_t) :: conv_result
-         INTEGER(4)             :: multiplier_int
+
 
 
          CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)         !!!!!!

@@ -4,8 +4,8 @@ MODULE bychkov_interpolate
 
     CONTAINS
 
-          ! Тест оператора свертки (классический)
-     SUBROUTINE  InterpolateByTwoFir(inputSignalFileName,inputRefFileName,outputSignalFileName,shift,multiplier)
+          !
+     SUBROUTINE  InterpolateByTwoFir(inputSignalFileName,inputRefFileName,outputSignalFileName,outputSignalFileNameZero,shift)
          USE analyticSignalModule
          USE ModuleWriteReadArrayFromToFile
          USE WriteReadAnalyticSignalToFromFile
@@ -15,23 +15,31 @@ MODULE bychkov_interpolate
          CHARACTER(*), INTENT(IN) :: inputSignalFileName
          CHARACTER(*), INTENT(IN) :: inputRefFileName
          CHARACTER(*), INTENT(IN) :: outputSignalFileName
+         CHARACTER(*), INTENT(IN) :: outputSignalFileNameZero
          INTEGER(1)  , INTENT(IN) :: shift
-         REAL(4)     , INTENT(IN) :: multiplier
+
 
          TYPE(analyticSignal_t) :: input_sig
          TYPE(analyticSignal_t) :: reference_sig
          TYPE(analyticSignal_t) :: conv_result
-         INTEGER(4)             :: multiplier_int
-
 
          CALL ReadAnalyticSignalFromFile(input_sig,int(2,1),inputSignalFileName)         !!!!!!
-         CALL ReadAnalyticSignalFromFile(reference_sig,int(4,1),inputRefFileName,'(I10)')
+         CALL ReadAnalyticSignalFromFile(reference_sig,int(2,1),inputRefFileName,'(I10)')
+
+!         WRITE(*,*) ' input_sig max ', input_sig%GetMax()
+!         WRITE(*,*) ' reference_sig max ', reference_sig%GetMax()
+
 
          conv_result = input_sig%Interpolate(int(2,8))
 
-         conv_result= conv_result.CONV.reference_sig
+!          WRITE(*,*) ' after zeroes max ', conv_result%GetMax()
 
-         !CALL conv_result%Rshift(shift)
+          CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileNameZero)
+
+         conv_result= conv_result.CONV.reference_sig
+!          WRITE(*,*) 'max ', conv_result%GetMax()
+
+         CALL conv_result%Rshift(shift)
          CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
      END SUBROUTINE InterpolateByTwoFir

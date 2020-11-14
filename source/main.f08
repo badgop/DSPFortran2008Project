@@ -8,6 +8,7 @@ PROGRAM main
     USE BERTestMod
     USE Bert2PsnMod
     USE bychkov_decimator
+    USE bychkov_interpolate
 
 
 
@@ -268,25 +269,25 @@ PROGRAM main
 !                                   ,outputfileNameAutoCorr   = 'test_signals\output\psp2aouto.pcm'&
 !                                   ,outputfileName           = 'test_signals\output\psp2.txt')
 !!!!
-       CALL BPSKGenerator2PSNTest(  psp0FileName         = 'test_signals\input\psp_valera.txt'&
-                                   ,psp1FileName         = 'test_signals\output\psp2.txt'&
-                                   ,dataFileName         = 'test_signals\input\data.txt'&
-                                   ,outPutFileName       = 'test_signals\output\BPSKTest2.pcm'&
-                                   ,filterFileName       = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
-                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
-                                   ,baudRateInSamples    = int(10240,8), chipRateInSamples = int(10,8) &
-                                   ,sampleRate           = int(10*MEGA,8)&
-                                   ,centralFrequency     =   int(0*MEGA,8)&
-                                   ,outPutSampleCapacity = int(14,1)&
-                                   ,outPutShift          = int(3,1)&
-                                   ,pauseLen             = int(10240*1,8))
-!!!!
-!!!!
-                CALL  AddNoiseTEst(inputNoiseFileName = 'test_signals\output\noise_0_1_2Mhz.pcm'&
-                                  ,inputSignalFileName ='test_signals\output\BPSKTest2.pcm'&
-                                  ,outputSignalFileName = 'test_signals\output\noise_0_1_2Mhz.pcm'&
-                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
-                                  ,snr =  -20.0 )
+!       CALL BPSKGenerator2PSNTest(  psp0FileName         = 'test_signals\input\psp_valera.txt'&
+!                                   ,psp1FileName         = 'test_signals\output\psp2.txt'&
+!                                   ,dataFileName         = 'test_signals\input\data.txt'&
+!                                   ,outPutFileName       = 'test_signals\output\BPSKTest2.pcm'&
+!                                   ,filterFileName       = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
+!                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
+!                                   ,baudRateInSamples    = int(10240,8), chipRateInSamples = int(10,8) &
+!                                   ,sampleRate           = int(10*MEGA,8)&
+!                                   ,centralFrequency     =   int(0*MEGA,8)&
+!                                   ,outPutSampleCapacity = int(14,1)&
+!                                   ,outPutShift          = int(3,1)&
+!                                   ,pauseLen             = int(10240*1,8))
+!!!!!
+!!!!!
+!                CALL  AddNoiseTEst(inputNoiseFileName = 'test_signals\output\noise_0_1_2Mhz.pcm'&
+!                                  ,inputSignalFileName ='test_signals\output\BPSKTest2.pcm'&
+!                                  ,outputSignalFileName = 'test_signals\output\noise_0_1_2Mhz.pcm'&
+!                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
+!                                  ,snr =  -20.0 )
 !!!!!!
 !!!!!!
 !          CALL  BPSKDemodulator2PSNTest(          psp0FileName          = 'test_signals\input\psp_valera.txt'&
@@ -319,36 +320,62 @@ PROGRAM main
 !         CALL DecimateByThreeFir(inputSignalFileName = 'test_signals\test_bychkov\outi.pcm'&
 !                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
 !                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate3.pcm'&
-!                              ,shift                = int(14,1)&
-!                              ,multiplier           =  1.0&
+!                              ,shift                = int(14,1)&!
 !                              )
 !
-!         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\outi.pcm'&
-!                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
-!                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate2.pcm'&
-!                              ,shift                = int(14,1)&
-!                              ,multiplier           =  1.0&
-!                              )
-!
-!         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate2.pcm'&
-!                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
-!                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate4.pcm'&
-!                              ,shift                = int(14,1)&
-!                              ,multiplier           =  1.0&
-!                              )
-!         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate4.pcm'&
-!                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
-!                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate8.pcm'&
-!                              ,shift                = int(14,1)&
-!                              ,multiplier           =  1.0&
-!                              )
-!        CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate8.pcm'&
-!                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
-!                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate16.pcm'&
-!                              ,shift                = int(14,1)&
-!                              ,multiplier           =  1.0&
-!                              )
+         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\outi.pcm'&
+                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
+                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate2.pcm'&
+                              ,shift                = int(14,1)&!
+                              )
 
+         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate2.pcm'&
+                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
+                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate4.pcm'&
+                              ,shift                = int(14,1)&!
+                              )
+         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate4.pcm'&
+                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
+                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate8.pcm'&
+                              ,shift                = int(14,1)&!
+                              )
+        CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate8.pcm'&
+                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
+                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate16.pcm'&
+                              ,shift                = int(14,1)&!
+                              )
+
+
+
+       CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\outi.pcm'&
+                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
+                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite2.pcm'&
+                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite2_zero.pcm'&
+                              ,shift                = int(13,1)&
+                              )
+
+
+      CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite2.pcm'&
+                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
+                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite4.pcm'&
+                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite4_zero.pcm'&
+                              ,shift                = int(13,1)&
+                              )
+
+     CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite4.pcm'&
+                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
+                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite8.pcm'&
+                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite8_zero.pcm'&
+                              ,shift                = int(13,1)&
+                              )
+
+
+     CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite8.pcm'&
+                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
+                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite16.pcm'&
+                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite16_zero.pcm'&
+                              ,shift                = int(13,1)&
+                              )
     CONTAINS
 
 

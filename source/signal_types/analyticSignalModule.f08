@@ -748,8 +748,8 @@ CONTAINS
 !
             inKind = input%GetSignalKind()
             refKind = reference%GetSignalKind()
-            !WRITE(*,*) 'inKind ', inKind
-           ! WRITE(*,*) 'refKind ', refKind
+!            WRITE(*,*) 'inKind ', inKind
+!            WRITE(*,*) 'refKind ', refKind
 !            WRITE (*,*) 'input%signalInt2 ', ALLOCATED (input%signalInt2)
 !            WRITE (*,*) 'reference%signalInt2 ', ALLOCATED (reference%signalInt2)
 !
@@ -1170,39 +1170,80 @@ CONTAINS
          INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
          INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
          INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
-         INTEGER(8)                           :: i,j
+         INTEGER(8)                           :: i,j,cnt
          ALLOCATE(Interpolate)
+
+         j=1
+         cnt=0
 
           SELECT CASE(this%signalArrayKind)
                 CASE(1)
                    ALLOCATE (arrayInt1(1:(this%GetSignalSize()*r)))
-                   DO i=1,this%GetSignalSize()
-                      arrayInt1(i)   = this%signalInt1(i)
-                      arrayInt1(i+1) = this%signalInt1(i)
+                   DO i=1,this%GetSignalSize()*r
+                      IF(cnt==0) THEN
+                           arrayInt1(i) = this%signalInt1(j)
+                      ELSE
+                           arrayInt1(i) = 0
+                      END IF
+
+                      cnt=cnt+1
+                      IF (cnt==r) THEN
+                         j   = j +1
+                         cnt = 0
+                      END IF
                    END DO
                    CALL Interpolate%Constructor(arrayInt1)
                    DEALLOCATE(arrayInt1)
                 CASE(2)
                    ALLOCATE (arrayInt2(1:(this%GetSignalSize()*r)))
-                   DO i=1,this%GetSignalSize()
-                      arrayInt1(i)   = this%signalInt1(i)
-                      arrayInt1(i+1) = this%signalInt1(i)
+                    DO i=1,this%GetSignalSize()*r
+                      IF(cnt==0) THEN
+                           arrayInt2(i) = this%signalInt2(j)
+                      ELSE
+                           arrayInt2(i) = 0
+                      END IF
+                      !WRITE(*,*) 'cnt ',cnt
+
+                      cnt=cnt+1
+                      IF (cnt==r) THEN
+                         j   = j +1
+                         cnt = 0
+                      END IF
                    END DO
                    CALL Interpolate%Constructor(arrayInt2)
                    DEALLOCATE(arrayInt2)
                 CASE(4)
                    ALLOCATE (arrayInt4(1:(this%GetSignalSize()*r)))
-                   DO i=1,this%GetSignalSize()
-                      arrayInt1(i)   = this%signalInt1(i)
-                      arrayInt1(i+1) = this%signalInt1(i)
+                   DO i=1,this%GetSignalSize()*r
+
+                      IF(cnt==0) THEN
+                           arrayInt4(i) = this%signalInt4(j)
+                      ELSE
+                           arrayInt4(i) = 0
+                      END IF
+
+                      cnt=cnt+1
+                      IF (cnt==r) THEN
+                         j   = j +1
+                         cnt = 0
+                      END IF
                    END DO
                    CALL Interpolate%Constructor(arrayInt4)
                    DEALLOCATE(arrayInt4)
                 CASE(8)
                   ALLOCATE (arrayInt1(8:(this%GetSignalSize()*r)))
-                  DO i=1,this%GetSignalSize()
-                      arrayInt1(i)   = this%signalInt1(i)
-                      arrayInt1(i+1) = this%signalInt1(i)
+                 DO i=1,this%GetSignalSize()*r
+                      IF(cnt==0) THEN
+                           arrayInt8(i) = this%signalInt8(j)
+                      ELSE
+                           arrayInt8(i) = 0
+                      END IF
+
+                      cnt=cnt+1
+                      IF (cnt==r) THEN
+                         j   = j +1
+                         cnt = 0
+                      END IF
                    END DO
                    CALL Interpolate%Constructor(arrayInt8)
                    DEALLOCATE(arrayInt8)

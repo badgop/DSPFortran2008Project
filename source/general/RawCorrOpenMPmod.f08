@@ -306,14 +306,18 @@ module RawCorrOpenMPmod
           END DO
     END FUNCTION   CorrelationRaw21
 
-     PURE  FUNCTION CorrelationRaw22(input,reference)
-          INTEGER(1),PARAMETER                       :: arrayKindInput=2
+      FUNCTION CorrelationRaw22(input,reference)
+         INTEGER(1),PARAMETER                       :: arrayKindInput=2
           INTEGER(1),PARAMETER                       :: arrayKindReference=2
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
           INTEGER(arrayKindReference) ,INTENT(IN)    :: reference(:)
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw22(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
+          INTEGER(8),ALLOCATABLE                     :: summMatrix(:)
+          INTEGER(8)                                 :: in
+          INTEGER                                    :: num=0
 
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
@@ -322,13 +326,45 @@ module RawCorrOpenMPmod
           ! что бы не было мусора в элементах массива
           CorrelationRaw22=0
           ! Выбрать пределы корреляции
-          DO i=1,inputLen-referenceLen
-                DO j=1,referenceLen
+         ! WRITE(*,*) 'RAW CORR 81 IN'
 
-                    CorrelationRaw22(i) = CorrelationRaw22(i)+ int(input(i+j),8)*int(reference(j),8)
+
+          summ=0
+          ALLOCATE(summMatrix(1:referenceLen))
+          summMatrix=0
+  !$omp parallel do SHARED(input,reference,CorrelationRaw22) PRIVATE(i,j) REDUCTION(+:summ)
+          DO i=1,inputLen-referenceLen
+
+                ! WRITE(*,*) 'i,j, thredNum ',i,j,OMP_GET_THREAD_NUM()
+
+
+                DO j=1,referenceLen
+               ! in= int(input(i+j))! !$omp end parallel do SImD
+               !WRITE(*,*) 'i,j, thredNum ',i,j,OMP_GET_THREAD_NUM()
+
+                 !CorrelationRaw81(i)=CorrelationRaw81(i)+int(input(i+j),8)*reference(j)
+
+                summ=summ+int(input(i+j),8)*int(reference(j),8)
+              !   WRITE(*,*) input(i+j),reference(j)
+
+                 !summMatrix(j) =  input(i+j)*int(reference(j),8)
 
                 END DO
+
+
+!               CorrelationRaw81(i)=sum(summMatrix)
+!               summMatrix=0
+
+
+                CorrelationRaw22(i)=summ
+                summ=0
+
+
+
           END DO
+ !$omp end parallel do
+
+        !  WRITE(*,*) 'RAW CORR 81 OUT'
     END FUNCTION   CorrelationRaw22
 
    PURE FUNCTION CorrelationRaw24(input,reference)
