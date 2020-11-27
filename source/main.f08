@@ -9,6 +9,7 @@ PROGRAM main
     USE Bert2PsnMod
     USE bychkov_decimator
     USE bychkov_interpolate
+    USE corr_study
 
 
 
@@ -323,59 +324,68 @@ PROGRAM main
 !                              ,shift                = int(14,1)&!
 !                              )
 !
-         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\outi.pcm'&
-                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
-                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate2.pcm'&
-                              ,shift                = int(14,1)&!
-                              )
+!         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\outi_800.pcm'&
+!                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
+!                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate2.pcm'&
+!                              ,shift                = int(14,1)&!
+!                              )
+!
+!         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate2.pcm'&
+!                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
+!                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate4.pcm'&
+!                              ,shift                = int(14,1)&!
+!                              )
+!         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate4.pcm'&
+!                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
+!                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate8.pcm'&
+!                              ,shift                = int(14,1)&!
+!                              )
+!        CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate8.pcm'&
+!                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
+!                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate16.pcm'&
+!                              ,shift                = int(14,1)&!
+!                              )
+!
+!
+!
+!       CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\outi.pcm'&
+!                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
+!                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite2.pcm'&
+!                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite2_zero.pcm'&
+!                              ,shift                = int(13,1)&
+!                              )
+!
+!
+!      CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite2.pcm'&
+!                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
+!                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite4.pcm'&
+!                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite4_zero.pcm'&
+!                              ,shift                = int(13,1)&
+!                              )
+!
+!     CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite4.pcm'&
+!                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
+!                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite8.pcm'&
+!                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite8_zero.pcm'&
+!                              ,shift                = int(13,1)&
+!                              )
+!
+!
+!     CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite8.pcm'&
+!                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
+!                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite16.pcm'&
+!                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite16_zero.pcm'&
+!                              ,shift                = int(13,1)&
+!                              )
 
-         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate2.pcm'&
-                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
-                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate4.pcm'&
-                              ,shift                = int(14,1)&!
-                              )
-         CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate4.pcm'&
-                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
-                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate8.pcm'&
-                              ,shift                = int(14,1)&!
-                              )
-        CALL DecimateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\decimate8.pcm'&
-                              ,inputRefFileName    = 'test_signals\test_bychkov\hblpf_22_int.txt'&
-                              ,outputSignalFileName = 'test_signals\test_bychkov\decimate16.pcm'&
-                              ,shift                = int(14,1)&!
-                              )
 
 
-
-       CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\outi.pcm'&
-                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
-                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite2.pcm'&
-                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite2_zero.pcm'&
-                              ,shift                = int(13,1)&
-                              )
-
-
-      CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite2.pcm'&
-                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
-                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite4.pcm'&
-                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite4_zero.pcm'&
-                              ,shift                = int(13,1)&
-                              )
-
-     CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite4.pcm'&
-                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
-                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite8.pcm'&
-                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite8_zero.pcm'&
-                              ,shift                = int(13,1)&
-                              )
-
-
-     CALL InterpolateByTwoFir(inputSignalFileName = 'test_signals\test_bychkov\interpolite8.pcm'&
-                              ,inputRefFileName    = 'test_signals\test_bychkov\interp_big_int.txt'&
-                              ,outputSignalFileName = 'test_signals\test_bychkov\interpolite16.pcm'&
-                              ,outputSignalFileNameZero = 'test_signals\test_bychkov\interpolite16_zero.pcm'&
-                              ,shift                = int(13,1)&
-                              )
+        CALL CrossCorrTwoPSP(inputSignalFileName  = 'test_signals\output\impGenTest1.pcm'&
+                     ,inputRefFileName     = 'test_signals\output\impGenTest1.pcm'&
+                     ,outputSignalFileName = 'test_signals\output\convolve_test_summ.pcm'&
+                     ,summFileNAme ='test_signals\output\summ_two_psp.pcm' &
+                     ,shift = int(2,1)&
+                     ,shiftLen = int(20,8))
     CONTAINS
 
 

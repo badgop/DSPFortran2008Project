@@ -624,7 +624,7 @@ CONTAINS
                 CASE(:HUGE_Int1)
                    ALLOCATE(arrayInt1(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
-                        arrayInt1(i) = int(xOp%GetValue(i)+xOp%GetValue(i),1)
+                        arrayInt1(i) = int(xOp%GetValue(i)+yOp%GetValue(i),1)
                      END DO
                         CALL  AddAnalyticSignals%Constructor (arrayInt1)
                         DEALLOCATE(arrayInt1)
@@ -632,21 +632,21 @@ CONTAINS
                      WRITE(*,*) 'ЗАшел в нужну ветку'
                    ALLOCATE(arrayInt2(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
-                        arrayInt2(i) = int(xOp%GetValue(i)+xOp%GetValue(i),2)
+                        arrayInt2(i) = int(xOp%GetValue(i)+yOp%GetValue(i),2)
                      END DO
                      CALL AddAnalyticSignals%Constructor (arrayInt2)
                      DEALLOCATE(arrayInt2)
                  CASE(HUGE_Int2+1:HUGE_Int4)
                    ALLOCATE(arrayInt4(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
-                        arrayInt4(i) = int(xOp%GetValue(i)+xOp%GetValue(i),4)
+                        arrayInt4(i) = int(xOp%GetValue(i)+yOp%GetValue(i),4)
                      END DO
                      CALL AddAnalyticSignals%Constructor (arrayInt4)
                      DEALLOCATE(arrayInt4)
                  CASE(HUGE_Int4+1:HUGE_Int8)
                    ALLOCATE(arrayInt8(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
-                        arrayInt8(i) = int(xOp%GetValue(i)+xOp%GetValue(i),8)
+                        arrayInt8(i) = int(xOp%GetValue(i)+yOp%GetValue(i),8)
                      END DO
                      CALL AddAnalyticSignals%Constructor (arrayInt8)
                      DEALLOCATE(arrayInt8)
@@ -718,8 +718,8 @@ CONTAINS
          allocate(Convolve)
          convolve%signalName='conv fun name'
          ! ЗАщита
-!         WRITE(*,*) input%signalSize
-!         WRITE(*,*) reference%signalSize
+         WRITE(*,*) input%signalSize
+         WRITE(*,*) reference%signalSize
 
          IF (input%signalSize<reference%signalSize) THEN
              WRITE(*,*) 'ОШИБКА Опорный сигнал  длительности > входящий'
@@ -748,8 +748,8 @@ CONTAINS
 !
             inKind = input%GetSignalKind()
             refKind = reference%GetSignalKind()
-!            WRITE(*,*) 'inKind ', inKind
-!            WRITE(*,*) 'refKind ', refKind
+            WRITE(*,*) 'inKind ', inKind
+            WRITE(*,*) 'refKind ', refKind
 !            WRITE (*,*) 'input%signalInt2 ', ALLOCATED (input%signalInt2)
 !            WRITE (*,*) 'reference%signalInt2 ', ALLOCATED (reference%signalInt2)
 !
