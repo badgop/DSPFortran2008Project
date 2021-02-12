@@ -3,17 +3,17 @@ MODULE Bert2PsnMod
 
     USE ModuleWriteReadArrayFromToFile
     USE ModuleExitProg
-   USE DBPSK2PSNmod
+    USE DBPSK2PSNmod
     USE OctetDataModule
     USE CRC16Mod
     USE PayloadGeneratorMod
     USE analyticSignalModule
     USE WriteReadAnalyticSignalToFromFile
-     USE DPSK2PSnDeMod
+    USE DPSK2PSnDeMod
     USE AWGNChannelMod
     USE  ModuleExitProg
     USE ReadWriteArrayToFromTxt
-    USE ModuleWriteReadArrayFromToFile
+
     IMPLICIT NONE
 
 

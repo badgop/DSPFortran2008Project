@@ -57,10 +57,11 @@ MODULE DDSModule
         PROCEDURE          :: ComputeOutputFromArray
         ! оновная процедура - получение выходного гармонического сигнала типа (analyticSignal_t
         ! на входе значение частоты в Гц, и требуемая длительность выходного сигнала
-
         PROCEDURE          :: ComputeOutputFromScalar
+        ! Процедура для получения
+        PROCEDURE          :: GetOutPutFromCodeArray
         ! Формируем обобщенный интерфейс, для удобства
-        GENERIC           :: ComputeOutput =>  ComputeOutputFromArray,ComputeOutputFromScalar
+        GENERIC            :: ComputeOutput =>  ComputeOutputFromArray,ComputeOutputFromScalar
 
         ! конструктор- для инициалзиаици параметро генератора
         PROCEDURE          :: Constructor => InitDDS
@@ -70,6 +71,12 @@ MODULE DDSModule
         ! установить фазу сигнала
         ! на входе значение типа REAL(8) - фаза в радианах
         PROCEDURE          :: SetPhase
+        ! возвращает код частоты
+        PROCEDURE          :: GetFreqCode
+
+        PROCEDURE          :: GetFreqStep
+
+
 
         ! функция выполняющая преобразование значения фазового аккумулятора
         ! в адрес ПЗУ
@@ -87,7 +94,7 @@ CONTAINS
     ! с входным сигналом, который содержит значения частоты для каждого
     ! отсчета
     SUBROUTINE ComputeOutputFromArray(this, inputSignal, outputSignal)
-        USE analyticSignalModule
+
 
         CLASS(DDS_t), INTENT(INOUT)              :: this
         ! массив  со значениями частоты
@@ -180,6 +187,42 @@ CONTAINS
         DEALLOCATE(tempArray)
 
     END SUBROUTINE ComputeOutputFromScalar
+
+    SUBROUTINE GetOutPutFromCodeArray (this, codeArray, outputSignal)
+        USE analyticSignalModule
+        CLASS(DDS_t)            , INTENT(INOUT)   :: this
+        ! массив  со значениями частоты
+        CLASS(analyticSignal_t) , INTENT(IN)      :: codeArray
+        ! массив с выходом генератора
+        CLASS(analyticSignal_t),  INTENT(INOUT)   :: outputSignal
+
+        INTEGER(8)                                :: LengthInputSignal
+        INTEGER(2)     , ALLOCATABLE              :: tempArray (:)
+        INTEGER(8)     , ALLOCATABLE              :: frequencyCodes(:)
+        INTEGER(8)                                :: i
+
+        LengthInputSignal  = codeArray%GetSignalSize()
+        ALLOCATE(tempArray(1:LengthInputSignal))
+        CALL   codeArray%ExtractSignalData(frequencyCodes)
+
+         DO i=1,LengthInputSignal
+            ! С ПОСЛЕД ФАЗЫ!!!!!
+            tempArray(i)= GetAmplitudeSample(this,this%phaseAccState)
+            this%phaseAccState=this%phaseAccState+frequencyCodes(i)
+!            !эмуляция переполнения аккумулятора фазы
+            IF (this%phaseAccState>this%romLengthInNumber) THEN
+               this%phaseAccState=this%phaseAccState - this%romLengthInNumber
+            END IF
+
+        END DO
+
+        CALL outputSignal%Constructor(tempArray)
+
+        DEALLOCATE(tempArray)
+        DEALLOCATE(frequencyCodes)
+
+    END SUBROUTINE GetOutPutFromCodeArray
+
 
     ! Член функция типа КОНСТРУКТОР
     !Выполняет инициализацию генератора ПЦС (DDS_t)
@@ -306,6 +349,8 @@ CONTAINS
 
         ! УСЕЧЕНИЕ значения аккумулятора фазы до LengthTruncedInBits значащих бит
         resultPhase=SHIFTA(inputPhase,neededShift)
+
+
         amplitude= this%romSinusTable(resultPhase)
 
      END FUNCTION
@@ -329,6 +374,22 @@ CONTAINS
         END IF
 
      END SUBROUTINE SetPhase
+
+
+     Function GetFreqCode(this,freq_real) RESULT (code)
+           CLASS(DDS_t), INTENT(IN) :: this
+           REAL(8)     , INTENT(IN) :: freq_real
+           INTEGER(8)               :: code
+
+           code = int ((freq_real/this%frequencyStep),8)
+
+     END FUNCTION GetFreqCode
+
+     Function GetFreqStep(this) RESULT (step)
+           CLASS(DDS_t), INTENT(IN) :: this
+           REAL(8)                  :: step
+           step = this%frequencyStep
+     END FUNCTION GetFreqStep
 
     ! деструкторы запускаются автоматически, после того как
     ! созданный обьект выйдет из области видимости.

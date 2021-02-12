@@ -3,13 +3,14 @@ PROGRAM main
     USE TestsModule
     USE ModuleWriteReadArrayFromToFile
     USE  ReadWriteArrayToFromTxt
-    USE MathConstModule
-    USE RandomMod
-    USE BERTestMod
-    USE Bert2PsnMod
-    USE bychkov_decimator
-    USE bychkov_interpolate
-    USE corr_study
+!    USE MathConstModule
+!    USE RandomMod
+!    USE BERTestMod
+!    USE Bert2PsnMod
+!    USE bychkov_decimator
+!    USE bychkov_interpolate
+!    USE corr_study
+    USE GaussFilter
 
 
 
@@ -127,27 +128,42 @@ PROGRAM main
 !
 !      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
 !                                      ,lenInblocks = int(10,8))
-
-!
+!!
+!!
 !       CALL BPSKGeneratorTest(      pspFileName          = 'test_signals\input\psp_valera.txt'&
 !                                   ,dataFileName         = 'test_signals\input\data.txt'&
 !                                   ,outPutFileName       = 'test_signals\output\BPSKTest1.pcm'&
 !                                   ,filterFileName       = 'test_signals\input\20_mhz_1_25_cut_int.txt'&
 !                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
 !                                   ,baudRateInSamples    = int(10240,8), chipRateInSamples = int(10,8) &
-!                                   ,sampleRate           = int(10*MEGA,8)&
-!                                   ,centralFrequency     = int(3*MEGA,8)&
+!                                   ,sampleRate           = int(20*MEGA,8)&
+!                                   ,centralFrequency     = int(0*MEGA,8)&
 !                                   ,outPutSampleCapacity = int(14,1)&
 !                                   ,outPutShift          = int(17,1)&
 !                                   ,pauseLen             = int(10240*0,8))
+
+!       CALL BPSKGeneratorTest(      pspFileName          = 'test_signals\input\psp_valera.txt'&
+!                                   ,dataFileName         = 'test_signals\input\data.txt'&
+!                                   ,outPutFileName       = 'test_signals\output\BPSKTest1.pcm'&
+!                                   ,filterFileName       = 'test_signals\input\vadim_100m_int.txt'&
+!                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
+!                                   ,baudRateInSamples    = int(102400,8), chipRateInSamples = int(100,8) &
+!                                   ,sampleRate           = int(100*MEGA,8)&
+!                                   ,centralFrequency     = int(10*MEGA,8)&
+!                                   ,outPutSampleCapacity = int(14,1)&
+!                                   ,outPutShift          = int(25,1)&
+!                                   ,pauseLen             = int(10240*0,8))
+
+
+!
 !        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\BPSKTest1.pcm ' &
 !                              , outPutFileNameI = 'test_signals\output\phaseDemodTestI.pcm'&
 !                              ,outPutFileNameQ  = 'test_signals\output\phaseDemodTestQ.pcm'&
 !                              ,filterFileName   = 'test_signals\input\20_mhz_1_25_cut_int.txt' &
 !                              ,sampleRate       = int(20*MEGA,8)&
-!                              ,centralFrequency = int (0*MEGA+0,8)&
+!                              ,centralFrequency = int (3*MEGA+100+0,8)&
 !                              ,initialPhase     = 0.3*PI&
-!                              ,outputShift      = int(28,8))
+!                              ,outputShift      = int(24,8))
 
 !         WRITE(*,*) 'аналитич со знаковым'
 !'test_signals\input\noise_7897.pcm'
@@ -158,24 +174,7 @@ PROGRAM main
 !                                         ,iterationCount=int(1,4))
 
 !
-!              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
-!                                   ,dataFileName           = 'test_signals\input\data.txt'&
-!                                   ,inPutFileName          = 'test_signals\output\BPSKTest1.pcm'&
-!                                   ,filterFileName         = 'test_signals\input\10_1_25_int.txt'&
-!                                   ,deCodedDataFileName    = 'test_signals\output\decodedData.txt'&
-!                                   ,phaseDetectorIName     = 'test_signals\output\bpskDemodI.pcm'&
-!                                   ,phaseDetectorQName     = 'test_signals\output\bpskDemodQ.pcm'&
-!                                   ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
-!                                   ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
-!                                   ,sampleRate             = int(10*MEGA,8)&
-!                                   ,centralFrequency       = int (0*MEGA+0,8)&
-!                                   ,initialPhase           = 0.3*PI&
-!                                   , outPutSampleCapacity  = int(14,1)&
-!                                   , outPutShift           = int(23,1)&
-!                                   , decimationCoeff       = int(1,8)&
-!                                   ,ethalonCapacity         = int(1,1)&
-!                                   ,signumState = .TRUE.&
-!                                   ,thresholdSumm =int(10,8))
+
 
 
 
@@ -204,8 +203,8 @@ PROGRAM main
 !                                  ,outputSignalFileName = 'test_signals\output\noiseAmpTEst.pcm'&
 !                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
 !                                  ,snr =  -20.0 )
+!!!!
 !!!
-!!
 !              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
 !                                   ,dataFileName           = 'test_signals\input\data.txt'&
 !                                   ,inPutFileName          = 'test_signals\output\awgnTest.pcm'&
@@ -215,8 +214,8 @@ PROGRAM main
 !                                   ,phaseDetectorQName     = 'test_signals\output\bpskDemodQ.pcm'&
 !                                   ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
 !                                   ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
-!                                   ,sampleRate             = int(10*MEGA,8)&
-!                                   ,centralFrequency       = int (3*MEGA+0,8)&
+!                                   ,sampleRate             = int(20*MEGA,8)&
+!                                   ,centralFrequency       = int (0*MEGA+0,8)&
 !                                   ,initialPhase           = 0.3*PI&
 !                                   , outPutSampleCapacity  = int(14,1)&
 !                                   , outPutShift           = int(26,1)&
@@ -302,7 +301,7 @@ PROGRAM main
 !                                                ,complexModuleCorrNAme  = 'test_signals\output\moduleCorr.pcm'&
 !                                                ,baudRateInSamples      = int(10240,8), chipRateInSamples = int(10,8) &
 !                                                ,sampleRate             = int(10*MEGA,8)&
-!                                                ,centralFrequency       = int (0*MEGA+0,8)&
+!                                                ,centralFrequency       = int (0*MEGA+100,8)&
 !                                                ,initialPhase           = 0.3*PI&
 !                                                ,outPutSampleCapacity   = int(24,1)&
 !                                                ,outPutShift            = int(15,1)&
@@ -311,7 +310,7 @@ PROGRAM main
 !                                                ,signumState            = .FALSE.&
 !                                                ,threshold              = int(5000,8)&
 !                                                ,thresholdSumm          = int(5,8))
-!!!!
+!!!!!
 
 
 !         CALL  BERTestSignumCorrelation2PSN (parameterFileName= 'test\2psnTest.txt'&
@@ -380,12 +379,44 @@ PROGRAM main
 
 
 
-        CALL CrossCorrTwoPSP(inputSignalFileName  = 'test_signals\output\impGenTest1.pcm'&
-                     ,inputRefFileName     = 'test_signals\output\impGenTest1.pcm'&
-                     ,outputSignalFileName = 'test_signals\output\convolve_test_summ.pcm'&
-                     ,summFileNAme ='test_signals\output\summ_two_psp.pcm' &
-                     ,shift = int(2,1)&
-                     ,shiftLen = int(20,8))
+!        CALL CrossCorrTwoPSP(inputSignalFileName  = 'test_signals\output\impGenTest1.pcm'&
+!                     ,inputRefFileName     = 'test_signals\output\impGenTest1.pcm'&
+!                     ,outputSignalFileName = 'test_signals\output\convolve_test_summ.pcm'&
+!                     ,summFileNAme ='test_signals\output\summ_two_psp.pcm' &
+!                     ,shift = int(2,1)&
+!                     ,shiftLen = int(20,8))
+
+
+!CALL DDSOutputTestFromeCodes(romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1),outputSignalSampleCapacity=int(12,1)&
+!                             ,samplingFrequency=100*KILO&
+!                             ,phase=real(1.0,8)&
+!                             ,signalLengthInSamples=2346&
+!                             ,centralFrequency=int(2*KILO,4)&
+!                             ,file1Name='test_signals\input\dds_test_output_codes.pcm')
+
+!CALL     GAUSS_FIR_TEST(sampleRate          = 20*MEGA&
+!                       ,bt = 0.5&
+!                       ,symbolPeriod = real(1.0/float(2*MEGA),8)&
+!                       ,fir_order = int(31,1)&
+!                       ,capacity = int(14,1))
+
+CALL     GAUSS_MOD_TEST(sampleRate          = 20*MEGA&
+                       ,bt                  = 0.5&
+                       ,baudRate            = int(2*MEGA,8) &
+                       ,mIndex              = real(0.5,8)&
+                       ,centralFrequency    = 0&
+                       ,fir_order           = int(23,1)&
+                       ,capacityFilter      = int(14,1)&
+                       ,outPutDDSCapacity   = int(12,1)&
+                       ,outputFilterShift   = int(2,1)&
+                       ,romLengthTruncedInBits = int(14,1)&
+                       , outPutFileName = 'test_signals\output\gaussFilter.pcm'&
+                       )
+
+                      !GAUSS_MOD_TEST(sampleRate,bt,baudRate,mIndex,fir_order,capacityFilter, outPutDDSCapacity)
+
+
+
     CONTAINS
 
 

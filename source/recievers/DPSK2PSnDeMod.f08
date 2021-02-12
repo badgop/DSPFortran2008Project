@@ -9,7 +9,6 @@ MODULE DPSK2PSnDeMod
     USE DDSModule
     USE MathConstModule
     USE PhaseDetectorModule
-    USE  ModuleWriteReadArrayFromToFile
     USE ModuleWriteReadArrayFromToFile
     USE WriteReadComplexSignalToFromFile
     USE FastModuleMod
@@ -193,6 +192,10 @@ CONTAINS
 
          CALL WriteComplexSignalToFile(DemodulatePsn0,int(2,1),'test_signals\output\Demodulate0PsnI.pcm'&
                                                        , 'test_signals\output\DemodulatePsn0Q.pcm')
+
+
+        CALL WriteComplexSignalToFile(DemodulatePsn1,int(2,1),'test_signals\output\Demodulate1PsnI.pcm'&
+                                                       , 'test_signals\output\DemodulatePsn1Q.pcm')
           module0 = DemodulatePsn0%GetModuleFast()
           module1 = DemodulatePsn1%GetModuleFast()
 
@@ -207,7 +210,8 @@ CONTAINS
 !
 !          CALL WriteAnalyticSignalToFile(diffSig,int(2,1),'test_signals\output\diffSIG.pcm')
 
-        !  CALL WriteArrayToFile (module0, 'test_signals\output\last_module0.pcm')
+          CALL WriteArrayToFile (module0, 'test_signals\output\last_module0.pcm')
+           CALL WriteArrayToFile (module1, 'test_signals\output\last_module1.pcm')
 
 
           CALL twoModules%Constructor(module0,module1)

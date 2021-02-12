@@ -140,10 +140,10 @@ CONTAINS
 !        WRITE (*,*) 'ВЫШЕЛ! '
          yy=yy/float(size (inputSignalArrayInt2))
          summ2=summ2/float(size (inputSignalArrayInt2))
-       !  WRITE (*,*) 'нощность ШУМА дБ ',   ((20.0*log10(sqrt(yy   )))-3.0)
+         WRITE (*,*) 'нощность ШУМА дБ ',   ((20.0*log10(sqrt(yy   )))-3.0)
          yy =  GetSignalRmsPowerINT2(noiseSignalArrayInt2, int(size(noiseSignalArrayInt2),8))
-       !  WRITE (*,*) 'нощность ШУМА2 дБ ',  yy
-       !  WRITE (*,*) 'нощность сигнла дБ ', ((20.0*log10(sqrt(summ2)))-3.0)
+        WRITE (*,*) 'нощность ШУМА2 дБ ',  yy
+         WRITE (*,*) 'нощность сигнла дБ ', ((20.0*log10(sqrt(summ2)))-3.0)
 
     END  FUNCTION AddNoiseAnalytic
 

@@ -1722,6 +1722,231 @@ call omp_set_num_threads( 4 )
       END SUBROUTINE BPSKDemodulator2PSNTest
 
 
+      SUBROUTINE DDSOutputTestFromeCodes(romLengthInBits,romLenthTruncedInBits,outputSignalSampleCapacity&
+                             ,samplingFrequency,phase&
+                             ,signalLengthInSamples,centralFrequency,file1Name)
+
+            USE analyticSignalModule
+            USE DDSModule
+            USE MathConstModule
+            USE PrefixModule
+            USE ModuleWriteReadArrayFromToFile
+            USE WriteReadAnalyticSignalToFromFile
+
+            !разрядность аккамулятора фазы
+            INTEGER(1), INTENT(IN) :: romLengthInBits
+            !число бит до которых усекатется таблица ПЗУ
+            INTEGER(1), INTENT(IN) :: romLenthTruncedInBits
+            !разрядность выходного сигнала
+            INTEGER(1), INTENT(IN) :: outputSignalSampleCapacity
+
+            !частота дискретизации
+            INTEGER(4), INTENT(IN) :: samplingFrequency
+            !центральная частота 1 и 2 выходных сигналов
+            INTEGER(4), INTENT(IN) :: centralFrequency
+
+            !начальная фаза
+            REAL(8),    INTENT(IN)    :: phase
+            ! длина выходного сигнала в периодах гармонич колебания
+            !INTEGER(4), INTENT(IN)    :: periods
+             INTEGER(4) ,INTENT(IN) :: signalLengthInSamples
+
+
+            CHARACTER(*),INTENT(IN) :: file1Name
+            !CHARACTER(*),INTENT(IN) :: file2Name
+
+            INTEGER(1) :: status
+
+           !INTEGER(4) :: oscillationPeriod
+
+
+            INTEGER(8), ALLOCATABLE :: codef(:)
+
+            INTEGER(8), ALLOCATABLE :: outputArray(:)
+            INTEGER(2), ALLOCATABLE :: tmp(:)
+
+            TYPE(DDS_t) ::ddsGenerator
+            TYPE(analyticSignal_t) ::imputFreqSignal
+            TYPE(analyticSignal_t) ::outputSignal
+
+            INTEGER(8)             ::code_f_int
+            REAL(8)                :: delta_f
+
+            ! инициаализируем генератор
+            status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
+                                             samplingFrequency,outputSignalSampleCapacity)
+
+
+
+
+
+
+            WRITE(*,*) 'Тест DDS_t запущен - '
+            WRITE(*,*) 'проверка значений полученных конструктором'
+
+
+            ! пишем таблицу ПЗУ
+            WRITE(*,*) 'ddsromtable.pcm - там таблица ПЗУ '
+            status=ddsGenerator%DebugOutput('ddsromtable.pcm')
+
+
+             CALL ddsGenerator%SetPhase(phase)
+
+             !oscillationPeriod=samplingFrequency/ centralFrequency
+             !signalLengthInSamples=oscillationPeriod*periods
+
+
+
+
+             ! делаем массив со кодами частоты
+             ALLOCATE(codef(1:signalLengthInSamples))
+
+             delta_f = float(samplingFrequency)/float(int(2,8)**romLengthInBits)
+             WRITE(*,*) 'delta_f ',delta_f
+
+
+             WRITE(*,*) 'float(centralFrequency) ',float(centralFrequency)
+             code_f_int =int((float(centralFrequency)/delta_f),8)
+             WRITE(*,*) 'code_f_int ',code_f_int
+
+
+
+             codef= code_f_int
+
+             WRITE(*,*) 'code_f ',codef(10)
+
+
+             ! делаем из массива аналитич сигнала
+             CALL imputFreqSignal%Constructor(codef)
+
+             ! получаем гармонический сигнал
+             CALL ddsGenerator%ComputeOutputFromArray(imputFreqSignal, outputsignal)
+
+
+
+
+            CALL WriteAnalyticSignalToFile(outputsignal,int(2,1),file1Name)
+
+             WRITE(*,*) ''
+             WRITE(*,*) 'ТЕСТ DDS ЗАКОНЧЕН!!!!!'
+
+
+
+
+
+      END SUBROUTINE DDSOutputTestFromeCodes
+
+      SUBROUTINE GAUSS_FIR_TEST(sampleRate,bt,symbolPeriod,fir_order,capacity)
+
+          USE GaussFilter
+          USE GFSKmod
+          USE MathConstModule
+
+          USE analyticSignalModule
+          USE PrefixModule
+          USE ModuleWriteReadArrayFromToFile
+          USE WriteReadAnalyticSignalToFromFile
+
+          integer(4) ,intent(IN)    :: sampleRate
+          real(4)    ,INTENT(IN)    :: bt
+          integer(1) ,INTENT(IN)    :: fir_order
+          real(8)    ,INTENT(IN)    :: symbolPeriod
+          integer(1) ,INTENT(IN)    :: capacity
+
+          integer(8) , ALLOCATABLE   :: IR_GAUSS(:)
+
+
+
+          write(*,*) 'symbol ', symbolPeriod
+
+          CALL  IR_GAUSS_CALCULATE_INT_2(sampleRate = sampleRate&
+                 ,bt = bt&
+                 ,symbolPeriod = symbolPeriod&
+                 ,fir_order = fir_order&
+                 ,capacity = capacity&
+                 ,IR_GAUSS_int = IR_GAUSS)
+         WRITE(*,'(I6)')  IR_GAUSS
+
+      END SUBROUTINE GAUSS_FIR_TEST
+
+
+  SUBROUTINE GAUSS_MOD_TEST(sampleRate,bt,baudRate,mIndex,centralFrequency,fir_order&
+                           ,capacityFilter,outPutDDSCapacity,outputFilterShift,romLengthTruncedInBits&
+                           , outPutFileName )
+
+          USE GaussFilter
+          USE MathConstModule
+          USE GFSKmod
+          USE OctetDataModule
+          USE CRC16Mod
+          USE PayloadGeneratorMod
+          USE analyticSignalModule
+          USE WriteReadAnalyticSignalToFromFile
+
+          integer(4) ,intent(IN)    :: sampleRate
+          real(4)    ,INTENT(IN)    :: bt
+          INTEGER(8) ,INTENT(IN)    :: baudRate
+          REAL(8)   , intent(in)    :: mIndex
+          INTEGER(4) ,intent(in)    :: centralFrequency
+          integer(1) ,INTENT(IN)    :: fir_order
+          integer(1) ,INTENT(IN)    :: capacityFilter
+          integer(1) ,INTENT(IN)    :: outPutDDSCapacity
+          INTEGER(1)  , intent(in)  :: outputFilterShift
+          integer(1) ,INTENT(IN)    :: romLengthTruncedInBits
+          CHARACTER(*), intent(in)  :: outPutFileName
+
+          integer(8) , ALLOCATABLE   :: IR_GAUSS(:)
+          TYPE(GFSKmodulator_t)     :: gfskMod_t
+          real(8)                   :: symbolPeriod
+          INTEGER(4)                :: messageLength
+
+          INTEGER(1),ALLOCATABLE      :: payloadDataBitArray(:)
+          INTEGER(1),ALLOCATABLE      :: payloadDataBitArrayWithCrc(:)
+           TYPE(analyticSignal_t)     ::outputSignal
+
+
+          symbolPeriod = real(1.0/float(baudRate),8)
+
+!          write(*,*) 'symbol ', symbolPeriod
+!
+!          CALL  IR_GAUSS_CALCULATE_INT_2(sampleRate = sampleRate&
+!                 ,bt = bt&
+!                 ,symbolPeriod = symbolPeriod&
+!                 ,fir_order = fir_order&
+!                 ,capacity = capacityFilter&
+!                 ,IR_GAUSS_int = IR_GAUSS)
+!
+!          WRITE(*,'(I6)')  IR_GAUSS
+
+
+          CALL gfskMod_t%Constructor( baudRate          = baudRate&
+                                    , mIndex            = mIndex&
+                                    , sampleRate        = sampleRate&
+                                    , bt                = bt&
+                                    , centralFrequency  = centralFrequency&
+                                    , fir_order         = fir_order&
+                                    , outPutDDSCapacity = outPutDDSCapacity&
+                                    , outputFilterShift = outputFilterShift&
+                                    ,capacityFilter     = capacityFilter&
+                                    ,romLengthTruncedInBits = romLengthTruncedInBits&
+                                     )
+           WRITE(*,*) 'GFSK constructor '
+
+           messageLength = 8192
+           ! формирование пакета данных без контрольной суммы
+           payloadDataBitArray =  GenerateRandomPayloadBitArray(messageLength)
+           WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
+           ! добавляем контрольную сумму
+           payloadDataBitArrayWithCrc = GeneratePayloadDataBitArrayWithCRC(payloadDataBitArray)
+           WRITE(*,*) 'size payloadDataBitArrayWithCrc ',size(payloadDataBitArrayWithCrc)
+
+          outputSignal = gfskMod_t%Generate(payloadDataBitArrayWithCrc)
+
+           CALL WriteAnalyticSignalToFile(outputSignal,int(2,1),outPutFileName)
+
+
+      END SUBROUTINE GAUSS_MOD_TEST
+
 
 
 

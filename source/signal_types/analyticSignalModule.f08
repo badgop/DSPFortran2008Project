@@ -281,7 +281,7 @@ CONTAINS
         END IF
         !и только потом выделять
         ! выделять нужно обязательно
-!           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS! INT8', this%signalName
+         !  WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS! INT8', this%signalName
           allocate (this%signalInt8,source=loadedSignal,STAT=stat,ERRMSG = errorCode )
            IF (STAT/=0) THEN
 

@@ -11,7 +11,7 @@ MODULE BERTestMod
     USE AWGNChannelMod
     USE  ModuleExitProg
     USE ReadWriteArrayToFromTxt
-    USE ModuleWriteReadArrayFromToFile
+
     IMPLICIT NONE
 
 
