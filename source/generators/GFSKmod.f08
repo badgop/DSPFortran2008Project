@@ -92,7 +92,7 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
                  ,IR_GAUSS_int = IR_GAUSS)
        WRITE(*,*)  'calculated ', sum(IR_GAUSS)
        CALL this%impluseResponse%Constructor(IR_GAUSS)
-       WRITE(*,'(I6)')  IR_GAUSS
+      ! WRITE(*,'(I6)')  IR_GAUSS
 
 
        this%deviation = (this%mIndex*real(this%baudRateInSamples))/2.0
@@ -137,6 +137,7 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
 !        CLASS(analyticSignal_t), allocatable  :: heterodyneSignal
         INTEGER(8)                            :: osr
 
+          WRITE(*,*) 'вход в генерацию'
 
         ALLOCATE(Generate)
 !        ALLOCATE(OutPutPsn)
@@ -146,11 +147,13 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
         diffData = this%GenerateDiffData(data)
         osr = this%SampleRate/this%baudRateInSamples
         outputDataSig = GenerateImpluseSequence(osr,diffData)
+
         CALL Generate%Constructor(outputDataSig)
+        DEALLOCATE(outputDataSig)
 
-        Generate = Generate.CONV.this%impluseResponse
-        Generate = Generate*this%deviationKoeff
-
+        !Generate = Generate.CONV.this%impluseResponse
+!        Generate = Generate*this%deviationKoeff
+        WRITE(*,*) 'выход из процедуры генерации'
 
        ! CALL Generate%RShift(this%outputFilterShift)
 
@@ -177,6 +180,7 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
 
     SUBROUTINE destructor(this)
         type(GFSKmodulator_t), intent(in) :: this
+
     END SUBROUTINE
 
 END MODULE GFSKmod

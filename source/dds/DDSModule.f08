@@ -207,6 +207,7 @@ CONTAINS
 
          DO i=1,LengthInputSignal
             ! С ПОСЛЕД ФАЗЫ!!!!!
+
             tempArray(i)= GetAmplitudeSample(this,this%phaseAccState)
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
 !            !эмуляция переполнения аккумулятора фазы

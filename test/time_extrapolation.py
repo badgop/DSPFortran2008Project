@@ -7,7 +7,7 @@ Created on Wed Aug  5 14:12:28 2020
 
 time = 20.0
 
-iteration=4000
+iteration=5000*2
 
 secund=1
 minute=60

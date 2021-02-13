@@ -269,8 +269,8 @@ module RawCorrOpenMPmod
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
 
-                    summ = summ +CorrelationRaw18(i)+int(input(i+j),8)*reference(j)
-                  ! WRITE(*,*) summ , int(input(i+j),8),reference(j)
+                   summ = summ +CorrelationRaw18(i)+int(input(i+j),8)*reference(j)
+                   !WRITE(*,*) summ , int(input(i+j),8),reference(j)
                    ! CorrelationRaw18(i)=CorrelationRaw18(i)+int(input(i+j),8)*reference(j)
 
                     !CorrelationRaw28(i)=CorrelationRaw28(i)+int(input(i+j),8)*int(reference(j),8)

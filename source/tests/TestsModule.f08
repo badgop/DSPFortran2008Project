@@ -1787,7 +1787,7 @@ call omp_set_num_threads( 4 )
 
             ! пишем таблицу ПЗУ
             WRITE(*,*) 'ddsromtable.pcm - там таблица ПЗУ '
-            status=ddsGenerator%DebugOutput('ddsromtable.pcm')
+           ! status=ddsGenerator%DebugOutput('ddsromtable.pcm')
 
 
              CALL ddsGenerator%SetPhase(phase)
@@ -1815,17 +1815,18 @@ call omp_set_num_threads( 4 )
 
              WRITE(*,*) 'code_f ',codef(10)
 
-
+            WRITE(*,*) 'до конструктора'
              ! делаем из массива аналитич сигнала
              CALL imputFreqSignal%Constructor(codef)
-
+WRITE(*,*) 'констркуткор отработал'
              ! получаем гармонический сигнал
-             CALL ddsGenerator%ComputeOutputFromArray(imputFreqSignal, outputsignal)
+             CALL ddsGenerator%GetOutPutFromCodeArray(imputFreqSignal, outputsignal)
 
 
 
+ WRITE(*,*) 'до записи!!!!!'
 
-            CALL WriteAnalyticSignalToFile(outputsignal,int(2,1),file1Name)
+           ! CALL WriteAnalyticSignalToFile(outputsignal,int(2,1),file1Name)
 
              WRITE(*,*) ''
              WRITE(*,*) 'ТЕСТ DDS ЗАКОНЧЕН!!!!!'
@@ -1867,6 +1868,8 @@ call omp_set_num_threads( 4 )
                  ,IR_GAUSS_int = IR_GAUSS)
          WRITE(*,'(I6)')  IR_GAUSS
 
+         DEALLOCATE(IR_GAUSS)
+
       END SUBROUTINE GAUSS_FIR_TEST
 
 
@@ -1905,7 +1908,7 @@ call omp_set_num_threads( 4 )
            TYPE(analyticSignal_t)     ::outputSignal
 
 
-          symbolPeriod = real(1.0/float(baudRate),8)
+         ! symbolPeriod = real(1.0/float(baudRate),8)
 
 !          write(*,*) 'symbol ', symbolPeriod
 !
@@ -1935,14 +1938,16 @@ call omp_set_num_threads( 4 )
            messageLength = 8192
            ! формирование пакета данных без контрольной суммы
            payloadDataBitArray =  GenerateRandomPayloadBitArray(messageLength)
-           WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
+          ! WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
            ! добавляем контрольную сумму
            payloadDataBitArrayWithCrc = GeneratePayloadDataBitArrayWithCRC(payloadDataBitArray)
-           WRITE(*,*) 'size payloadDataBitArrayWithCrc ',size(payloadDataBitArrayWithCrc)
-
+          ! WRITE(*,*) 'size payloadDataBitArrayWithCrc ',size(payloadDataBitArrayWithCrc)
+           WRITE(*,*) 'до присваивагния'
           outputSignal = gfskMod_t%Generate(payloadDataBitArrayWithCrc)
-
-           CALL WriteAnalyticSignalToFile(outputSignal,int(2,1),outPutFileName)
+          DEALLOCATE(payloadDataBitArray)
+          DEALLOCATE(payloadDataBitArrayWithCrc)
+         WRITE(*,*) 'после присваивагния'
+          ! CALL WriteAnalyticSignalToFile(outputSignal,int(2,1),outPutFileName)
 
 
       END SUBROUTINE GAUSS_MOD_TEST

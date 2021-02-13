@@ -67,18 +67,20 @@ MODULE GaussFilter
    real(8) :: B=0
    real(8)     :: h
    real(8)     :: exponenta=0
-   INTEGER(2) :: j
-   INTEGER(2) ::K=1
+   INTEGER(1) :: j
+   INTEGER(4) ::k
 
     Td= 1.0/float(sampleRate)
     ALLOCATE( IR_GAUSS_float(1:fir_order))
 
     B=bt/symbolPeriod
-!    write(*,*)'B '  B
+    write(*,*)'B ',  B
 
     a =(2*pi)/log(2.0)   !LOG Elemental Intrinsic Function (Generic): Returns the natural logarithm of the argument.
 
+   k= 1
     do j=-FIR_ORDER/2,FIR_ORDER/2,1
+           WRITE(*,*) 'j ' ,j , 'k ',k
             exponenta =  exp ( (-1)*(pi*a)*(b**2)*((j*td)**2) )
             h = B*SQRT(a)*exponenta
             IR_GAUSS_float(k) = h
@@ -91,7 +93,7 @@ MODULE GaussFilter
 !
 !          write(*,*) IR_GAUSS_float(k)
 !    end do
-    write(*,*) 'sum ', sum(IR_GAUSS_float)
+   ! write(*,*) 'sum ', sum(IR_GAUSS_float)
 
     END SUBROUTINE IR_CALCULATE_FLOAT
 
