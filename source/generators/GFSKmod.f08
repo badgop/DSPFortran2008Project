@@ -93,7 +93,7 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
                  ,IR_GAUSS_int = IR_GAUSS)
        WRITE(*,*)  'calculated ', sum(IR_GAUSS)
        CALL this%impluseResponse%Constructor(IR_GAUSS)
-      ! WRITE(*,'(I6)')  IR_GAUSS
+       WRITE(*,'(I6)')  IR_GAUSS
 
 
        this%deviation = (this%mIndex*real(this%baudRateInSamples))/2.0
@@ -154,19 +154,10 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
         diffData = this%GenerateDiffData(data)
         osr = this%SampleRate/this%baudRateInSamples
         outputDataSig = GenerateImpluseSequence(osr,diffData)
-<<<<<<< HEAD
         CALL deviation%Constructor(outputDataSig)
         DEALLOCATE(outputDataSig)
 
-=======
 
-        CALL Generate%Constructor(outputDataSig)
-        DEALLOCATE(outputDataSig)
->>>>>>> abcd057e860f1eb43105ebc71cd6170c56d9d92c
-
-        !Generate = Generate.CONV.this%impluseResponse
-!        Generate = Generate*this%deviationKoeff
-        WRITE(*,*) 'выход из процедуры генерации'
 
         DEALLOCATE(diffData )
 

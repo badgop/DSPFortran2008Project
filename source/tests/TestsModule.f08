@@ -1826,7 +1826,7 @@ WRITE(*,*) 'констркуткор отработал'
 
  WRITE(*,*) 'до записи!!!!!'
 
-           ! CALL WriteAnalyticSignalToFile(outputsignal,int(2,1),file1Name)
+            CALL WriteAnalyticSignalToFile(outputsignal,int(2,1),file1Name)
 
              WRITE(*,*) ''
              WRITE(*,*) 'ТЕСТ DDS ЗАКОНЧЕН!!!!!'
@@ -1962,7 +1962,6 @@ WRITE(*,*) 'констркуткор отработал'
            ! добавляем контрольную сумму
            payloadDataBitArrayWithCrc = GeneratePayloadDataBitArrayWithCRC(payloadDataBitArray)
           ! WRITE(*,*) 'size payloadDataBitArrayWithCrc ',size(payloadDataBitArrayWithCrc)
-<<<<<<< HEAD
 
           outputSignal = gfskMod_t%Generate(payloadDataBitArrayWithCrc)
 
@@ -2037,14 +2036,6 @@ WRITE(*,*) 'констркуткор отработал'
 
 
 
-=======
-           WRITE(*,*) 'до присваивагния'
-          outputSignal = gfskMod_t%Generate(payloadDataBitArrayWithCrc)
-          DEALLOCATE(payloadDataBitArray)
-          DEALLOCATE(payloadDataBitArrayWithCrc)
-         WRITE(*,*) 'после присваивагния'
-          ! CALL WriteAnalyticSignalToFile(outputSignal,int(2,1),outPutFileName)
->>>>>>> abcd057e860f1eb43105ebc71cd6170c56d9d92c
 
 
       END SUBROUTINE GAUSS_MOD_TEST

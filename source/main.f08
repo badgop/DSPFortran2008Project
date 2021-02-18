@@ -13,10 +13,6 @@ PROGRAM main
     USE GaussFilter
 
     INTEGER (8) :: CNTR53
-<<<<<<< HEAD
-=======
-
->>>>>>> abcd057e860f1eb43105ebc71cd6170c56d9d92c
 
 
 
@@ -408,7 +404,6 @@ PROGRAM main
 
 
 
-<<<<<<< HEAD
 
 CALL     GAUSS_MOD_TEST(sampleRate          = int(20*MEGA,4)&
                        ,bt                  = 0.5&
@@ -427,41 +422,6 @@ CALL     GAUSS_MOD_TEST(sampleRate          = int(20*MEGA,4)&
                        , timerName  = 'test_signals\output\timer.pcm'&
                        , filterName =  'test_signals\input\bandpass_10_int.txt'&
                        )
-=======
-DO CNTR53=1,200
-WRITE(*,*) 'number ====== ', CNTR53
-!CALL     GAUSS_MOD_TEST(sampleRate          = 20*MEGA&
-!                       ,bt                  = 0.5&
-!                       ,baudRate            = int(2*MEGA,8) &
-!                       ,mIndex              = real(0.5,8)&
-!                       ,centralFrequency    = 0&
-!                       ,fir_order           = int(23,1)&
-!                       ,capacityFilter      = int(14,1)&
-!                       ,outPutDDSCapacity   = int(12,1)&
-!                       ,outputFilterShift   = int(2,1)&
-!                       ,romLengthTruncedInBits = int(14,1)&
-!                       , outPutFileName = 'test_signals\output\gaussFilter.pcm'&
-!                       )
-!
-!                     !GAUSS_MOD_TEST(sampleRate,bt,baudRate,mIndex,fir_order,capacityFilter, outPutDDSCapacity)
-
-!CALL     GAUSS_FIR_TEST(sampleRate          = 20*MEGA&
-!                       ,bt = 0.5&
-!                       ,symbolPeriod = real(1.0/float(2*MEGA),8)&
-!                       ,fir_order = int(31,1)&
-!                       ,capacity = int(14,1))
-
-
-!        CALL CrossCorrTwoPSP(inputSignalFileName  = 'test_signals\output\impGenTest1.pcm'&
-!                     ,inputRefFileName     = 'test_signals\output\impGenTest1.pcm'&
-!                     ,outputSignalFileName = 'test_signals\output\convolve_test_summ.pcm'&
-!                     ,summFileNAme ='test_signals\output\summ_two_psp.pcm' &
-!                     ,shift = int(2,1)&
-!                     ,shiftLen = int(20,8))
-
-
-END DO
->>>>>>> abcd057e860f1eb43105ebc71cd6170c56d9d92c
 
 
     CONTAINS
