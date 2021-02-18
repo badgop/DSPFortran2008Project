@@ -821,10 +821,13 @@ CONTAINS
         INTEGER(4),ALLOCATABLE                  :: tempArray4(:)
         INTEGER(2),ALLOCATABLE                  :: tempArray2(:)
         INTEGER(1),ALLOCATABLE                  :: tempArray1(:)
-        INTEGER(8)                              ::allocationStatus
+        INTEGER(8)                              :: allocationStatus
+
+
 
         !итоговая длина сигнала
         summLen = beforeLen + afterLen + this%signalSize
+        WRITE(*,*) 'summ len ',  summLen
         ! проверка на максимальную длину массива
         IF(summLen>HUGE(summLen)) THEN
           WRITE(*,*) 'Превышение максимальной длины массива'
@@ -844,9 +847,12 @@ CONTAINS
                       END IF
 
                       tempArray1=0
-                      tempArray1(beforeLen+1:beforeLen-1+this%signalSize)=this%signalInt1
+                      tempArray1(beforeLen+1:(beforeLen+this%signalSize))=this%signalInt1
+
+
                       DEALLOCATE(this%signalInt1)
                       ALLOCATE(this%signalInt1,source=tempArray1,stat=allocationStatus)
+
                       IF (allocationStatus>0) THEN
                           WRITE(*,*) 'не могу выделить память this%signal'
                           CALL ExitFromProgramNormal()
@@ -861,7 +867,7 @@ CONTAINS
                       END IF
 
                       tempArray2=0
-                      tempArray2(beforeLen+1:beforeLen-1+this%signalSize)=this%signalInt2
+                      tempArray2(beforeLen+1:beforeLen+this%signalSize)=this%signalInt2
                       DEALLOCATE(this%signalInt2)
                       ALLOCATE(this%signalInt2,source=tempArray2,stat=allocationStatus)
                       IF (allocationStatus>0) THEN
@@ -877,7 +883,7 @@ CONTAINS
                       END IF
 
                       tempArray4=0
-                      tempArray4(beforeLen+1:beforeLen-1+this%signalSize)=this%signalInt4
+                      tempArray4(beforeLen+1:beforeLen+this%signalSize)=this%signalInt4
                       DEALLOCATE(this%signalInt4)
                       ALLOCATE(this%signalInt4,source=tempArray4,stat=allocationStatus)
                       IF (allocationStatus>0) THEN
@@ -895,7 +901,15 @@ CONTAINS
                       END IF
 
                       tempArray8=0
-                      tempArray8(beforeLen+1:beforeLen+1+this%signalSize)=this%signalInt8
+                      WRITE(*,*) 'size ',size(tempArray8)
+                      WRITE(*,*) 'beforeLen ',beforeLen
+                      WRITE(*,*) '(beforeLen+1 ',beforeLen+1
+                      WRITE(*,*) '(beforeLen-1+this%signalSize ',beforeLen+1+this%signalSize
+
+
+                      tempArray8(beforeLen+1:beforeLen+this%signalSize)=this%signalInt8
+
+
                       DEALLOCATE(this%signalInt8)
                       ALLOCATE(this%signalInt8,source=tempArray8,stat=allocationStatus)
                       IF (allocationStatus>0) THEN
@@ -1055,21 +1069,21 @@ CONTAINS
                         CALL MultiplyAnalyticSignalsAndConstant8%Constructor (arrayInt1)
                         DEALLOCATE(arrayInt1)
                  CASE(HUGE_Int1+1:HUGE_Int2)
-                   ALLOCATE(arrayInt2(2:xOp%GetSignalSize()))
+                   ALLOCATE(arrayInt2(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
                         arrayInt2(i) = int(xOp%GetValue(i)*yOp,2)
                      END DO
                      CALL MultiplyAnalyticSignalsAndConstant8%Constructor (arrayInt2)
                      DEALLOCATE(arrayInt2)
                  CASE(HUGE_Int2+1:HUGE_Int4)
-                   ALLOCATE(arrayInt4(2:xOp%GetSignalSize()))
+                   ALLOCATE(arrayInt4(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
                         arrayInt4(i) = int(xOp%GetValue(i)*yOp,4)
                      END DO
                      CALL MultiplyAnalyticSignalsAndConstant8%Constructor (arrayInt4)
                      DEALLOCATE(arrayInt4)
                  CASE(HUGE_Int4+1:HUGE_Int8)
-                   ALLOCATE(arrayInt8(2:xOp%GetSignalSize()))
+                   ALLOCATE(arrayInt8(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
                         arrayInt8(i) = int(xOp%GetValue(i)*yOp,8)
                      END DO

@@ -8,10 +8,11 @@ MODULE PSNMakerMod
     FUNCTION MakePSN(psnLength) RESULT (psn)
          INTEGER(2)               , INTENT(IN)  :: psnLength
          INTEGER(1), DIMENSION(:) , ALLOCATABLE :: psn
-         INTEGER(1)                             :: volume = 1
+         INTEGER(1)                             :: volume
          INTEGER(8)                             :: randomValue
          INTEGER(2)                             :: i
 
+         volume = 1
          ALLOCATE(psn(1:psnLength))
          psn=0
          DO i=1,psnLength

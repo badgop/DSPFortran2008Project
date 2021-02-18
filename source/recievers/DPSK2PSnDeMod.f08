@@ -253,13 +253,13 @@ CONTAINS
         INTEGER(8)                            :: timeStampCurr     = 0
 
 
-        INTEGER(8)                            :: pointAccumulator = 0;
+        INTEGER(8)                            :: pointAccumulator
         INTEGER(8)                            :: maxMod=0
         bitBuffer=0
 
 
 
-
+        pointAccumulator = 0
         lasti=0
         CALL matchedFilterOut%ExtractSignalData(realPart,imagePart)
         cnt=0

@@ -13,8 +13,8 @@ MODULE ComplexDDSModule
         TYPE(DDS_t) ::ddsGeneratorI
         TYPE(DDS_t) ::ddsGeneratorQ
 
-        REAL(8)     :: phaseShiftI=PI/2.0
-        REAL(8)     :: phaseShiftQ=0.0
+        REAL(8)     :: phaseShiftI
+        REAL(8)     :: phaseShiftQ
         LOGICAL     :: jSign=.FALSE.
 
 

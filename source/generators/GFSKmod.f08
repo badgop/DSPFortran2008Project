@@ -8,6 +8,7 @@ MODULE GFSKmod
     USE DDSModule
     USE MathConstModule
 
+
     IMPLICIT NONE
     PRIVATE
 
@@ -103,6 +104,7 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
        WRITE(*,*) 'devKoeff ', devKoeff
        WRITE(*,*) 'прибавляеем 1 к коэфф умножения девиации'
        devKoeffInt8 = int(devKoeff,8)+1
+
        WRITE(*,*) 'devKoeffInt8*sum(IR_GAUSS) ',devKoeffInt8*sum(IR_GAUSS)
 
        delta = real((devKoeffInt8*sum(IR_GAUSS) -this%mixerI%GetFreqCode(this%deviation)),8)*this%mixerI%GetFreqStep()
@@ -129,54 +131,62 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
     FUNCTION Generate (this, data)
         CLASS(GFSKmodulator_t), intent(inout) :: this
         INTEGER(1)  , intent(in)              :: data(:)
+
         INTEGER(1)  , allocatable             :: Diffdata(:)
-!        CLASS(analyticSignal_t),  allocatable :: OutPutPsn
-!        CLASS(analyticSignal_t) , allocatable :: OutPutModulationSig
-        INTEGER(1)              , allocatable :: outputDataSig(:)
-        CLASS(analyticSignal_t), allocatable  :: Generate
-!        CLASS(analyticSignal_t), allocatable  :: heterodyneSignal
+        INTEGER(1)  , allocatable             :: outputDataSig(:)
+        TYPE(analyticSignal_t), allocatable  :: deviation
+        TYPE(analyticSignal_t), allocatable  :: i_t
+        TYPE(analyticSignal_t), allocatable  :: q_t
+
+
+        TYPE(complexSignal_t), allocatable   :: generate
+
         INTEGER(8)                            :: osr
 
+          WRITE(*,*) 'вход в генерацию'
 
+        ALLOCATE(deviation)
         ALLOCATE(Generate)
-!        ALLOCATE(OutPutPsn)
-!        ALLOCATE(OutPutModulationSig)
-!        ALLOCATE(heterodyneSignal)
+        ALLOCATE(i_t)
+        ALLOCATE(q_t)
+
 
         diffData = this%GenerateDiffData(data)
         osr = this%SampleRate/this%baudRateInSamples
         outputDataSig = GenerateImpluseSequence(osr,diffData)
-        CALL Generate%Constructor(outputDataSig)
-
-        Generate = Generate.CONV.this%impluseResponse
-        Generate = Generate*this%deviationKoeff
+        CALL deviation%Constructor(outputDataSig)
+        DEALLOCATE(outputDataSig)
 
 
-       ! CALL Generate%RShift(this%outputFilterShift)
+
+        DEALLOCATE(diffData )
+
+        deviation = deviation.CONV.this%impluseResponse
+        deviation = deviation * this%deviationKoeff
+
+        CALL this%mixerI%SetPhase(PI/2)
+        CALL this%mixerQ%SetPhase(0*PI)
+
+        CALL this%mixerI%GetOutPutFromCodeArray(deviation,i_t)
+        CALL this%mixerQ%GetOutPutFromCodeArray(deviation,q_t)
+
+        CALL generate%Constructor(i_t,q_t)
+
+        DEALLOCATE(deviation)
+        DEALLOCATE(i_t)
+        DEALLOCATE(q_t)
 
 
-!
-!        CALL Generate%ZeroesStuffing(this%baudRateInSamples,this%baudRateInSamples)
-!
-!
 
-!
-!        CALL this%mixerI%SetPhase(PI/2)
-!        CALL this%mixerQ%SetPhase(PI/2)
-!
-!        CALL this%mixerI%ComputeOutput(int(this%centralFrequency,8),(Generate%GetSignalSize()),heterodyneSignal)
-!        Generate = Generate*heterodyneSignal
-!        !WRITE(*,*) 'СДВИГ В МОДЕЛЯТУРЕ  ', this%outputFilterShift
-!        CALL Generate%RShift(this%outputFilterShift)
+!        CALL Generate%ZeroesStuffing(int(1000,8),int(1000,8))
 
-!        DEALLOCATE(OutPutPsn)
-!        DeALLOCATE(OutPutModulationSig)
-!        DEALLOCATE(heterodyneSignal)
+
 
     END FUNCTION Generate
 
     SUBROUTINE destructor(this)
         type(GFSKmodulator_t), intent(in) :: this
+
     END SUBROUTINE
 
 END MODULE GFSKmod

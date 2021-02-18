@@ -207,12 +207,20 @@ CONTAINS
 
          DO i=1,LengthInputSignal
             ! С ПОСЛЕД ФАЗЫ!!!!!
+
             tempArray(i)= GetAmplitudeSample(this,this%phaseAccState)
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
+
 !            !эмуляция переполнения аккумулятора фазы
-            IF (this%phaseAccState>this%romLengthInNumber) THEN
+
+            IF (this%phaseAccState<0) THEN
+               this%phaseAccState=this%phaseAccState + this%romLengthInNumber
+            END IF
+            IF (this%phaseAccState>=this%romLengthInNumber) THEN
                this%phaseAccState=this%phaseAccState - this%romLengthInNumber
             END IF
+
+
 
         END DO
 
@@ -335,7 +343,7 @@ CONTAINS
      END FUNCTION DebugOutput
 
      ! функция что возвращает значение амлитуды. Входной аргумет - значение фазы аккумулятора
-      PURE FUNCTION GetAmplitudeSample(this,inputPhase) RESULT (amplitude)
+       FUNCTION GetAmplitudeSample(this,inputPhase) RESULT (amplitude)
 
         IMPLICIT NONE
         CLASS(DDS_t), INTENT(IN) :: this
@@ -349,6 +357,7 @@ CONTAINS
 
         ! УСЕЧЕНИЕ значения аккумулятора фазы до LengthTruncedInBits значащих бит
         resultPhase=SHIFTA(inputPhase,neededShift)
+         !WRITE(*,*) inputPhase,resultPhase
 
 
         amplitude= this%romSinusTable(resultPhase)

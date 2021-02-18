@@ -3,26 +3,28 @@ PROGRAM main
     USE TestsModule
     USE ModuleWriteReadArrayFromToFile
     USE  ReadWriteArrayToFromTxt
-!    USE MathConstModule
-!    USE RandomMod
-!    USE BERTestMod
-!    USE Bert2PsnMod
-!    USE bychkov_decimator
-!    USE bychkov_interpolate
-!    USE corr_study
+    USE MathConstModule
+    USE RandomMod
+    USE BERTestMod
+    USE Bert2PsnMod
+    USE bychkov_decimator
+    USE bychkov_interpolate
+    USE corr_study
     USE GaussFilter
 
+    INTEGER (8) :: CNTR53
 
 
 
 
 
 
-!CALL DDSOutputTest(romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1),outputSignalSampleCapacity=int(12,1)&
+
+!CALL DDSOutputTest(romLengthInBits=int(32,1),romLenthTruncedInBits=int(16,1),outputSignalSampleCapacity=int(14,1)&
 !                             ,samplingFrequency=192*KILO&
-!                             ,phase=real(1.0,8)&
-!                             ,signalLengthInSamples=2346&
-!                             ,centralFrequency=int(2*KILO,4)&
+!                             ,phase=real(0.0,8)&
+!                             ,signalLengthInSamples=20300&
+!                             ,centralFrequency=int(19.2*KILO,4)&
 !                             ,centralFrequency2=int(1*KILO,4)&
 !                             ,file1Name='test_signals\input\dds_test_output1.pcm'&
 !                             ,file2Name='test_signals\input\dds_test_output2.pcm' )
@@ -400,7 +402,10 @@ PROGRAM main
 !                       ,fir_order = int(31,1)&
 !                       ,capacity = int(14,1))
 
-CALL     GAUSS_MOD_TEST(sampleRate          = 20*MEGA&
+
+
+
+CALL     GAUSS_MOD_TEST(sampleRate          = int(20*MEGA,4)&
                        ,bt                  = 0.5&
                        ,baudRate            = int(2*MEGA,8) &
                        ,mIndex              = real(0.5,8)&
@@ -409,12 +414,14 @@ CALL     GAUSS_MOD_TEST(sampleRate          = 20*MEGA&
                        ,capacityFilter      = int(14,1)&
                        ,outPutDDSCapacity   = int(12,1)&
                        ,outputFilterShift   = int(2,1)&
-                       ,romLengthTruncedInBits = int(14,1)&
-                       , outPutFileName = 'test_signals\output\gaussFilter.pcm'&
+                       ,romLengthTruncedInBits = int(12,1)&
+                       , outPutFileNameI = 'test_signals\output\gfsk_i.pcm'&
+                       , outPutFileNameQ = 'test_signals\output\gfsk_q.pcm'&
+                       , outputFreqName  = 'test_signals\output\freq_out.pcm'&
+                       , outputFreqName2  = 'test_signals\output\freq_out2.pcm'&
+                       , timerName  = 'test_signals\output\timer.pcm'&
+                       , filterName =  'test_signals\input\bandpass_10_int.txt'&
                        )
-
-                      !GAUSS_MOD_TEST(sampleRate,bt,baudRate,mIndex,fir_order,capacityFilter, outPutDDSCapacity)
-
 
 
     CONTAINS

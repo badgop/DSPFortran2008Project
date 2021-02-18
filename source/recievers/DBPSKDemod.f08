@@ -174,9 +174,10 @@ CONTAINS
         INTEGER(8)                            :: cnt
         LOGICAL                               :: latchEarly = .FALSE.
         LOGICAL                               :: latchLate  = .FALSE.
-        INTEGER(8)                            :: pointAccumulator = 0;
+        INTEGER(8)                            :: pointAccumulator
         INTEGER(8)                            :: maxMod=0
         bitBuffer=0
+        pointAccumulator = 0
         module = matchedFilterOut%GetModuleFast()
         ALLOCATE(module2(1:size(module)))
         !module2 =  SHIFTA(module,4)

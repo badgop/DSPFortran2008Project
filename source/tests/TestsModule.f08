@@ -1787,7 +1787,7 @@ call omp_set_num_threads( 4 )
 
             ! пишем таблицу ПЗУ
             WRITE(*,*) 'ddsromtable.pcm - там таблица ПЗУ '
-            status=ddsGenerator%DebugOutput('ddsromtable.pcm')
+           ! status=ddsGenerator%DebugOutput('ddsromtable.pcm')
 
 
              CALL ddsGenerator%SetPhase(phase)
@@ -1815,15 +1815,16 @@ call omp_set_num_threads( 4 )
 
              WRITE(*,*) 'code_f ',codef(10)
 
-
+            WRITE(*,*) 'до конструктора'
              ! делаем из массива аналитич сигнала
              CALL imputFreqSignal%Constructor(codef)
-
+WRITE(*,*) 'констркуткор отработал'
              ! получаем гармонический сигнал
-             CALL ddsGenerator%ComputeOutputFromArray(imputFreqSignal, outputsignal)
+             CALL ddsGenerator%GetOutPutFromCodeArray(imputFreqSignal, outputsignal)
 
 
 
+ WRITE(*,*) 'до записи!!!!!'
 
             CALL WriteAnalyticSignalToFile(outputsignal,int(2,1),file1Name)
 
@@ -1867,12 +1868,14 @@ call omp_set_num_threads( 4 )
                  ,IR_GAUSS_int = IR_GAUSS)
          WRITE(*,'(I6)')  IR_GAUSS
 
+         DEALLOCATE(IR_GAUSS)
+
       END SUBROUTINE GAUSS_FIR_TEST
 
 
   SUBROUTINE GAUSS_MOD_TEST(sampleRate,bt,baudRate,mIndex,centralFrequency,fir_order&
                            ,capacityFilter,outPutDDSCapacity,outputFilterShift,romLengthTruncedInBits&
-                           , outPutFileName )
+                           , outPutFileNameI, outPutFileNameQ, outputFreqName,outputFreqName2,timerName,filterName )
 
           USE GaussFilter
           USE MathConstModule
@@ -1882,6 +1885,10 @@ call omp_set_num_threads( 4 )
           USE PayloadGeneratorMod
           USE analyticSignalModule
           USE WriteReadAnalyticSignalToFromFile
+          USE complexSignalModule
+          USE WriteReadComplexSignalToFromFile
+          USE FreqDetectMod
+          USE ClippingMode
 
           integer(4) ,intent(IN)    :: sampleRate
           real(4)    ,INTENT(IN)    :: bt
@@ -1893,19 +1900,35 @@ call omp_set_num_threads( 4 )
           integer(1) ,INTENT(IN)    :: outPutDDSCapacity
           INTEGER(1)  , intent(in)  :: outputFilterShift
           integer(1) ,INTENT(IN)    :: romLengthTruncedInBits
-          CHARACTER(*), intent(in)  :: outPutFileName
+          CHARACTER(*), intent(in)  :: outPutFileNameI
+          CHARACTER(*), intent(in)  :: outPutFileNameQ
+          CHARACTER(*), intent(in)  :: outputFreqName
+          CHARACTER(*), intent(in)  :: outputFreqName2
 
-          integer(8) , ALLOCATABLE   :: IR_GAUSS(:)
+
+          CHARACTER(*), intent(in)  :: timerName
+          CHARACTER(*), intent(in)  :: filterName
           TYPE(GFSKmodulator_t)     :: gfskMod_t
-          real(8)                   :: symbolPeriod
+
           INTEGER(4)                :: messageLength
 
-          INTEGER(1),ALLOCATABLE      :: payloadDataBitArray(:)
-          INTEGER(1),ALLOCATABLE      :: payloadDataBitArrayWithCrc(:)
-           TYPE(analyticSignal_t)     ::outputSignal
+          INTEGER(1),ALLOCATABLE    :: payloadDataBitArray(:)
+          INTEGER(1),ALLOCATABLE    :: payloadDataBitArrayWithCrc(:)
+          TYPE(complexSignal_t)        ::outputSignal
+          TYPE(analyticSignal_t),ALLOCATABLE       ::freqOutputSignal
+          TYPE(analyticSignal_t)       :: filter
+          INTEGER(8), ALLOCATABLE    :: base(:)
+          INTEGER(8), ALLOCATABLE    :: diff(:)
+          INTEGER(8)                 :: i,j,summ
+          TYPE(analyticSignal_t)     :: timer_t
+
+          INTEGER(8),DIMENSION(:), ALLOCATABLE    :: freqOut
+          INTEGER(8),DIMENSION(:), ALLOCATABLE    :: timer
+          INTEGER(2)                              :: level
 
 
-          symbolPeriod = real(1.0/float(baudRate),8)
+
+         ! symbolPeriod = real(1.0/float(baudRate),8)
 
 !          write(*,*) 'symbol ', symbolPeriod
 !
@@ -1932,17 +1955,87 @@ call omp_set_num_threads( 4 )
                                      )
            WRITE(*,*) 'GFSK constructor '
 
-           messageLength = 8192
+           messageLength = 20000
            ! формирование пакета данных без контрольной суммы
            payloadDataBitArray =  GenerateRandomPayloadBitArray(messageLength)
-           WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
+          ! WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
            ! добавляем контрольную сумму
            payloadDataBitArrayWithCrc = GeneratePayloadDataBitArrayWithCRC(payloadDataBitArray)
-           WRITE(*,*) 'size payloadDataBitArrayWithCrc ',size(payloadDataBitArrayWithCrc)
+          ! WRITE(*,*) 'size payloadDataBitArrayWithCrc ',size(payloadDataBitArrayWithCrc)
 
           outputSignal = gfskMod_t%Generate(payloadDataBitArrayWithCrc)
 
-           CALL WriteAnalyticSignalToFile(outputSignal,int(2,1),outPutFileName)
+
+
+          DEALLOCATE(payloadDataBitArray)
+          DEALLOCATE(payloadDataBitArrayWithCrc)
+
+          CALL WriteComplexSignalToFile(outputSignal,int(2,1),outPutFileNameI,outPutFileNameQ)
+
+!          CALL FreqDetectorComplexSignalINT8(outputSignal, freqOutputSignal)
+!          CALL freqOutputSignal%RShift(int(6,1))
+         CALL FreqDetectorComplexSignalReal(outputSignal, freqOutputSignal,sampleRate)
+
+          CALL ReadAnalyticSignalFromFile(filter,int(2,1),filterName)
+
+!         freqOutputSignal=freqOutputSignal.CONV.filter
+!         CALL freqOutputSignal%RShift(int(20,1))
+
+          CALL freqOutputSignal%ExtractSignalData(freqOut)
+
+          CALL WriteAnalyticSignalToFile(freqOutputSignal,int(2,1),outputFreqName)
+
+          freqOutputSignal = freqOutputSignal*freqOutputSignal
+
+
+
+
+          CALL freqOutputSignal%ExtractSignalData(base)
+
+          ALLOCATE(diff(1:size(base)))
+
+          do i=2,size(base)
+             diff(i) = base(i)-base(i-1)
+          end DO
+
+          CALL  freqOutputSignal%Constructor(diff)
+
+           CALL freqOutputSignal%Rshift(int(14,1))
+          CALL WriteAnalyticSignalToFile(freqOutputSignal,int(2,1),outputFreqName2)
+
+          ALLOCATE(timer(1:size(diff)))
+
+!          level = 1
+!          diff     =   ClipToLevelInt2(diff,level,level)
+!          freqOut  =   ClipToLevelInt8(freqOut,level,level)
+
+          DO i=1,size(base)-10
+
+              DO j=1,10
+                 summ = summ +diff(i+j)!freqOut(i+j)*
+              END DO
+              timer(i)=summ/8192
+              summ=0
+
+          END DO
+
+          CALL timer_t%Constructor(timer)
+
+          DO i=1,size(base)
+
+                 IF  (  (ABS(timer(i))<=2500)  .AND.(ABS(timer(i))>=300)) THEN
+                   WRITE(*,*) i,ABS(timer(i))
+                 END IF
+
+
+          END DO
+
+
+          CALL WriteAnalyticSignalToFile(timer_t,int(2,1),timerName)
+
+
+
+
 
 
       END SUBROUTINE GAUSS_MOD_TEST

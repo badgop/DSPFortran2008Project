@@ -86,8 +86,9 @@ END INTERFACE
 
         INTEGER(8):: lengthFile=0
         LOGICAL(1):: existsFile=.FALSE.
-        INTEGER(1):: iostat_Num=0
+        INTEGER(1):: iostat_Num
 
+        iostat_Num=0
         INQUIRE(FILE = name_x, SIZE = lengthFile, EXIST= existsFile)
 
         IF (existsFile) THEN
@@ -133,8 +134,8 @@ END INTERFACE
         INTEGER(INT_KIND), INTENT(IN) :: x(:)
         CHARACTER(*), INTENT(IN) :: name_x
         CHARACTER(*), INTENT(IN) :: fmt
-        INTEGER(4):: iostat_Num=0
-
+        INTEGER(4):: iostat_Num
+        iostat_Num=0
         OPEN(10, FILE = name_x, ACCESS="STREAM",ACTION= "WRITE",ASYNCHRONOUS="YES", FORM="FORMATTED",IOSTAT=iostat_Num)
         SELECT CASE (iostat_Num)
             CASE (0)
