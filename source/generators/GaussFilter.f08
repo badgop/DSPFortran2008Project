@@ -80,7 +80,11 @@ MODULE GaussFilter
 
    k= 1
     do j=-FIR_ORDER/2,FIR_ORDER/2,1
+<<<<<<< HEAD
             !WRITE(*,*) 'j ' ,j , 'k ',k
+=======
+           WRITE(*,*) 'j ' ,j , 'k ',k
+>>>>>>> abcd057e860f1eb43105ebc71cd6170c56d9d92c
             exponenta =  exp ( (-1)*(pi*a)*(b**2)*((j*td)**2) )
             h = B*SQRT(a)*exponenta
             IR_GAUSS_float(k) = h
