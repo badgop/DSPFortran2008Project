@@ -24,6 +24,8 @@ MODULE ComplexDDSModule
 
         PROCEDURE :: Constructor
         PROCEDURE :: ComputeOutput
+        PROCEDURE :: ComputeOutputFromScalar
+        GENERIC   :: ComputeOutputComplex =>  ComputeOutput,ComputeOutputFromScalar
 
         FINAL :: destructor
     END TYPE complexDDS_t
@@ -56,7 +58,6 @@ CONTAINS
     END SUBROUTINE
     
     SUBROUTINE ComputeOutput(this,inputSignal,outputSignalComplex)
-
         CLASS(complexDDS_t),     INTENT(INOUT)  :: this
         CLASS(analyticSignal_t), INTENT(IN)     :: inputSignal
         CLASS(ComplexSignal_t),  INTENT(INOUT)  :: outputSignalComplex
@@ -69,8 +70,23 @@ CONTAINS
 
         CALL outputSignalComplex%Constructor(out_i,out_q)
 
-
     END SUBROUTINE ComputeOutput
+
+    SUBROUTINE ComputeOutputFromScalar(this,frequency, signalLength, outputSignalComplex)
+        CLASS(complexDDS_t),     INTENT(INOUT)  :: this
+        INTEGER(8), INTENT(IN)                  :: frequency
+        INTEGER(8), INTENT(IN) :: signalLength
+        CLASS(ComplexSignal_t),  INTENT(INOUT)  :: outputSignalComplex
+
+        type(analyticSignal_t)     :: out_i
+        type(analyticSignal_t)     :: out_q
+
+        CALL this%ddsGeneratorI%ComputeOutput(frequency,signalLength, out_i)
+        CALL this%ddsGeneratorQ%ComputeOutput(frequency,signalLength, out_q)
+
+        CALL outputSignalComplex%Constructor(out_i,out_q)
+
+    END SUBROUTINE ComputeOutputFromScalar
 
     SUBROUTINE destructor(this)
         TYPE(complexDDS_t), INTENT(INOUT) :: this

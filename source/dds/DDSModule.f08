@@ -130,7 +130,7 @@ CONTAINS
 
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
 !            !эмуляция переполнения аккумулятора фазы
-            IF (this%phaseAccState>this%romLengthInNumber) THEN
+            IF (this%phaseAccState>=this%romLengthInNumber) THEN
                this%phaseAccState=this%phaseAccState - this%romLengthInNumber
             END IF
           !WRITE(*,*) 'ФАЗА', this%phaseAccState
@@ -176,7 +176,7 @@ CONTAINS
 
             this%phaseAccState=this%phaseAccState+frequencyCode
             !эмуляция переполнения аккумулятора фазы
-            IF (this%phaseAccState>this%romLengthInNumber) THEN
+            IF (this%phaseAccState>=this%romLengthInNumber) THEN
                 this%phaseAccState=this%phaseAccState - this%romLengthInNumber
             END IF
 

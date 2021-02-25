@@ -15,13 +15,13 @@ MODULE FreqDetectMod
 SUBROUTINE FreqDetectorComplexSignalINT8(in,out)
 
         TYPE(complexSignal_t), INTENT(IN)                   :: in
-        TYPE(analyticSignal_t),INTENT(INOUT), allocatable   :: out
+        TYPE(analyticSignal_t),INTENT(INOUT)                :: out
 
         INTEGER(8),DIMENSION(:),ALLOCATABLE  ::  in_i
         INTEGER(8),DIMENSION(:),ALLOCATABLE  ::  in_q
         INTEGER(8),DIMENSION(:),ALLOCATABLE  ::  out_arr
 
-        ALLOCATE(out)
+
         CALL in%ExtractSignalData(in_i,in_q)
         CALL FreqDetectorInt8(in_i,in_q,out_arr)
         CALL out%Constructor (out_arr)
@@ -35,7 +35,7 @@ END SUBROUTINE FreqDetectorComplexSignalINT8
 SUBROUTINE FreqDetectorComplexSignalReal(in,out,sampleRate)
 
         TYPE(complexSignal_t), INTENT(IN)                   :: in
-        TYPE(analyticSignal_t),INTENT(INOUT), allocatable   :: out
+        TYPE(analyticSignal_t),INTENT(INOUT)                :: out
         integer(4)            ,intent(IN)                   :: sampleRate
 
         INTEGER(8),DIMENSION(:),ALLOCATABLE  ::  in_i
@@ -43,7 +43,7 @@ SUBROUTINE FreqDetectorComplexSignalReal(in,out,sampleRate)
         REAL(8),DIMENSION(:),ALLOCATABLE     ::  out_arr
         INTEGER(8),DIMENSION(:),ALLOCATABLE  ::  out_arr_int
 
-        ALLOCATE(out)
+
         CALL in%ExtractSignalData(in_i,in_q)
         CALL FreqDetectorReal(real(in_i,8)/maxval(in_i),real(in_q,8)/maxval(in_q),sampleRate,out_arr)
         WRITE(*,*) 'посчитано '

@@ -503,9 +503,13 @@ CONTAINS
 
          allocate( MultiplyAnalyticSignals)
 
-!         WRITE(*,*) 'ЗАшел в умножение'
-!         WRITE(*,*) 'maxREz ', maxRez
+         WRITE(*,*) 'ЗАшел в умножение'
+         WRITE(*,*) 'maxREz ', maxRez
 !         WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
+
+           WRITE(*,*) ' xOp ', xOp%GetSignalSize()
+            WRITE(*,*) ' yOp ', yOp%GetSignalSize()
+
 
           SELECT CASE (maxRez)
                 CASE(:HUGE_Int1)
@@ -523,12 +527,12 @@ CONTAINS
                      CALL MultiplyAnalyticSignals%Constructor (arrayInt2)
                      DEALLOCATE(arrayInt2)
                  CASE(HUGE_Int2+1:HUGE_Int4)
-!                     WRITE(*,*) 'ЗАшел в нужну ветку'
+                     WRITE(*,*) 'ЗАшел в нужну ветку'
 
                    ALLOCATE(arrayInt4(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
                         arrayInt4(i) = (xOp%GetValue(i)*yOp%GetValue(i))
-!                        WRITE(*,*) 'arrayInt4(i) ',arrayInt4(i)
+                        !WRITE(*,*) 'arrayInt4(i) ',arrayInt4(i)
                      END DO
                      CALL MultiplyAnalyticSignals%Constructor (arrayInt4)
                      DEALLOCATE(arrayInt4)
@@ -568,28 +572,28 @@ CONTAINS
                 CASE(:HUGE_Int1)
                    ALLOCATE(arrayInt1(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
-                        arrayInt1(i) = int(xOp%GetValue(i)-xOp%GetValue(i),1)
+                        arrayInt1(i) = int(xOp%GetValue(i)-yOp%GetValue(i),1)
                      END DO
                         CALL  SubtractAnalyticSignals%Constructor (arrayInt1)
                         DEALLOCATE(arrayInt1)
                  CASE(HUGE_Int1+1:HUGE_Int2)
                    ALLOCATE(arrayInt2(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
-                        arrayInt2(i) = int(xOp%GetValue(i)-xOp%GetValue(i),2)
+                        arrayInt2(i) = int(xOp%GetValue(i)-yOp%GetValue(i),2)
                      END DO
                      CALL SubtractAnalyticSignals%Constructor (arrayInt2)
                      DEALLOCATE(arrayInt2)
                  CASE(HUGE_Int2+1:HUGE_Int4)
                    ALLOCATE(arrayInt4(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
-                        arrayInt4(i) = int(xOp%GetValue(i)-xOp%GetValue(i),4)
+                        arrayInt4(i) = int(xOp%GetValue(i)-yOp%GetValue(i),4)
                      END DO
                      CALL SubtractAnalyticSignals%Constructor (arrayInt4)
                      DEALLOCATE(arrayInt4)
                  CASE(HUGE_Int4+1:HUGE_Int8)
                    ALLOCATE(arrayInt8(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
-                        arrayInt8(i) = int(xOp%GetValue(i)-xOp%GetValue(i),8)
+                        arrayInt8(i) = int(xOp%GetValue(i)-yOp%GetValue(i),8)
                      END DO
                      CALL SubtractAnalyticSignals%Constructor (arrayInt8)
                      DEALLOCATE(arrayInt8)
@@ -1328,7 +1332,8 @@ CONTAINS
            INTEGER(8)             , INTENT(IN)  :: ptr
            INTEGER(8)                           :: GetValue
            IF (ptr>this%signalSize) THEN
-              WRITE(*,*) 'Идекс превосходит размеры массива'
+
+              WRITE(*,*) 'Идекс превосходит размеры массива ',ptr
               CALL ExitFromProgramNormal()
            END IF
 
@@ -1465,7 +1470,7 @@ CONTAINS
 
                 CASE(0)
                     WRITE(*,*) 'деструктор сторона не инициализирована'
-                    CALL ExitFromProgramNormal()
+                    !CALL ExitFromProgramNormal()
 
          END SELECT
 

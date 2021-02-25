@@ -41,6 +41,9 @@
         PROCEDURE :: GetModuleFast
         PROCEDURE :: Decimate
         PROCEDURE :: ClipSignal
+        PROCEDURE :: Summ
+        PROCEDURE :: Substract
+        PROCEDURE :: MakeConjugation
         generic :: operator   (.CONVSIGN.) =>  ConvolveComplexSignum
         generic :: operator   (.CONV.)     =>  ConvolveComplexAnalytic
         FINAL :: destructor
@@ -157,8 +160,12 @@ CONTAINS
             ! требуется расследование
             !MultiplyComplexSignals%Signal=xOp%signal*yOp%signal
             CALL  MultiplyComplexSignals%SetName('комплпекс умн И','комплпекс умн Ку')
-            MultiplyComplexSignals%i=(xOp%i*yOp%i)-(xOp%q*yOp%q)
-            MultiplyComplexSignals%q=(xOp%i*yOp%q)+(yOp%i*xOp%q)
+
+            ! I
+            MultiplyComplexSignals%i= (xOp%i*yOp%i)  -  (xOp%q*yOp%q)
+            ! Q
+            MultiplyComplexSignals%q=(xOp%i*yOp%q)  +  (yOp%i*xOp%q)
+
             MultiplyComplexSignals%isAllocated=.TRUE.
      END FUNCTION MultiplyComplexSignals
 
@@ -274,6 +281,30 @@ CONTAINS
         ClipSignal%q=this%q%ClipSignal(level,outLevel)
     END  FUNCTION ClipSignal
 
+    FUNCTION Summ (this) RESULT(output)
+        CLASS(complexSignal_t), INTENT(IN)  :: this
+        TYPE(analyticSignal_t), ALLOCATABLE::  output
+
+        ALLOCATE(output)
+        output = this%i+this%q
+    END  FUNCTION Summ
+
+    FUNCTION Substract (this) RESULT(output)
+        CLASS(complexSignal_t), INTENT(IN)  :: this
+        TYPE(analyticSignal_t), ALLOCATABLE::  output
+
+        ALLOCATE(output)
+        output = this%i-this%q
+    END  FUNCTION Substract
+
+    FUNCTION MakeConjugation (this) RESULT(output)
+        CLASS(complexSignal_t), INTENT(IN)  :: this
+        TYPE(complexSignal_t), ALLOCATABLE::  output
+
+        ALLOCATE(output)
+        output = this
+        output%q = output%q*(-int(1,8))
+    END  FUNCTION MakeConjugation
 
 
     SUBROUTINE destructor(this)
