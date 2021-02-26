@@ -1921,7 +1921,7 @@ WRITE(*,*) 'констркуткор отработал'
                                      )
            WRITE(*,*) 'GFSK constructor '
 
-           messageLength = 200
+           messageLength = 2000
            ! формирование пакета данных без контрольной суммы
            payloadDataBitArray =  GenerateRandomPayloadBitArray(messageLength)
           ! WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
@@ -1947,15 +1947,17 @@ WRITE(*,*) 'констркуткор отработал'
                                                , signalLength = outputSignalBaseBand%GetSignalSize()&
                                                , outputSignalComplex = complexHeterodyne&
                                                )
-
+          WRITE(*,*)  'centralFrequency ' , centralFrequency
 
          outputSignalRF  = outputSignalBaseBand*complexHeterodyne
 
-         analyticSygnalRF = outputSignalRF%Summ()
+         outputSignalRF = outputSignalRF%MakeConjugation()
 
+         analyticSygnalRF = outputSignalRF%SummIQ()
+         CALL analyticSygnalRF%RShift(outPutDDSCapacity)
 
-           CALL outputSignalRF%RShift(outPutDDSCapacity)
-           CALL WriteComplexSignalToFile(outputSignalRF,int(2,1),outPutFileNameI,outPutFileNameQ)
+         CALL outputSignalRF%RShift(outPutDDSCapacity)
+         CALL WriteComplexSignalToFile(outputSignalRF,int(2,1),outPutFileNameI,outPutFileNameQ)
 
           !проверка результатов сразу
           CALL FreqDetectorComplexSignalINT8(outputSignalBaseBand, freqOutputSignalInt)

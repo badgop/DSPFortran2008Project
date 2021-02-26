@@ -72,17 +72,17 @@ PROGRAM main
 !   через DDSOutputTest создать опорные колебания с нужной частотой и длительностью
 !  и запустить уже ComplexMultiplyTest
 
-     CALL ComplexDDSTest(centralFrequency= int(20*KILO,4),samplingFrequency=192*KILO&
-                         ,sig_len=2346,romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1)&
-                        ,outputSignalSampleCapacity=int(12,1)&
-                        ,outputSignalFileNameI='test_signals\output\complexdds_outI.pcm'&
-                        ,outputSignalFileNameQ='test_signals\output\complexdds_outQ.pcm')
-
-      CALL ComplexDDSTest(centralFrequency= int(10*KILO,4),samplingFrequency=192*KILO&
-                          ,sig_len=2346,romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1)&
-                          ,outputSignalSampleCapacity=int(12,1)&
-                          ,outputSignalFileNameI='test_signals\output\complexdds_outI2.pcm'&
-                          ,outputSignalFileNameQ='test_signals\output\complexdds_outQ2.pcm')
+!     CALL ComplexDDSTest(centralFrequency= int(20*KILO,4),samplingFrequency=192*KILO&
+!                         ,sig_len=2346,romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1)&
+!                        ,outputSignalSampleCapacity=int(12,1)&
+!                        ,outputSignalFileNameI='test_signals\output\complexdds_outI.pcm'&
+!                        ,outputSignalFileNameQ='test_signals\output\complexdds_outQ.pcm')
+!
+!      CALL ComplexDDSTest(centralFrequency= int(10*KILO,4),samplingFrequency=192*KILO&
+!                          ,sig_len=2346,romLengthInBits=int(32,1),romLenthTruncedInBits=int(14,1)&
+!                          ,outputSignalSampleCapacity=int(12,1)&
+!                          ,outputSignalFileNameI='test_signals\output\complexdds_outI2.pcm'&
+!                          ,outputSignalFileNameQ='test_signals\output\complexdds_outQ2.pcm')
 
 !     CALL ComplexMultiplyTest(inputSignalFileNameI='test_signals\output\complexdds_outI.pcm'&
 !                             ,inputSignalFileNameQ='test_signals\output\complexdds_outQ.pcm'&
@@ -93,13 +93,13 @@ PROGRAM main
 !                             ,shift=int(9,1) )
 
 
-     CALL ComplexMultiplyTest(inputSignalFileNameI='test_signals\input\outi.pcm'&
-                             ,inputSignalFileNameQ='test_signals\input\outq.pcm'&
-                             ,inputRefI='test_signals\output\complexdds_outI.pcm'&
-                             ,inputRefQ='test_signals\output\complexdds_outQ.pcm'&
-                             ,outputSignalFileNameI='test_signals\output\complex_mult_testI.pcm'&
-                             ,outputSignalFileNameQ='test_signals\output\complex_mult_testQ.pcm'&
-                             ,shift=int(9,1) )
+!     CALL ComplexMultiplyTest(inputSignalFileNameI='test_signals\input\outi.pcm'&
+!                             ,inputSignalFileNameQ='test_signals\input\outq.pcm'&
+!                             ,inputRefI='test_signals\output\complexdds_outI.pcm'&
+!                             ,inputRefQ='test_signals\output\complexdds_outQ.pcm'&
+!                             ,outputSignalFileNameI='test_signals\output\complex_mult_testI.pcm'&
+!                             ,outputSignalFileNameQ='test_signals\output\complex_mult_testQ.pcm'&
+!                             ,shift=int(9,1) )
 
 
 
@@ -415,29 +415,29 @@ PROGRAM main
 !                       ,capacity = int(14,1))
 
 
-!CALL     GAUSS_MOD_TEST(sampleRate          = int(192*KILO,4)&
-!                       ,bt                  = 0.28&
-!                       ,baudRate            = int(19.2*KILO,8) &
-!                       ,mIndex              = real(0.25,8)&
-!                       ,centralFrequency    = int(20*KILO,4)&
-!                       ,fir_order           = int(23,1)&
-!                       ,capacityFilter      = int(14,1)&
-!                       ,outPutDDSCapacity   = int(12,1)&
-!                       ,outputFilterShift   = int(2,1)&
-!                       ,romLengthTruncedInBits = int(12,1)&
-!                       , outPutFileNameI = 'test_signals\output\gfsk_i.pcm'&
-!                       , outPutFileNameQ = 'test_signals\output\gfsk_q.pcm'&
-!                       , outputFreqName  = 'test_signals\output\freq_out.pcm'&
-!                       , outputFreqName2  = 'test_signals\output\freq_out2.pcm'&
-!                       , analyticName    =  'test_signals\output\analytic.pcm'&
-!                       , outPutFreqShift  = int(5,1)&
-!                       )
+CALL     GAUSS_MOD_TEST(sampleRate          = int(192*KILO,4)&
+                       ,bt                  = 0.28&
+                       ,baudRate            = int(19.2*KILO,8) &
+                       ,mIndex              = real(0.25,8)&
+                       ,centralFrequency    = int(20*KILO,4)&
+                       ,fir_order           = int(23,1)&
+                       ,capacityFilter      = int(14,1)&
+                       ,outPutDDSCapacity   = int(12,1)&
+                       ,outputFilterShift   = int(2,1)&
+                       ,romLengthTruncedInBits = int(12,1)&
+                       , outPutFileNameI = 'test_signals\output\gfsk_i.pcm'&
+                       , outPutFileNameQ = 'test_signals\output\gfsk_q.pcm'&
+                       , outputFreqName  = 'test_signals\output\freq_out.pcm'&
+                       , outputFreqName2  = 'test_signals\output\freq_out2.pcm'&
+                       , analyticName    =  'test_signals\output\analytic.pcm'&
+                       , outPutFreqShift  = int(5,1)&
+                       )
 
 !CALL     GAUSS_MOD_TEST(sampleRate          = int(20*MEGA,4)&
 !                       ,bt                  = 0.5&
 !                       ,baudRate            = int(2*MEGA,8) &
 !                       ,mIndex              = real(0.5,8)&
-!                       ,centralFrequency    = 0&
+!                       ,centralFrequency    = int(20*KILO,4)&
 !                       ,fir_order           = int(23,1)&
 !                       ,capacityFilter      = int(14,1)&
 !                       ,outPutDDSCapacity   = int(12,1)&

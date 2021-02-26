@@ -41,7 +41,7 @@
         PROCEDURE :: GetModuleFast
         PROCEDURE :: Decimate
         PROCEDURE :: ClipSignal
-        PROCEDURE :: Summ
+        PROCEDURE :: SummIQ
         PROCEDURE :: Substract
         PROCEDURE :: MakeConjugation
         generic :: operator   (.CONVSIGN.) =>  ConvolveComplexSignum
@@ -281,13 +281,13 @@ CONTAINS
         ClipSignal%q=this%q%ClipSignal(level,outLevel)
     END  FUNCTION ClipSignal
 
-    FUNCTION Summ (this) RESULT(output)
+    FUNCTION SummIQ (this) RESULT(output)
         CLASS(complexSignal_t), INTENT(IN)  :: this
         TYPE(analyticSignal_t), ALLOCATABLE::  output
 
         ALLOCATE(output)
         output = this%i+this%q
-    END  FUNCTION Summ
+    END  FUNCTION SummIQ
 
     FUNCTION Substract (this) RESULT(output)
         CLASS(complexSignal_t), INTENT(IN)  :: this
@@ -303,6 +303,7 @@ CONTAINS
 
         ALLOCATE(output)
         output = this
+        WRITE(*,*) '  MakeConjugation   '
         output%q = output%q*(-int(1,8))
     END  FUNCTION MakeConjugation
 

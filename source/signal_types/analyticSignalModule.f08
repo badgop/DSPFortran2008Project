@@ -619,9 +619,12 @@ CONTAINS
 
         allocate(AddAnalyticSignals)
 
-!           WRITE(*,*) 'ЗАшел в сложение'
-!           WRITE(*,*) 'maxREz ', maxRez
-!           WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
+           WRITE(*,*) 'ЗАшел в сложение'
+           WRITE(*,*) 'maxAbsX ', maxAbsX
+           WRITE(*,*) 'maxAbsY ', maxAbsY
+           WRITE(*,*) 'maxREz ', maxRez
+
+           WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
 
 
          SELECT CASE (maxRez)
@@ -1063,8 +1066,10 @@ CONTAINS
          maxAbsX = xOp%GetMaxAbs()
          maxAbsY = yOp
          maxRez  = maxAbsX*maxAbsY
+         WRITE(*,*) " maxAbsY  ", yOp
+         WRITE(*,*) " maxRez  ", maxRez
 
-          SELECT CASE (maxRez)
+          SELECT CASE (ABS(maxRez))
                 CASE(:HUGE_Int1)
                      ALLOCATE(arrayInt1(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
@@ -1074,6 +1079,7 @@ CONTAINS
                         DEALLOCATE(arrayInt1)
                  CASE(HUGE_Int1+1:HUGE_Int2)
                    ALLOCATE(arrayInt2(1:xOp%GetSignalSize()))
+
                      DO i=1,xOp%GetSignalSize()
                         arrayInt2(i) = int(xOp%GetValue(i)*yOp,2)
                      END DO
@@ -1124,7 +1130,8 @@ CONTAINS
          maxAbsY = xOp
          maxRez  = maxAbsX*maxAbsY
 
-          SELECT CASE (maxRez)
+
+          SELECT CASE (ABS(maxRez))
                 CASE(:HUGE_Int1)
                      ALLOCATE(arrayInt1(1:yOp%GetSignalSize()))
                      DO i=1,yOp%GetSignalSize()
