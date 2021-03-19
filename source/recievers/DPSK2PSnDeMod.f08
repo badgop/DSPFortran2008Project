@@ -238,7 +238,7 @@ CONTAINS
         INTEGER(8),dimension(:) , ALLOCATABLE :: module
         !!!!!!!!!!!!!!!!!!!
         INTEGER(2)              , ALLOCATABLE :: module2(:)
-        INTEGER(8), ALLOCATABLE               :: realPart(:)
+        INTEGER(8),dimension(:), ALLOCATABLE               :: realPart
         INTEGER(8), ALLOCATABLE               :: imagePart(:)
         INTEGER(8)                            :: i
         INTEGER(8)                            :: lastI
@@ -266,7 +266,7 @@ CONTAINS
         isFindingMessage  = .TRUE.
         timeStampCurr=0
         timeStampLast=0
-        DO i=1,size(realPart)
+        DO i=LBOUND(realPart,1),size(realPart)
 
 
 

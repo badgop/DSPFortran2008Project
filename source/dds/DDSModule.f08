@@ -22,7 +22,7 @@ MODULE DDSModule
 
             PRIVATE
             ! ПЗУ таблицы с отчетами синуса
-            INTEGER(2),ALLOCATABLE :: romSinusTable(:)
+            INTEGER(2),DIMENSION(:),ALLOCATABLE :: romSinusTable
 
             !мгновенное значение аккамулятора фазы
             INTEGER(8) :: phaseAccState=0
@@ -104,8 +104,8 @@ CONTAINS
 
 
         ! массив с кодами часоты, которые надо подавать на генератора
-        INTEGER(8), ALLOCATABLE             :: frequencyCodes (:)
-        INTEGER(2), ALLOCATABLE             :: tempArray (:)
+        INTEGER(8),DIMENSION(:), ALLOCATABLE             :: frequencyCodes
+        INTEGER(2),DIMENSION(:), ALLOCATABLE             :: tempArray
         INTEGER(8)                          :: LengthInputSignal
         INTEGER(8)                          :: i
 
@@ -130,7 +130,7 @@ CONTAINS
 
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
 !            !эмуляция переполнения аккумулятора фазы
-            IF (this%phaseAccState>=this%romLengthInNumber) THEN
+            IF (this%phaseAccState>=(this%romLengthInNumber)) THEN
                this%phaseAccState=this%phaseAccState - this%romLengthInNumber
             END IF
           !WRITE(*,*) 'ФАЗА', this%phaseAccState
@@ -159,7 +159,7 @@ CONTAINS
 
 
         INTEGER(8) :: frequencyCode
-        INTEGER(8), ALLOCATABLE             :: tempArray (:)
+        INTEGER(8),DIMENSION(:), ALLOCATABLE             :: tempArray
         INTEGER(8)             :: i
         ! из массива со значениями частоты, получаем массив с  значениями кодов частоты
 
@@ -176,7 +176,7 @@ CONTAINS
 
             this%phaseAccState=this%phaseAccState+frequencyCode
             !эмуляция переполнения аккумулятора фазы
-            IF (this%phaseAccState>=this%romLengthInNumber) THEN
+            IF (this%phaseAccState>=(this%romLengthInNumber-1)) THEN
                 this%phaseAccState=this%phaseAccState - this%romLengthInNumber
             END IF
 
@@ -197,13 +197,18 @@ CONTAINS
         CLASS(analyticSignal_t),  INTENT(INOUT)   :: outputSignal
 
         INTEGER(8)                                :: LengthInputSignal
-        INTEGER(2)     , ALLOCATABLE              :: tempArray (:)
-        INTEGER(8)     , ALLOCATABLE              :: frequencyCodes(:)
+        INTEGER(2),DIMENSION(:)     , ALLOCATABLE :: tempArray
+        INTEGER(8),DIMENSION(:)     , ALLOCATABLE :: frequencyCodes
+        ! РАЗРЯДНОСТЬ SOURCE
         INTEGER(8)                                :: i
 
         LengthInputSignal  = codeArray%GetSignalSize()
         ALLOCATE(tempArray(1:LengthInputSignal))
         CALL   codeArray%ExtractSignalData(frequencyCodes)
+
+!          WRITE(*,*) 'UBOUND(frequencyCodes) ',UBOUND(frequencyCodes)
+!            WRITE(*,*) 'LBOUND(frequencyCodes) ',LBOUND(frequencyCodes)
+
 
          DO i=1,LengthInputSignal
             ! С ПОСЛЕД ФАЗЫ!!!!!
@@ -211,12 +216,13 @@ CONTAINS
             tempArray(i)= GetAmplitudeSample(this,this%phaseAccState)
             this%phaseAccState=this%phaseAccState+frequencyCodes(i)
 
+
 !            !эмуляция переполнения аккумулятора фазы
 
             IF (this%phaseAccState<0) THEN
                this%phaseAccState=this%phaseAccState + this%romLengthInNumber
             END IF
-            IF (this%phaseAccState>=this%romLengthInNumber) THEN
+            IF (this%phaseAccState>=(this%romLengthInNumber-1)) THEN
                this%phaseAccState=this%phaseAccState - this%romLengthInNumber
             END IF
 

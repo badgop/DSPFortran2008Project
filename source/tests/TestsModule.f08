@@ -1949,9 +1949,12 @@ WRITE(*,*) 'констркуткор отработал'
                                                )
           WRITE(*,*)  'centralFrequency ' , centralFrequency
 
+          !complexHeterodyne = complexHeterodyne%MakeConjugation()
+
          outputSignalRF  = outputSignalBaseBand*complexHeterodyne
 
-         outputSignalRF = outputSignalRF%MakeConjugation()
+
+         !outputSignalRF = outputSignalRF%MakeConjugation()
 
          analyticSygnalRF = outputSignalRF%SummIQ()
          CALL analyticSygnalRF%RShift(outPutDDSCapacity)
@@ -1969,7 +1972,80 @@ WRITE(*,*) 'констркуткор отработал'
           CALL WriteAnalyticSignalToFile(analyticSygnalRF,int(2,1),analyticName)
 
 
+
       END SUBROUTINE GAUSS_MOD_TEST
+
+
+      SUBROUTINE HDLCMakerTest(outputData, outputFrame,length)
+         USE OctetDataModule
+         USE ModuleWriteReadArrayFromToFile
+         USE CRC16Mod
+         USE BitOpsMod
+         USE HDLCFrameMakerModule
+         USE ReadWriteArrayToFromTxt
+
+         CHARACTER(*), intent(in)            :: outputData, outputFrame
+         INTEGER(1), PARAMETER,DIMENSION(24) :: preambuleByBit = [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+
+         INTEGER(2)                                  :: length
+         INTEGER(1)  , ALLOCATABLE                   :: messageOctets(:)
+         INTEGER(1)  , ALLOCATABLE, DIMENSION(:)     :: dataArray
+         INTEGER(1)  , ALLOCATABLE, DIMENSION(:)     :: dataArrayHDLC
+
+          dataArray = GenerateRandomPayloadBitArray(int(length,4))
+          CALL WriteArrayToFileTxt(int( dataArray,8),outputData,'(I1.1)' )
+
+
+          dataArrayHDLC =  MakeFrameHDLC(dataArray,preambuleByBit )
+           CALL WriteArrayToFileTxt(int( dataArrayHDLC,8),outputFrame,'(I1.1)' )
+
+      END SUBROUTINE HDLCMakerTest
+
+      SUBROUTINE GFSKRecieverTest(inputSigFileNameI, inputSigFileNameQ , freqDetOutFileName, impulseResponseFileName&
+                                , outPutFilterShift, decimationRate)
+      USE analyticSignalModule
+      USE ModuleWriteReadArrayFromToFile
+      USE WriteReadAnalyticSignalToFromFile
+      USE ReadWriteArrayToFromTxt
+      USE BPSKmod
+      USE DPSK2PSnDeMod
+      USE WriteReadComplexSignalToFromFile
+      USE complexSignalModule
+      USE OctetDataModule
+      USE CRC16Mod
+      USE GFSKSimpleReciever
+
+      CHARACTER(*), intent(in)             :: inputSigFileNameI
+      CHARACTER(*), intent(in)             :: inputSigFileNameQ
+      CHARACTER(*), intent(in)             :: freqDetOutFileName
+      CHARACTER(*), intent(in)             :: impulseResponseFileName
+      INTEGER(1)  , intent(in)             :: outPutFilterShift
+      INTEGER(8)  , intent(in)             :: decimationRate
+
+      INTEGER(2), DIMENSION(:),ALLOCATABLE :: impluseResponse
+      TYPE(GFSKSimpleDemodulator)          :: GFSKReciever
+
+      TYPE(analyticSignal_t)               :: freqDetOutPut
+       TYPE(ComplexSignal_t)               :: inputBaseBandSignal
+
+
+
+
+      CALL ReadArrayFromFile (impluseResponse,impulseResponseFileName,'(I10)' )
+
+      CALL GFSKReciever%Constructor( decimationRate   = decimationRate&
+                                   , impulseResponse  = impluseResponse&
+                                   ,outputfilterShift = outPutFilterShift&
+                                   )
+      DEALLOCATE(impluseResponse)
+
+      CALL ReadComplexSignalFromFile(inputBaseBandSignal,int(2,1),inputSigFileNameI,inputSigFileNameQ)
+
+      freqDetOutPut = GFSKReciever%Demodulate(inputBaseBandSignal)
+
+      CALL WriteAnalyticSignalToFile(freqDetOutPut,int(2,1),freqDetOutFileName)
+
+      END SUBROUTINE GFSKRecieverTest
 
 
 

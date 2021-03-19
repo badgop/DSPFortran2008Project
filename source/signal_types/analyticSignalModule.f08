@@ -30,10 +30,10 @@ MODULE analyticSignalModule
 
         PRIVATE
         ! отсчеты аналитического сингнала содержаться в динамеческом массиве
-        INTEGER(8),ALLOCATABLE :: signalInt8(:)
-        INTEGER(4),ALLOCATABLE :: signalInt4(:)
-        INTEGER(2),ALLOCATABLE :: signalInt2(:)
-        INTEGER(1),ALLOCATABLE :: signalInt1(:)
+        INTEGER(8), DIMENSION(:),ALLOCATABLE :: signalInt8
+        INTEGER(4), DIMENSION(:),ALLOCATABLE :: signalInt4
+        INTEGER(2), DIMENSION(:),ALLOCATABLE :: signalInt2
+        INTEGER(1), DIMENSION(:),ALLOCATABLE :: signalInt1
         INTEGER(1)             :: signalArrayKind = 0
         ! поле типа данных - isAllocated определяет выделена ли память под сигнал т.е проведена ли
         ! инициализация экземпляра обьекта
@@ -145,7 +145,7 @@ CONTAINS
     SUBROUTINE ConstructorInt1(this,loadedSignal)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),PARAMETER                  :: arrayKind=1
-        INTEGER(arrayKind), INTENT(IN) :: loadedSignal(:)
+        INTEGER(arrayKind),DIMENSION(:), INTENT(IN) :: loadedSignal
         INTEGER(4) :: stat
         CHARACTER(len=60) ::errorCode
         !  Если память под объект уже выделена?
@@ -166,8 +166,12 @@ CONTAINS
         END IF
         !и только потом выделять
         ! выделять нужно обязательно
-           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS INT1 !', this%signalName
+          ! WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS INT1 !', this%signalName
+!            WRITE(*,*) 'UBOUND(loadedSignal) ',UBOUND(loadedSignal)
+!            WRITE(*,*) 'LBOUND(loadedSignal) ',LBOUND(loadedSignal)
           allocate (this%signalInt1,source=loadedSignal,STAT=stat,ERRMSG = errorCode )
+!           WRITE(*,*) 'UBOUND(this%signalInt1) ',UBOUND(this%signalInt1)
+!            WRITE(*,*) 'LBOUND(this%signalInt1) ',LBOUND(this%signalInt1)
            IF (STAT/=0) THEN
 
                WRITE (*,*) 'Аналитич конструктор не смог выделить память,ERRMSG = ',errorCode
@@ -184,7 +188,7 @@ CONTAINS
     SUBROUTINE ConstructorInt2(this,loadedSignal)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),PARAMETER                  :: arrayKind=2
-        INTEGER(arrayKind), INTENT(IN) :: loadedSignal(:)
+        INTEGER(arrayKind),DIMENSION(:), INTENT(IN) :: loadedSignal
         INTEGER(4) :: stat
         CHARACTER(len=60) ::errorCode
         !  Если память под объект уже выделена?
@@ -222,7 +226,7 @@ CONTAINS
     SUBROUTINE ConstructorInt4(this,loadedSignal)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),PARAMETER                  :: arrayKind=4
-        INTEGER(arrayKind), INTENT(IN) :: loadedSignal(:)
+         INTEGER(arrayKind),DIMENSION(:), INTENT(IN) :: loadedSignal
         INTEGER(4) :: stat
         CHARACTER(len=60) ::errorCode
         !  Если память под объект уже выделена?
@@ -243,7 +247,9 @@ CONTAINS
         END IF
         !и только потом выделять
         ! выделять нужно обязательно
-         !  WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS! INT4', this%signalName
+!           WRITE(*,*) 'ANALYTIC CONSTRUCTOR WORKS! INT4', this%signalName
+!            WRITE(*,*) 'this%signalInt4,source=loadedSignal ',UBOUND(loadedSignal)
+!            WRITE(*,*) 'this%signalInt4,source=loadedSignal ',LBOUND(loadedSignal)
           allocate (this%signalInt4,source=loadedSignal,STAT=stat,ERRMSG = errorCode )
            IF (STAT/=0) THEN
 
@@ -260,7 +266,7 @@ CONTAINS
     SUBROUTINE ConstructorInt8(this,loadedSignal)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),PARAMETER                  :: arrayKind=8
-        INTEGER(arrayKind), INTENT(IN) :: loadedSignal(:)
+        INTEGER(arrayKind),DIMENSION(:), INTENT(IN) :: loadedSignal
         INTEGER(4) :: stat
         CHARACTER(len=60) ::errorCode
         !  Если память под объект уже выделена?
@@ -297,7 +303,7 @@ CONTAINS
 
      SUBROUTINE ExtractSignalData1(this,extractedSignal)
         INTEGER(1),PARAMETER                  :: arrayKind=1
-        INTEGER(arrayKind),ALLOCATABLE, INTENT(INOUT) :: extractedSignal(:)
+        INTEGER(arrayKind),DIMENSION(:),ALLOCATABLE, INTENT(INOUT) :: extractedSignal
         CLASS(analyticSignal_t), INTENT(IN)  :: this
         INTEGER(4)                           :: stat
         CHARACTER(len=60) ::errorCode
@@ -341,7 +347,7 @@ CONTAINS
 
        SUBROUTINE ExtractSignalData2(this,extractedSignal)
         INTEGER(1),PARAMETER                  :: arrayKind=2
-        INTEGER(arrayKind),ALLOCATABLE, INTENT(INOUT) :: extractedSignal(:)
+      INTEGER(arrayKind),DIMENSION(:),ALLOCATABLE, INTENT(INOUT) :: extractedSignal
         CLASS(analyticSignal_t), INTENT(IN)  :: this
         INTEGER(4)                           :: stat
         CHARACTER(len=60) ::errorCode
@@ -382,7 +388,7 @@ CONTAINS
 
      SUBROUTINE ExtractSignalData4(this,extractedSignal)
         INTEGER(1),PARAMETER                  :: arrayKind=4
-        INTEGER(arrayKind),ALLOCATABLE, INTENT(INOUT) :: extractedSignal(:)
+       INTEGER(arrayKind),DIMENSION(:),ALLOCATABLE, INTENT(INOUT) :: extractedSignal
         CLASS(analyticSignal_t), INTENT(IN)  :: this
         INTEGER(4)                           :: stat
         CHARACTER(len=60) ::errorCode
@@ -423,34 +429,56 @@ CONTAINS
 
      SUBROUTINE ExtractSignalData8(this,extractedSignal)
         INTEGER(1),PARAMETER                  :: arrayKind=8
-        INTEGER(arrayKind),ALLOCATABLE, INTENT(INOUT) :: extractedSignal(:)
+        INTEGER(arrayKind),DIMENSION(:),ALLOCATABLE, INTENT(INOUT) :: extractedSignal
         CLASS(analyticSignal_t), INTENT(IN)  :: this
          INTEGER(4)                           :: stat
         CHARACTER(len=60) ::errorCode
-
+        INTEGER(8)                            ::signalSize
+       ! WRITE(*,*)   'ExtractSignalData8   ------     '
         !ЗАЩИТА
+
+
         IF (this%isAllocated) THEN
-                       SELECT CASE(this%signalArrayKind)
+               SELECT CASE(this%signalArrayKind)
                   CASE(1)
-                  ALLOCATE(extractedSignal,source=int(this%signalInt1,8),STAT=stat,ERRMSG = errorCode)
+                    signalSize = size(this%signalInt1)
+                  ALLOCATE(extractedSignal(1:signalSize),STAT=stat,ERRMSG = errorCode)
+                  extractedSignal = this%signalInt1
+
                   IF (stat/=0) THEN
                        WRITE (*,*) 'НЕ могу выделить память ExtractSignalData1 ,ERRMSG = ',errorCode
                      CALL ExitFromProgramNormal()
                    END IF
                 CASE(2)
-                  ALLOCATE(extractedSignal,source=int(this%signalInt2,8),STAT=stat,ERRMSG = errorCode)
+                 ! ALLOCATE(extractedSignal,source=int(this%signalInt2,8),STAT=stat,ERRMSG = errorCode)
+
+                  signalSize = size(this%signalInt2)
+                  ALLOCATE(extractedSignal(1:signalSize),STAT=stat,ERRMSG = errorCode)
+                  extractedSignal = this%signalInt2
                   IF (stat/=0) THEN
                        WRITE (*,*) 'НЕ могу выделить память ExtractSignalData1 ,ERRMSG = ',errorCode
                      CALL ExitFromProgramNormal()
                    END IF
                 CASE(4)
-                   ALLOCATE(extractedSignal,source=int(this%signalInt4,8),STAT=stat,ERRMSG = errorCode)
+                 !  ALLOCATE(extractedSignal,source=int(this%signalInt4,8),STAT=stat,ERRMSG = errorCode)
+                  signalSize = size(this%signalInt4)
+                  ALLOCATE(extractedSignal(1:signalSize),STAT=stat,ERRMSG = errorCode)
+                  extractedSignal = this%signalInt4
+
+!                       WRITE(*,*) 'extractedSignal,source=int(this%signalInt4,8) ',UBOUND(this%signalInt4)
+!                       WRITE(*,*) 'extractedSignal,source=int(this%signalInt4,8) ',LBOUND(this%signalInt4)
+!                       WRITE(*,*) 'UBOUND(extractedSignal) ',UBOUND(extractedSignal)
+!                       WRITE(*,*) 'LBOUND(extractedSignal) ',LBOUND(extractedSignal)
                   IF (stat/=0) THEN
                        WRITE (*,*) 'НЕ могу выделить память ExtractSignalData1 ,ERRMSG = ',errorCode
                      CALL ExitFromProgramNormal()
                    END IF
                 CASE(8)
-                   ALLOCATE(extractedSignal,source=this%signalInt8,STAT=stat,ERRMSG = errorCode)
+                   !ALLOCATE(extractedSignal,source=this%signalInt8,STAT=stat,ERRMSG = errorCode)
+
+                    signalSize = size(this%signalInt8)
+                    ALLOCATE(extractedSignal(1:signalSize),STAT=stat,ERRMSG = errorCode)
+                    extractedSignal = this%signalInt8
                   IF (stat/=0) THEN
                        WRITE (*,*) 'НЕ могу выделить память ExtractSignalData1 ,ERRMSG = ',errorCode
                      CALL ExitFromProgramNormal()
@@ -460,6 +488,9 @@ CONTAINS
            WRITE (*,*) 'НЕ МОГУ ИЗВЛЕЧЬ ДАННЫЕ INT8', this%signalName
            CALL ExitFromProgramNormal()
         END IF
+!        WRITE(*,*) 'ExtractSignalData8'
+!         WRITE(*,*) 'UBOUND(extractedSignal) ',UBOUND(extractedSignal)
+!          WRITE(*,*) 'LBOUND(extractedSignal) ',LBOUND(extractedSignal)
      END SUBROUTINE ExtractSignalData8
 
 
@@ -490,10 +521,10 @@ CONTAINS
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable ::MultiplyAnalyticSignals
 
-         INTEGER(2), ALLOCATABLE              :: arrayInt1(:)
-         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
-         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
-         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+         INTEGER(1),DIMENSION(:), ALLOCATABLE              :: arrayInt1
+         INTEGER(2),DIMENSION(:), ALLOCATABLE              :: arrayInt2
+         INTEGER(4),DIMENSION(:), ALLOCATABLE              :: arrayInt4
+         INTEGER(8),DIMENSION(:), ALLOCATABLE              :: arrayInt8
 
          INTEGER(8)                           :: maxAbsX,maxAbsY,maxRez,i
 
@@ -507,8 +538,8 @@ CONTAINS
          WRITE(*,*) 'maxREz ', maxRez
 !         WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
 
-           WRITE(*,*) ' xOp ', xOp%GetSignalSize()
-            WRITE(*,*) ' yOp ', yOp%GetSignalSize()
+!         WRITE(*,*) ' xOp ', xOp%GetSignalSize()
+!         WRITE(*,*) ' yOp ', yOp%GetSignalSize()
 
 
           SELECT CASE (maxRez)
@@ -527,7 +558,7 @@ CONTAINS
                      CALL MultiplyAnalyticSignals%Constructor (arrayInt2)
                      DEALLOCATE(arrayInt2)
                  CASE(HUGE_Int2+1:HUGE_Int4)
-                     WRITE(*,*) 'ЗАшел в нужну ветку'
+
 
                    ALLOCATE(arrayInt4(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
@@ -558,14 +589,19 @@ CONTAINS
          CLASS(analyticSignal_t), INTENT(IN)  :: xOp
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable ::SubtractAnalyticSignals
-          INTEGER(2), ALLOCATABLE              :: arrayInt1(:)
-          INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
-          INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
-          INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+          INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt1
+          INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt2
+          INTEGER(4), DIMENSION(:), ALLOCATABLE              :: arrayInt4
+          INTEGER(8), DIMENSION(:), ALLOCATABLE              :: arrayInt8
           INTEGER(8)                           :: maxAbsX,maxAbsY,maxRez,i
         maxAbsX = xOp%GetMaxAbs()
         maxAbsY = yOp%GetMaxAbs()
-        maxRez  = maxAbsX+maxAbsX
+        maxRez  = maxAbsX+maxAbsY
+
+          WRITE(*,*) 'ЗАшел в вычитание'
+           WRITE(*,*) 'maxAbsX ', maxAbsX
+           WRITE(*,*) 'maxAbsY ', maxAbsY
+           WRITE(*,*) 'maxREz ', maxRez
 
          allocate( SubtractAnalyticSignals)
          SELECT CASE (maxRez)
@@ -608,14 +644,14 @@ CONTAINS
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable :: AddAnalyticSignals
 
-         INTEGER(2), ALLOCATABLE              :: arrayInt1(:)
-         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
-         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
-         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+         INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt1
+         INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt2
+         INTEGER(4), DIMENSION(:), ALLOCATABLE              :: arrayInt4
+         INTEGER(8), DIMENSION(:), ALLOCATABLE              :: arrayInt8
          INTEGER(8)                           :: maxAbsX,maxAbsY,maxRez,i
          maxAbsX = xOp%GetMaxAbs()
          maxAbsY = yOp%GetMaxAbs()
-         maxRez  = maxAbsX+maxAbsX
+         maxRez  = maxAbsX+maxAbsY
 
         allocate(AddAnalyticSignals)
 
@@ -624,7 +660,7 @@ CONTAINS
            WRITE(*,*) 'maxAbsY ', maxAbsY
            WRITE(*,*) 'maxREz ', maxRez
 
-           WRITE(*,*) 'HUGE_Int4 ',HUGE_Int4
+
 
 
          SELECT CASE (maxRez)
@@ -636,7 +672,7 @@ CONTAINS
                         CALL  AddAnalyticSignals%Constructor (arrayInt1)
                         DEALLOCATE(arrayInt1)
                  CASE(HUGE_Int1+1:HUGE_Int2)
-                     WRITE(*,*) 'ЗАшел в нужну ветку'
+                    ! WRITE(*,*) 'ЗАшел в нужну ветку'
                    ALLOCATE(arrayInt2(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
                         arrayInt2(i) = int(xOp%GetValue(i)+yOp%GetValue(i),2)
@@ -673,10 +709,10 @@ CONTAINS
     SUBROUTINE AssignDataFromAssignment(leftOp,rightOp)
         CLASS(analyticSignal_t), INTENT(INOUT)  :: leftOp
         CLASS(analyticSignal_t), INTENT(IN)     :: rightOp
-        INTEGER(8),ALLOCATABLE :: extractedSignalInt8(:)
-        INTEGER(4),ALLOCATABLE :: extractedSignalInt4(:)
-        INTEGER(2),ALLOCATABLE :: extractedSignalInt2(:)
-        INTEGER(1),ALLOCATABLE :: extractedSignalInt1(:)
+        INTEGER(8), DIMENSION(:),ALLOCATABLE :: extractedSignalInt8
+        INTEGER(4), DIMENSION(:),ALLOCATABLE :: extractedSignalInt4
+        INTEGER(2), DIMENSION(:),ALLOCATABLE :: extractedSignalInt2
+        INTEGER(1), DIMENSION(:),ALLOCATABLE :: extractedSignalInt1
 
         SELECT CASE(rightOp%signalArrayKind)
                CASE(1)
@@ -716,7 +752,7 @@ CONTAINS
          CLASS(analyticSignal_t), INTENT(IN)  :: input
          CLASS(analyticSignal_t), INTENT(IN)  :: reference
          CLASS(analyticSignal_t), allocatable :: convolve
-         INTEGER(8),ALLOCATABLE               :: tempArray(:)
+         INTEGER(8),DIMENSION(:), ALLOCATABLE  :: tempArray
          INTEGER(8)                           :: i,j
          INTEGER(4)                           :: stat
          INTEGER(1)                           :: inKind,refKind
@@ -808,6 +844,10 @@ CONTAINS
 
               !WRITE(*,*) 'обычн свертка, нить №  ',  omp_get_thread_num()
              CALL convolve%Constructor(tempArray)
+
+!              WRITE(*,*) 'UBOUND(convolve%Constructor(tempArray)) ',UBOUND(tempArray)
+!              WRITE(*,*) 'LBOUND(convolve%Constructor(tempArray)) ',LBOUND(tempArray)
+
              DEALLOCATE(tempArray)
 
     END FUNCTION   Convolve
@@ -824,10 +864,10 @@ CONTAINS
         INTEGER(8),INTENT(IN)                   :: afterLen
         !итоговая длина сигнала
         INTEGER(8)                              :: summLen
-        INTEGER(8),ALLOCATABLE                  :: tempArray8(:)
-        INTEGER(4),ALLOCATABLE                  :: tempArray4(:)
-        INTEGER(2),ALLOCATABLE                  :: tempArray2(:)
-        INTEGER(1),ALLOCATABLE                  :: tempArray1(:)
+        INTEGER(8), DIMENSION(:),ALLOCATABLE                  :: tempArray8
+        INTEGER(4), DIMENSION(:),ALLOCATABLE                  :: tempArray4
+        INTEGER(2), DIMENSION(:),ALLOCATABLE                  :: tempArray2
+        INTEGER(1), DIMENSION(:),ALLOCATABLE                  :: tempArray1
         INTEGER(8)                              :: allocationStatus
 
 
@@ -959,7 +999,7 @@ CONTAINS
          TYPE(signumSignal_t  )               :: inputSig
          TYPE(signumSignal_t  )               :: referenceSig
          INTEGER(8)                           :: status
-         INTEGER(8), ALLOCATABLE              :: rez(:)
+         INTEGER(8), DIMENSION(:), ALLOCATABLE              :: rez
 
 
          allocate(ConvolveSignum,stat=status)
@@ -1013,7 +1053,7 @@ CONTAINS
 
          ! ВЫХОДНАЯ РАЗРЯДНОСТЬ ЗНАКОВОГО КОРРЕЛЯТОРА 32 БИТА
 
-         INTEGER(4), ALLOCATABLE               :: rez(:)
+         INTEGER(4), DIMENSION(:), ALLOCATABLE               :: rez
 
          !WRITE(*,*) 'ЗАЩЕЛ'
 
@@ -1055,21 +1095,21 @@ CONTAINS
          CLASS(analyticSignal_t), INTENT(IN)  :: xOp
          INTEGER(8),              INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable ::MultiplyAnalyticSignalsAndConstant8
-         INTEGER(2), ALLOCATABLE              :: arrayInt1(:)
-         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
-         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
-         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+         INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt1
+         INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt2
+         INTEGER(4), DIMENSION(:), ALLOCATABLE              :: arrayInt4
+         INTEGER(8), DIMENSION(:), ALLOCATABLE              :: arrayInt8
          INTEGER(8)                           :: maxAbsX,maxAbsY,maxRez,i
 
          allocate( MultiplyAnalyticSignalsAndConstant8)
-
+         WRITE(*,*) 'MultiplyAnalyticSignalsAndConstant8'
          maxAbsX = xOp%GetMaxAbs()
-         maxAbsY = yOp
+         maxAbsY = abs(yOp)
          maxRez  = maxAbsX*maxAbsY
          WRITE(*,*) " maxAbsY  ", yOp
          WRITE(*,*) " maxRez  ", maxRez
 
-          SELECT CASE (ABS(maxRez))
+          SELECT CASE (maxRez)
                 CASE(:HUGE_Int1)
                      ALLOCATE(arrayInt1(1:xOp%GetSignalSize()))
                      DO i=1,xOp%GetSignalSize()
@@ -1116,10 +1156,10 @@ CONTAINS
          INTEGER(8),              INTENT(IN)  :: xOp
          CLASS(analyticSignal_t), INTENT(IN)  :: yOp
          CLASS(analyticSignal_t), allocatable ::Multiplydonstant8AndAnalyticSignals
-         INTEGER(2), ALLOCATABLE              :: arrayInt1(:)
-         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
-         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
-         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+         INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt1
+         INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt2
+         INTEGER(4), DIMENSION(:),ALLOCATABLE               :: arrayInt4
+         INTEGER(8), DIMENSION(:), ALLOCATABLE              :: arrayInt8
          INTEGER(8)                           :: maxAbsX,maxAbsY,maxRez,i
 
          allocate( Multiplydonstant8AndAnalyticSignals)
@@ -1127,11 +1167,11 @@ CONTAINS
             ! Хотя деструктор вызывается спокойно с нужными парамерами
             ! требуется расследование
          maxAbsX = yOp%GetMaxAbs()
-         maxAbsY = xOp
+         maxAbsY = abs(xOp)
          maxRez  = maxAbsX*maxAbsY
 
 
-          SELECT CASE (ABS(maxRez))
+          SELECT CASE (maxRez)
                 CASE(:HUGE_Int1)
                      ALLOCATE(arrayInt1(1:yOp%GetSignalSize()))
                      DO i=1,yOp%GetSignalSize()
@@ -1191,10 +1231,10 @@ CONTAINS
          CLASS(analyticSignal_t), INTENT(IN)  :: this
          CLASS(analyticSignal_t), allocatable :: Interpolate
          INTEGER(8) , INTENT(IN)              :: r
-         INTEGER(2), ALLOCATABLE              :: arrayInt1(:)
-         INTEGER(2), ALLOCATABLE              :: arrayInt2(:)
-         INTEGER(4), ALLOCATABLE              :: arrayInt4(:)
-         INTEGER(8), ALLOCATABLE              :: arrayInt8(:)
+         INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt1
+         INTEGER(2), DIMENSION(:), ALLOCATABLE              :: arrayInt2
+         INTEGER(4), DIMENSION(:), ALLOCATABLE              :: arrayInt4
+         INTEGER(8), DIMENSION(:), ALLOCATABLE              :: arrayInt8
          INTEGER(8)                           :: i,j,cnt
          ALLOCATE(Interpolate)
 
@@ -1396,13 +1436,13 @@ CONTAINS
 
        SELECT CASE(this%signalArrayKind)
                CASE(1)
-                   CALL ReverseArrayInt( this%signalInt1(:) )
+                   CALL ReverseArrayInt( this%signalInt1 )
                CASE(2)
-                  CALL ReverseArrayInt( this%signalInt2(:) )
+                  CALL ReverseArrayInt( this%signalInt2 )
                CASE(4)
-                  CALL ReverseArrayInt( this%signalInt4(:) )
+                  CALL ReverseArrayInt( this%signalInt4 )
                CASE(8)
-                  CALL ReverseArrayInt( this%signalInt8(:) )
+                  CALL ReverseArrayInt( this%signalInt8 )
                CASE(0)
                      WRITE(*,*) 'клипирование - сигнал не инициализирован'
                     CALL ExitFromProgramNormal()

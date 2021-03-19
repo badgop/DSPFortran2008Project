@@ -8,10 +8,10 @@ MODULE AWGNChannelMod
 
     TYPE, PUBLIC :: AWGNChannel_t
         PRIVATE
-        INTEGER(2),ALLOCATABLE    :: noiseArray(:)
-        REAL(4)                   :: powerNoise
+        INTEGER(2),DIMENSION(:),ALLOCATABLE    :: noiseArray
+        REAL(8)                   :: powerNoise
         INTEGER(8)                :: noiseArraySize
-        INTEGER(8)                :: ptr = 0
+        INTEGER(8)                :: ptr = 1
     CONTAINS
         PROCEDURE                 :: MakeBandNoise
         PROCEDURE                 :: LoadNoiseInt2
@@ -40,7 +40,7 @@ CONTAINS
     SUBROUTINE LoadNoiseInt2(this,inputSignal)
         CLASS(AWGNChannel_t), INTENT(INOUT)     :: this
         CLASS(analyticSignal_t), INTENT(IN)     :: inputSignal
-        INTEGER(2),ALLOCATABLE                  :: tmpArray(:)
+        INTEGER(2),ALLOCATABLE,DIMENSION(:)                  :: tmpArray
 
         CALL inputSignal%ExtractSignalData(tmpArray)
         ALLOCATE(this%noiseArray,source  =(tmpArray))
@@ -55,8 +55,8 @@ CONTAINS
         REAL(4)                 , INTENT(IN)          :: snrNeed
         INTEGER(1)              , INTENT(IN)          :: outCapacity
         CLASS (analyticSignal_t),ALLOCATABLE          :: AddNoiseAnalytic
-        INTEGER(2)              ,ALLOCATABLE          :: inputSignalArrayInt2(:)
-        INTEGER(2)              ,ALLOCATABLE          :: noiseSignalArrayInt2(:)
+        INTEGER(2),DIMENSION(:),ALLOCATABLE          :: inputSignalArrayInt2
+        INTEGER(2),DIMENSION(:),ALLOCATABLE          :: noiseSignalArrayInt2
 
         REAL(8)                                       :: powerInput
         REAL(8)                                       :: koeff,x,y
@@ -78,6 +78,7 @@ CONTAINS
        ! WRITE (*,*) 'powerInput ' ,powerInput
         koeff = CalculateNeededAmplitudeKoeff (powerInput,this%powerNoise,snrNeed)
        ! WRITE(*,*) 'koeff ',koeff
+
         ptr= this%ptr
 !        WRITE(*,*) this%ptr
 !        WRITE(*,*) size(this%noiseArray)
@@ -161,7 +162,7 @@ CONTAINS
     FUNCTION CalculateNeededAmplitudeKoeff(powerInput,powerNoise,snrNeed)
        REAL(4)                 , INTENT(IN)          :: snrNeed
        REAL(8)                 , INTENT(IN)          :: powerInput
-       REAL(4)                 , INTENT(IN)          :: powerNoise
+       REAL(8)                 , INTENT(IN)          :: powerNoise
        REAL(8)                           :: CalculateNeededAmplitudeKoeff
        REAL(8)                           :: coeff_dB,snrCurrent
 
@@ -177,8 +178,9 @@ CONTAINS
     SUBROUTINE SetPtr(this,ptrValue)
         CLASS(AWGNChannel_t)    , INTENT(inout)      :: this
         INTEGER(8)              , INTENT(inout)      :: ptrValue
-
+        IF (ptrValue==0) ptrValue=1
         this%ptr =   ptrValue
+
     END  SUBROUTINE  SetPtr
 
 

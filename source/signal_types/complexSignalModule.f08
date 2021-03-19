@@ -74,8 +74,8 @@ CONTAINS
     SUBROUTINE ConstructorFromArrays_int8(this,componentI,componentQ)
         CLASS(complexSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),PARAMETER                   :: arrayKind=8
-        INTEGER(arrayKind), INTENT(IN)                 :: componentI(:)
-        INTEGER(arrayKind), INTENT(IN)                 :: componentQ(:)
+        INTEGER(arrayKind), DIMENSION(:), INTENT(IN)                 :: componentI
+        INTEGER(arrayKind), DIMENSION(:), INTENT(IN)                 :: componentQ
         INTEGER(8) :: fileSizeI
 
         !что если обьект уже проинициализирован - проверить!!!
@@ -94,8 +94,8 @@ CONTAINS
     SUBROUTINE ConstructorFromArrays_int4(this,componentI,componentQ)
         CLASS(complexSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),PARAMETER                   :: arrayKind=4
-        INTEGER(arrayKind), INTENT(IN)                 :: componentI(:)
-        INTEGER(arrayKind), INTENT(IN)                 :: componentQ(:)
+        INTEGER(arrayKind), DIMENSION(:), INTENT(IN)                 :: componentI
+        INTEGER(arrayKind), DIMENSION(:), INTENT(IN)                 :: componentQ
         INTEGER(8) :: fileSizeI
 
         !что если обьект уже проинициализирован - проверить!!!
@@ -114,8 +114,8 @@ CONTAINS
         SUBROUTINE ConstructorFromArrays_int2(this,componentI,componentQ)
         CLASS(complexSignal_t), INTENT(INOUT)  :: this
         INTEGER(1),PARAMETER                   :: arrayKind=2
-        INTEGER(arrayKind), INTENT(IN)                 :: componentI(:)
-        INTEGER(arrayKind), INTENT(IN)                 :: componentQ(:)
+        INTEGER(arrayKind), DIMENSION(:), INTENT(IN)                 :: componentI
+        INTEGER(arrayKind), DIMENSION(:), INTENT(IN)                 :: componentQ
         INTEGER(8) :: fileSizeI
 
         !что если обьект уже проинициализирован - проверить!!!
@@ -148,7 +148,8 @@ CONTAINS
 
     END SUBROUTINE ConstructorFromAnalyticSignals
 
-    FUNCTION MultiplyComplexSignals(xOp,yOp)
+     FUNCTION MultiplyComplexSignals(xOp,yOp)
+
          CLASS(complexSignal_t), INTENT(IN)  :: xOp
          CLASS(complexSignal_t), INTENT(IN)  :: yOp
          CLASS(complexSignal_t), allocatable ::MultiplyComplexSignals
@@ -162,17 +163,22 @@ CONTAINS
             CALL  MultiplyComplexSignals%SetName('комплпекс умн И','комплпекс умн Ку')
 
             ! I
+            WRITE(*,*) '====================== multiplay i'
             MultiplyComplexSignals%i= (xOp%i*yOp%i)  -  (xOp%q*yOp%q)
+            WRITE(*,*) ' ======================max i', MultiplyComplexSignals%i%GetMaxAbs()
+
+            WRITE(*,*) ' =====================multiplay q'
             ! Q
-            MultiplyComplexSignals%q=(xOp%i*yOp%q)  +  (yOp%i*xOp%q)
+            MultiplyComplexSignals%q=(xOp%i*yOp%q)  +  (xOp%q*yOp%i)
+             WRITE(*,*) ' ===================max q', MultiplyComplexSignals%q%GetMaxAbs()
 
             MultiplyComplexSignals%isAllocated=.TRUE.
      END FUNCTION MultiplyComplexSignals
 
 
     SUBROUTINE ExtractSignalData(this,extractedI,extractedq)
-        INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedI(:)
-        INTEGER(8),ALLOCATABLE, INTENT(INOUT) :: extractedQ(:)
+        INTEGER(8), DIMENSION(:),ALLOCATABLE, INTENT(INOUT) :: extractedI
+        INTEGER(8), DIMENSION(:),ALLOCATABLE, INTENT(INOUT) :: extractedQ
         CLASS(complexSignal_t), INTENT(IN)  :: this
 
         CALL this%i%ExtractSignalData(extractedI)
@@ -247,9 +253,9 @@ CONTAINS
     ! Возвращает МАССИВ INT8 с модулем Комплексноого числа
     FUNCTION GetModuleFast(this)
        CLASS(complexSignal_t)  , INTENT(IN)    :: this
-       INTEGER(8)              , ALLOCATABLE   :: GetModuleFast(:)
-       INTEGER(8),ALLOCATABLE                  :: extractedI(:)
-       INTEGER(8),ALLOCATABLE                  :: extractedQ(:)
+       INTEGER(8), DIMENSION(:), ALLOCATABLE   :: GetModuleFast
+       INTEGER(8), DIMENSION(:),ALLOCATABLE                  :: extractedI
+       INTEGER(8), DIMENSION(:),ALLOCATABLE                  :: extractedQ
 
 
        CALL this%i%ExtractSignalData(extractedI)

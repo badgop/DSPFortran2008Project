@@ -314,6 +314,8 @@ MODULE BERTestMod
         !by default
         isCrcOk = .FALSE.
         z= GetRandomInt(int(4,1))
+        WRITE(*,*) 'z= GetRandomInt(int(4,1))  ' ,z
+
         CALL awgnChannel%SetPtr(z)
 
         bpskSignalWithNoise = awgnChannel%AddNoiseAnalytic(bpskSignal,snr,capacity)

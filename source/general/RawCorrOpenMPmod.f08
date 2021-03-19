@@ -251,8 +251,8 @@ module RawCorrOpenMPmod
         FUNCTION CorrelationRaw18(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=1
           INTEGER(1),PARAMETER                       :: arrayKindReference=8
-          INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
-          INTEGER(arrayKindReference) ,INTENT(IN)    :: reference(:)
+          INTEGER(arrayKindInput),DIMENSION(:)     ,INTENT(IN)    :: input
+          INTEGER(arrayKindReference),DIMENSION(:)  ,INTENT(IN)    :: reference
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw18(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn

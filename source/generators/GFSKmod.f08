@@ -92,6 +92,8 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
                  ,capacity = this%capacityFilter&
                  ,IR_GAUSS_int = IR_GAUSS)
        WRITE(*,*)  'calculated ', sum(IR_GAUSS)
+            WRITE(*,*) 'UBOUND(IR_GAUSS) ',UBOUND(IR_GAUSS)
+            WRITE(*,*) 'LBOUND(IR_GAUSS) ',LBOUND(IR_GAUSS)
        CALL this%impluseResponse%Constructor(IR_GAUSS)
        WRITE(*,'(I6)')  IR_GAUSS
 
@@ -132,8 +134,8 @@ SUBROUTINE Constructor(this,baudRate,mIndex,bt,sampleRate,centralFrequency&
         CLASS(GFSKmodulator_t), intent(inout) :: this
         INTEGER(1)  , intent(in)              :: data(:)
 
-        INTEGER(1)  , allocatable             :: Diffdata(:)
-        INTEGER(1)  , allocatable             :: outputDataSig(:)
+        INTEGER(1) ,DIMENSION(:) , allocatable             :: Diffdata
+        INTEGER(1)  ,DIMENSION(:) , allocatable             :: outputDataSig
         TYPE(analyticSignal_t), allocatable  :: deviation
         TYPE(analyticSignal_t), allocatable  :: i_t
         TYPE(analyticSignal_t), allocatable  :: q_t
