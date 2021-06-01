@@ -412,31 +412,14 @@ PROGRAM main
 !                       ,bt = 0.5&
 !                       ,symbolPeriod = real(1.0/float(2*MEGA),8)&
 !                       ,fir_order = int(31,1)&
-!                       ,capacity = int(14,1))
+!                       ,capacity = int(14,1)&
+!                       ,outputFileName = 'test_signals\output\gauss.txt' )
 
 
-CALL     GAUSS_MOD_TEST(sampleRate          = int(192*KILO,4)&
-                       ,bt                  = 0.28&
-                       ,baudRate            = int(19.2*KILO,8) &
-                       ,mIndex              = real(0.25,8)&
-                       ,centralFrequency    = int(0*KILO,4)&
-                       ,fir_order           = int(23,1)&
-                       ,capacityFilter      = int(14,1)&
-                       ,outPutDDSCapacity   = int(12,1)&
-                       ,outputFilterShift   = int(2,1)&
-                       ,romLengthTruncedInBits = int(12,1)&
-                       , outPutFileNameI = 'test_signals\output\gfsk_i.pcm'&
-                       , outPutFileNameQ = 'test_signals\output\gfsk_q.pcm'&
-                       , outputFreqName  = 'test_signals\output\freq_out.pcm'&
-                       , outputFreqName2  = 'test_signals\output\freq_out2.pcm'&
-                       , analyticName    =  'test_signals\output\analytic.pcm'&
-                       , outPutFreqShift  = int(5,1)&
-                       )
-
-!CALL     GAUSS_MOD_TEST(sampleRate          = int(20*MEGA,4)&
-!                       ,bt                  = 0.5&
-!                       ,baudRate            = int(2*MEGA,8) &
-!                       ,mIndex              = real(0.5,8)&
+!CALL     GAUSS_MOD_TEST(sampleRate          = int(192*KILO,4)&
+!                       ,bt                  = 0.28&
+!                       ,baudRate            = int(19.2*KILO,8) &
+!                       ,mIndex              = real(0.25,8)&
 !                       ,centralFrequency    = int(0*KILO,4)&
 !                       ,fir_order           = int(23,1)&
 !                       ,capacityFilter      = int(14,1)&
@@ -447,21 +430,48 @@ CALL     GAUSS_MOD_TEST(sampleRate          = int(192*KILO,4)&
 !                       , outPutFileNameQ = 'test_signals\output\gfsk_q.pcm'&
 !                       , outputFreqName  = 'test_signals\output\freq_out.pcm'&
 !                       , outputFreqName2  = 'test_signals\output\freq_out2.pcm'&
-!                        , analyticName    =  'test_signals\output\analytic.pcm'&
-!                       , outPutFreqShift  = int(10,1)&
-!                       )
-!CALL      HDLCMakerTest( outputData = 'test_signals\output\dataArray.txt'&
-!                       , outputFrame = 'test_signals\output\dataArrayHDLC.txt'&
-!                       , length   =   int(160,2)&
+!                       , analyticName    =  'test_signals\output\analytic.pcm'&
+!                       , outPutFreqShift  = int(5,1)&
 !                       )
 
-CALL    GFSKRecieverTest( inputSigFileNameI = 'test_signals\output\gfsk_i.pcm'&
-                        , inputSigFileNameQ = 'test_signals\output\gfsk_q.pcm'&
-                        , freqDetOutFileName = 'test_signals\output\recieverFreq_out.pcm'&
+CALL     GAUSS_MOD_TEST(sampleRate             = int(20*MEGA,4)&
+                       ,bt                     = 0.5&
+                       ,baudRate               = int(2*MEGA,8) &
+                       ,mIndex                 = real(0.5,8)&
+                       ,centralFrequency       = int(0*KILO,4)&
+                       ,fir_order              = int(23,1)&
+                       ,capacityFilter         = int(14,1)&
+                       ,outPutDDSCapacity      = int(12,1)&
+                       ,outputFilterShift      = int(2,1)&
+                       ,romLengthTruncedInBits = int(12,1)&
+                       , outPutFileNameI       = 'test_signals\output\gfsk_i.pcm'&
+                       , outPutFileNameQ       = 'test_signals\output\gfsk_q.pcm'&
+                       , outputFreqName        = 'test_signals\output\freq_out.pcm'&
+                       , outputFreqName2       = 'test_signals\output\freq_out2.pcm'&
+                        , analyticName         =  'test_signals\output\analytic.pcm'&
+                       , outPutFreqShift       = int(10,1)&
+                       )
+
+
+CALL    GFSKRecieverTest( inputSigFileNameI       = 'test_signals\output\gfsk_i.pcm'&
+                        , inputSigFileNameQ       = 'test_signals\output\gfsk_q.pcm'&
+                        , freqDetOutFileName      = 'test_signals\output\recieverFreq_out.pcm'&
                         , impulseResponseFileName = 'test_signals\input\lpf_3_2_20Mhz_int.txt'&
-                        , outPutFilterShift      = int(14,1)&
-                        , decimationRate         = int(1,8)&
+                        , outPutFilterShift       = int(14,1)&
+                        , decimationRate          = int(5,8)&
+                        , outPutFreqShift         = int(12,1)&
                         )
+
+CALL      HDLCMakerTest( outputData = 'test_signals\output\dataArray.txt'&
+                       , outputFrame = 'test_signals\output\dataArrayHDLC.txt'&
+                       , length   =   int(160,2)&
+                       )
+
+!CALL PsnAutoCorrTest   (PSNLength = int(32,2)&
+!                       ,phaseOSR = int(2,1)&
+!                       ,corrOutPutFileName = 'test_signals\output\psn_cross_corr.pcm'&
+!                       , psnFileName ='test_signals\output\psn_cross_corr.txt' )
+
 
 
 

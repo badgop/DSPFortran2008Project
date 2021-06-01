@@ -52,7 +52,7 @@ module corr_study
 
          conv_result= summ_result.CONV.reference_sig
         CALL conv_result%Rshift(shift)
-        ! CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
+         CALL WriteAnalyticSignalToFile(conv_result,int(2,1),outputSignalFileName)
 
     END SUBROUTINE
 

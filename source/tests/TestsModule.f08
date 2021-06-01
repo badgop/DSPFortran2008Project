@@ -1823,7 +1823,7 @@ WRITE(*,*) 'констркуткор отработал'
 
       END SUBROUTINE DDSOutputTestFromeCodes
 
-      SUBROUTINE GAUSS_FIR_TEST(sampleRate,bt,symbolPeriod,fir_order,capacity)
+      SUBROUTINE GAUSS_FIR_TEST(sampleRate,bt,symbolPeriod,fir_order,capacity, outputFileName)
 
           USE GaussFilter
           USE GFSKmod
@@ -1832,6 +1832,7 @@ WRITE(*,*) 'констркуткор отработал'
           USE analyticSignalModule
           USE PrefixModule
           USE ModuleWriteReadArrayFromToFile
+          USE ReadWriteArrayToFromTxt
           USE WriteReadAnalyticSignalToFromFile
 
           integer(4) ,intent(IN)    :: sampleRate
@@ -1839,6 +1840,7 @@ WRITE(*,*) 'констркуткор отработал'
           integer(1) ,INTENT(IN)    :: fir_order
           real(8)    ,INTENT(IN)    :: symbolPeriod
           integer(1) ,INTENT(IN)    :: capacity
+          CHARACTER(*), intent(in)  :: outputFileName
 
           integer(8) , ALLOCATABLE   :: IR_GAUSS(:)
 
@@ -1853,6 +1855,8 @@ WRITE(*,*) 'констркуткор отработал'
                  ,capacity = capacity&
                  ,IR_GAUSS_int = IR_GAUSS)
          WRITE(*,'(I6)')  IR_GAUSS
+
+         CALL WriteArrayToFileTxt(int( IR_GAUSS,8),outputFileName,'(I6.1)' )
 
          DEALLOCATE(IR_GAUSS)
 
@@ -1995,14 +1999,15 @@ WRITE(*,*) 'констркуткор отработал'
           dataArray = GenerateRandomPayloadBitArray(int(length,4))
           CALL WriteArrayToFileTxt(int( dataArray,8),outputData,'(I1.1)' )
 
-
           dataArrayHDLC =  MakeFrameHDLC(dataArray,preambuleByBit )
-           CALL WriteArrayToFileTxt(int( dataArrayHDLC,8),outputFrame,'(I1.1)' )
+          CALL WriteArrayToFileTxt(int( dataArrayHDLC,8),outputFrame,'(I1.1)' )
 
       END SUBROUTINE HDLCMakerTest
 
-      SUBROUTINE GFSKRecieverTest(inputSigFileNameI, inputSigFileNameQ , freqDetOutFileName, impulseResponseFileName&
-                                , outPutFilterShift, decimationRate)
+      SUBROUTINE GFSKRecieverTest(inputSigFileNameI, inputSigFileNameQ , freqDetOutFileName&
+                                 , impulseResponseFileName&
+                                 , outPutFilterShift, decimationRate, outPutFreqShift&
+                                 )
       USE analyticSignalModule
       USE ModuleWriteReadArrayFromToFile
       USE WriteReadAnalyticSignalToFromFile
@@ -2021,31 +2026,99 @@ WRITE(*,*) 'констркуткор отработал'
       CHARACTER(*), intent(in)             :: impulseResponseFileName
       INTEGER(1)  , intent(in)             :: outPutFilterShift
       INTEGER(8)  , intent(in)             :: decimationRate
+      INTEGER(1)  , intent(in)             :: outPutFreqShift
 
-      INTEGER(2), DIMENSION(:),ALLOCATABLE :: impluseResponse
-      TYPE(GFSKSimpleDemodulator)          :: GFSKReciever
 
-      TYPE(analyticSignal_t)               :: freqDetOutPut
-       TYPE(ComplexSignal_t)               :: inputBaseBandSignal
+      INTEGER(4), DIMENSION(:),ALLOCATABLE :: impluseResponse
+
+      TYPE(GFSKSimpleDemodulator)           :: GFSKReciever
+      TYPE(analyticSignal_t)                :: freqDetOutPut
+      TYPE(ComplexSignal_t)                 :: inputBaseBandSignal
+
+
 
 
 
 
       CALL ReadArrayFromFile (impluseResponse,impulseResponseFileName,'(I10)' )
 
+
       CALL GFSKReciever%Constructor( decimationRate   = decimationRate&
                                    , impulseResponse  = impluseResponse&
                                    ,outputfilterShift = outPutFilterShift&
+                                   ,outPutFreqShift   = outPutFreqShift&
                                    )
       DEALLOCATE(impluseResponse)
 
       CALL ReadComplexSignalFromFile(inputBaseBandSignal,int(2,1),inputSigFileNameI,inputSigFileNameQ)
 
       freqDetOutPut = GFSKReciever%Demodulate(inputBaseBandSignal)
+      CALL  freqDetOutPut%RShift(outPutFreqShift)
 
       CALL WriteAnalyticSignalToFile(freqDetOutPut,int(2,1),freqDetOutFileName)
 
       END SUBROUTINE GFSKRecieverTest
+
+
+     SUBROUTINE PsnAutoCorrTest(PSNLength, phaseOSR,  corrOutPutFileName, psnFileName)
+
+           USE RandomMod
+           USE PSNMakerMod
+           USE impulseGeneratorModule
+           USE RawCorrOpenMPmod
+           USE ModuleWriteReadArrayFromToFile
+           USE ReadWriteArrayToFromTxt
+           USE ClippingMode
+
+           INTEGER(2)  , intent(in)             :: PSNLength
+           INTEGER(1)  , intent(in)             :: phaseOsr
+           CHARACTER(*), intent(in)             :: corrOutPutFileName
+           CHARACTER(*), intent(in)             :: psnFileName
+
+           INTEGER(1)  ,DIMENSION(:), ALLOCATABLE :: psn
+           INTEGER(2)  ,DIMENSION(:), ALLOCATABLE :: psnSampled
+           INTEGER(1)  ,DIMENSION(:), ALLOCATABLE :: psnSampledClipped
+           INTEGER(2)  ,DIMENSION(:), ALLOCATABLE :: psn_shifted
+           INTEGER(8)  ,DIMENSION(:), ALLOCATABLE :: cross_corr
+           INTEGER(2)  ,DIMENSION(:), ALLOCATABLE :: cross_corr_int2
+
+           INTEGER(1)  ,DIMENSION(:), ALLOCATABLE :: data
+           INTEGER(2)  ,DIMENSION(:), ALLOCATABLE :: dataSampled
+           INTEGER(2)   :: dataLength
+
+
+           dataLength = 128
+
+           CALL RanomGeneratorInit()
+           psn = MakePSN(PSNLength)
+
+           data = MakePSN(dataLength)
+
+           psnSampled  = GenerateImpluseSequence(int(phaseOsr,8),psn )
+           dataSampled = GenerateImpluseSequence(int(phaseOsr,8),data)
+
+
+
+           ALLOCATE(psn_shifted(1:(PSNLength*3*phaseOsr+dataLength*phaseOsr)))
+           WRITE(*,*) 'size  ', size (psn_shifted)
+           psn_shifted=0
+
+           psn_shifted( PSNLength*phaseOsr+1  : 2*PSNLength*phaseOsr)                       = psnSampled
+           psn_shifted( 2*PSNLength*phaseOsr+1:(2*PSNLength*phaseOsr+size(dataSampled)) ) = dataSampled
+
+           cross_corr = CorrelationRawOpemMP(psn_shifted, psnSampled)
+
+           ALLOCATE(cross_corr_int2(1:size(cross_corr)))
+           cross_corr_int2 = cross_corr
+
+
+          CALL  WriteArrayToFile(cross_corr_int2,corrOutPutFileName)
+
+          CALL WriteArrayToFileTxt( psn,psnFileName,"(I10)")
+
+
+
+     END SUBROUTINE PsnAutoCorrTest
 
 
 
