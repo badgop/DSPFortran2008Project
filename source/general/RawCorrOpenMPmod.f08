@@ -266,6 +266,7 @@ module RawCorrOpenMPmod
           ! что бы не было мусора в элементах массива
           CorrelationRaw18=0
           ! Выбрать пределы корреляции
+           !$omp parallel do SHARED(input,reference,CorrelationRaw18) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
 
@@ -279,6 +280,7 @@ module RawCorrOpenMPmod
 
                    summ = 0
           END DO
+          !$omp end parallel do
 
           WRITE (*,*) 'max coorr ',maxVal(CorrelationRaw18)
     END FUNCTION   CorrelationRaw18
@@ -340,7 +342,7 @@ module RawCorrOpenMPmod
 
                 DO j=1,referenceLen
                ! in= int(input(i+j))! !$omp end parallel do SImD
-               !WRITE(*,*) 'i,j, thredNum ',i,j,OMP_GET_THREAD_NUM()
+
 
                  !CorrelationRaw81(i)=CorrelationRaw81(i)+int(input(i+j),8)*reference(j)
 
@@ -358,8 +360,7 @@ module RawCorrOpenMPmod
 
                 CorrelationRaw22(i)=summ
                 summ=0
-
-
+!                   WRITE(*,*) 'i,j, thredNum ',i,j,OMP_GET_THREAD_NUM()
 
           END DO
  !$omp end parallel do

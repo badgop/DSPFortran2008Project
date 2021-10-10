@@ -29,7 +29,7 @@ module HDLCFrameMakerModule
           tmpArray2 = InsertField (tmpArray1,flagByBit,.FALSE.)
           ! вставка преамбулы
           DEALLOCATE(tmpArray1)
-           WRITE(*,*) 'Вставка преамбулы флага'
+          WRITE(*,*) 'Вставка преамбулы флага'
           tmpArray1 = InsertField (tmpArray2,preambuleByBit,.TRUE.)
           DEALLOCATE (tmpArray2)
           ALLOCATE (outputBits, source = tmpArray1 )

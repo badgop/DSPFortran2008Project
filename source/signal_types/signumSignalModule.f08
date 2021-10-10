@@ -259,7 +259,7 @@ CONTAINS
          INTEGER(8)              :: regPtr     = 0
          INTEGER(1)              :: extractedBit = 0
          INTEGER(4)              :: summ=0
-         CHARACTER(10)           :: fmt="(I64.1)"
+
 
 
          registerKind=KIND(input%signal)

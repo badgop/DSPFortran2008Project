@@ -8,7 +8,7 @@ MODULE PayloadGeneratorMod
 
 
      FUNCTION GenerateRandomPayloadBitArray(dataLength) RESULT (dataArary)
-          INTEGER(1),ALLOCATABLE               :: dataArary(:)
+          INTEGER(1),DIMENSION(:) ,ALLOCATABLE               :: dataArary
           INTEGER(4)            ,INTENT(IN)    :: dataLength
           INTEGER(4)                           :: i
           CALL RanomGeneratorInit()
@@ -21,6 +21,14 @@ MODULE PayloadGeneratorMod
           END DO
     END FUNCTION GenerateRandomPayloadBitArray
 
+     ! тоже самое но с CRC
+     FUNCTION GenerateRandomPayloadBitArrayWithCRC(dataLength) RESULT (dataAraryCRC)
+          INTEGER(1),DIMENSION(:) ,ALLOCATABLE               :: dataAraryCRC
+          INTEGER(4)            ,INTENT(IN)    :: dataLength
+          INTEGER(1),DIMENSION(:) ,ALLOCATABLE :: data
+          data = GenerateRandomPayloadBitArray(dataLength)
+          dataAraryCRC = GeneratePayloadDataBitArrayWithCRC (data)
+    END FUNCTION GenerateRandomPayloadBitArrayWithCRC
 
     FUNCTION GeneratePayloadDataOctetsWithCRC(bitDataArary) RESULT(dataOctetsWithCrc)
           INTEGER(1)            ,INTENT(INOUT) :: bitDataArary(:)
@@ -43,8 +51,8 @@ MODULE PayloadGeneratorMod
       ! |7| |6| |5| |4| |3| |2| |1| |0|  - разряды числа
       ! |1| |2| |3| |4| |5| |6| |7| |8|  - разряды сообщения в пакете
       FUNCTION GeneratePayloadDataBitArrayWithCRC(bitDataArary) RESULT(BitArrayWithCrc)
-          INTEGER(1) ,DIMENSION(:)       ,INTENT(IN) :: bitDataArary
-          INTEGER(1),DIMENSION(:),ALLOCATABLE            :: OctetdataArary
+          INTEGER(1),DIMENSION(:)       ,INTENT(IN)         :: bitDataArary
+          INTEGER(1),DIMENSION(:),ALLOCATABLE               :: OctetdataArary
           INTEGER(1),DIMENSION(:),ALLOCATABLE               :: dataOctetsWithCrc
           INTEGER(1),DIMENSION(:),ALLOCATABLE               :: BitArrayWithCrc
 
