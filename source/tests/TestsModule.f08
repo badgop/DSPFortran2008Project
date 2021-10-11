@@ -573,7 +573,7 @@ module TestsModule
          mean=0
          percents=0
 call omp_set_num_threads( 4 )
-!$OMP PARALLEL DO SHARED (input_sig,reference_sig)
+!!$OMP PARALLEL DO SHARED (input_sig,reference_sig)
          DO I=1,iterationCount
             call cpu_time(start)
             CALL conv_result%SetName('свертка')
@@ -585,7 +585,7 @@ call omp_set_num_threads( 4 )
            mean=finish-start
 !            WRITE(*,*) 'execution time ', mean
          END DO
-         !$OMP END PARALLEL DO
+  !       !$OMP END PARALLEL DO
          mean=mean/iterationCount
          WRITE(*,*)  'MEAN TIME ', mean
          CALL conv_result%Rshift(shift)
@@ -676,7 +676,7 @@ call omp_set_num_threads( 4 )
          USE analyticSignalModule
 
 
-         INTEGER(8)             ::  input(1:200)
+         INTEGER(8)             ::  input(1:20)
          INTEGER(8)             ::  ref(1:2)
          INTEGER(8),ALLOCATABLE ::  res(:)
          TYPE(signumSignal_t  ) :: input_sig!
@@ -731,7 +731,7 @@ call omp_set_num_threads( 4 )
          percents=0
 !         call omp_set_num_threads( 4 )
         call cpu_time(start)
-     !$OMP PARALLEL DO SHARED (input_sig,reference_sig)
+    ! !$OMP PARALLEL DO SHARED (input_sig,reference_sig)
          DO I=1,iterationCount
              !WRITE(*,*) 'Cycle ', i
 
@@ -744,7 +744,7 @@ call omp_set_num_threads( 4 )
 
 !            WRITE(*,*) 'execution time ', mean
          END DO
-       !$OMP END PARALLEL DO
+     !  !$OMP END PARALLEL DO
         call cpu_time(finish)
         mean=finish-start
          mean=mean/iterationCount

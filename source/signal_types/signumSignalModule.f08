@@ -343,9 +343,9 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                     DO j=1,reference%signalSize-1
                        !!WRITE(*,*) j
                        result= NOT(XOR(window(j),reference%signal(j)))
-                      ! WRITE(*,*) SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
-                       summ = summ +  SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
-                       !Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
+                      ! WRITE(*,*) POPCNT(result) -(64-POPCNT(result))
+                       summ = summ +  POPCNT(result) -(64-POPCNT(result))
+                       !Correlate(corrCnt) = Correlate(corrCnt) + POPCNT(result) -(64-POPCNT(result))
                     END DO
 
                     Correlate(corrCnt)=summ
@@ -359,8 +359,8 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                     result = NOT(XOR(window(reference%signalSize),reference%signal(reference%signalSize)))
                     result = AND(result,mask)
                     !!WRITE(*,*) 'result ',result
-                    Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result) -(reference%trailLen-SumOnesInInt_8(result))
-                   ! WRITE(*,*) SumOnesInInt_8(result) -(reference%trailLen-SumOnesInInt_8(result))
+                    Correlate(corrCnt) = Correlate(corrCnt) + POPCNT(result) -(reference%trailLen-POPCNT(result))
+                   ! WRITE(*,*) POPCNT(result) -(reference%trailLen-POPCNT(result))
                      !!WRITE(*,*) 'DEBUG '
                  ELSE
 
@@ -371,8 +371,8 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
 
 
 
-                       summ = summ + SumOnesInInt_8(result)&
-                                           -(64-SumOnesInInt_8(result))
+                       summ = summ + POPCNT(result)&
+                                           -(64-POPCNT(result))
 
                     END DO
 
@@ -509,9 +509,9 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                     DO j=1,reference%signalSize-1
                        !!WRITE(*,*) j
                        result= NOT(XOR(window(j),reference%signal(j)))
-                      ! WRITE(*,*) SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
-                       summ = summ +  SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
-                       !Correlate(corrCnt) = Correlate(corrCnt) + SumOnesInInt_8(result) -(64-SumOnesInInt_8(result))
+                      ! WRITE(*,*) POPCNT(result) -(64-POPCNT(result))
+                       summ = summ +  POPCNT(result) -(64-POPCNT(result))
+                       !Correlate(corrCnt) = Correlate(corrCnt) + POPCNT(result) -(64-POPCNT(result))
                     END DO
 
                    CorrelateOMP(corrCnt)=summ
@@ -525,9 +525,9 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                     result = NOT(XOR(window(reference%signalSize),reference%signal(reference%signalSize)))
                     result = AND(result,mask)
                     !!WRITE(*,*) 'result ',result
-                    CorrelateOMP(corrCnt) = CorrelateOMP(corrCnt) + SumOnesInInt_8(result)&
-                                                                    - (reference%trailLen-SumOnesInInt_8(result))
-                   ! WRITE(*,*) SumOnesInInt_8(result) -(reference%trailLen-SumOnesInInt_8(result))
+                    CorrelateOMP(corrCnt) = CorrelateOMP(corrCnt) + POPCNT(result)&
+                                                                    - (reference%trailLen-POPCNT(result))
+                   ! WRITE(*,*) POPCNT(result) -(reference%trailLen-POPCNT(result))
                      !!WRITE(*,*) 'DEBUG '
                  ELSE
 
@@ -538,8 +538,8 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
 
 
 
-                       summ = summ + SumOnesInInt_8(result)&
-                                           -(64-SumOnesInInt_8(result))
+                       summ = summ + POPCNT(result)&
+                                           -(64-POPCNT(result))
 
                     END DO
 
@@ -557,7 +557,7 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                      regPtr   = 63
                      arrayPtr = arrayPtr + 1
                  END IF
-
+!                 WRITE(*,*) 'arrayPtr ',arrayPtr
                  IF (BTEST (input%signal(arrayPtr),regPtr)) THEN
                     extractedBit = 1
                  ELSE

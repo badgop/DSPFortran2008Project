@@ -136,13 +136,13 @@ PROGRAM main
 !                    ,inputRefFileName     = 'test_signals\input\noise_7897.pcm'&
 !                    ,outputSignalFileName = 'test_signals\output\auto_convolve_test_sig.pcm'&
 !                    ,shift = int(0,1)&
-!                    ,iterationCount=int(2,4))
+!                    ,iterationCount=int(100,4))
 
-!      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
-!
-!
-!      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
-!                                      ,lenInblocks = int(10,8))
+      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
+
+
+      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
+                                      ,lenInblocks = int(10,8))
 !!
 !!
 !       CALL BPSKGeneratorTest(      pspFileName          = 'test_signals\input\psp_valera.txt'&
@@ -186,7 +186,7 @@ PROGRAM main
 !                                         ,inputRefFileName     = 'test_signals\output\impGenTest1.pcm'&
 !                                         ,outputSignalFileName = 'test_signals\output\auto_convolve_test22.pcm'&
 !                                         ,shift = int(0,1)&
-!                                         ,iterationCount=int(1,4))
+!                                         ,iterationCount=int(10,4))
 
 !
 
@@ -257,8 +257,8 @@ PROGRAM main
 !                                ,level               = int(0,2)&
 !                                ,outLevel            = int(1,2))
 !
-!         CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
-!                                    , resultFileName = 'test\res2ult.txt' )
+         CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
+                                    , resultFileName = 'test\res2ult.txt' )
 
 !           CALL  ArrayReverseTest()
 
@@ -298,11 +298,7 @@ PROGRAM main
 !                                   ,pauseLen             = int(10240*1,8))
 !!!!!
 !!!!!
-!                CALL  AddNoiseTEst(inputNoiseFileName = 'test_signals\output\noise_0_1_2Mhz.pcm'&
-!                                  ,inputSignalFileName ='test_signals\output\BPSKTest2.pcm'&
-!                                  ,outputSignalFileName = 'test_signals\output\noise_0_1_2Mhz.pcm'&
-!                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
-!                                  ,snr =  -20.0 )
+
 !!!!!!
 !!!!!!
 !          CALL  BPSKDemodulator2PSNTest(          psp0FileName          = 'test_signals\input\psp_valera.txt'&
@@ -479,10 +475,10 @@ PROGRAM main
 !                       , resultFileName = 'test\gfskREs.txt' )
 
 
-CALL       TestAWGNInternalGenerator(length = int(20*1000*1000,8)&
-                                     , inputRefFileName =  'test_signals\input\20_mhz_1_25_cut_int.txt'&
-                                     , shift = int(16,1)&
-                                    ,outputFileName  = 'test_signals\output\generatedNoise.pcm' )
+!CALL       TestAWGNInternalGenerator(length = int(20*1000*1000,8)&
+!                                     , inputRefFileName =  'test_signals\input\20_mhz_1_25_cut_int.txt'&
+!                                     , shift = int(16,1)&
+!                                    ,outputFileName  = 'test_signals\output\generatedNoise.pcm' )
 
 
 
