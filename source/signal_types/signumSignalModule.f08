@@ -4,13 +4,12 @@ MODULE signumSignalModule
     USE SignumArrayMod
     USE MathConstModule
     USE ModuleExitProg
+    USE openmpSignumCorr
+    USE ModuleExitProg
     IMPLICIT NONE
     PRIVATE
 
-    INTERFACE
-            INTEGER FUNCTION OMP_GET_THREAD_NUM()
-            END FUNCTION
-    END INTERFACE
+
 
     TYPE, PUBLIC :: signumSignal_t
         PRIVATE
@@ -53,6 +52,7 @@ CONTAINS
         INTEGER(8) :: length_new
         INTEGER(8) :: i,j,k
         INTEGER(1) :: registerKind
+        CHARACTER(len=60) ::errorCode
 
 
         IF (ALLOCATED(this%signal)) THEN
@@ -77,7 +77,12 @@ CONTAINS
         IF (this%trailLen>0) length_new=length_new+1
        !WRITE(*,*) 'trail length = ',this%trailLen
        ! WRITE(*,*) 'Новая длина = ',length_new
-        allocate (this%signal(1:length_new))
+        allocate (this%signal(1:length_new), STAT=stat,ERRMSG = errorCode)
+
+          IF (STAT/=0) THEN
+               WRITE (*,*) 'Знаковый конструктор не смог выделить память,ERRMSG = ',errorCode
+               CALL ExitFromProgramNormal()
+           END IF
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
         k=0
@@ -102,6 +107,7 @@ CONTAINS
         INTEGER(8) :: length_new
         INTEGER(8) :: i,j,k
         INTEGER(1) :: registerKind
+        CHARACTER(len=60) ::errorCode
 
 
         IF (ALLOCATED(this%signal)) THEN
@@ -123,7 +129,12 @@ CONTAINS
         IF (this%trailLen>0) length_new=length_new+1
         !WRITE(*,*) 'trail length = ',this%trailLen
         !WRITE(*,*) 'Новая длина = ',length_new
-        allocate (this%signal(1:length_new))
+       allocate (this%signal(1:length_new), STAT=stat,ERRMSG = errorCode)
+
+          IF (STAT/=0) THEN
+               WRITE (*,*) 'Знаковый конструктор не смог выделить память,ERRMSG = ',errorCode
+               CALL ExitFromProgramNormal()
+           END IF
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
         k=0
@@ -148,7 +159,7 @@ CONTAINS
         INTEGER(8) :: length_new
         INTEGER(8) :: i,j,k
         INTEGER(1) :: registerKind
-
+         CHARACTER(len=60) ::errorCode
 
         IF (ALLOCATED(this%signal)) THEN
            !!WRITE(*,*) 'ПАмять уже выделена, обнуляю'
@@ -171,7 +182,12 @@ CONTAINS
        ! WRITE(*,*) 'trail length = ',this%trailLen
 
        ! WRITE(*,*) 'Новая длина = ',length_new
-        allocate (this%signal(1:length_new))
+        allocate (this%signal(1:length_new), STAT=stat,ERRMSG = errorCode)
+
+          IF (STAT/=0) THEN
+               WRITE (*,*) 'Знаковый конструктор не смог выделить память,ERRMSG = ',errorCode
+               CALL ExitFromProgramNormal()
+           END IF
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
         k=0
@@ -196,6 +212,7 @@ CONTAINS
         INTEGER(8) :: length_new
         INTEGER(8) :: i,j,k
         INTEGER(1) :: registerKind
+         CHARACTER(len=60) ::errorCode
 
 
         IF (ALLOCATED(this%signal)) THEN
@@ -217,7 +234,12 @@ CONTAINS
         IF (this%trailLen>0) length_new=length_new+1
         !WRITE(*,*) 'trail length = ',this%trailLen
        ! WRITE(*,*) 'Новая длина = ',length_new
-        allocate (this%signal(1:length_new))
+        allocate (this%signal(1:length_new), STAT=stat,ERRMSG = errorCode)
+
+          IF (STAT/=0) THEN
+               WRITE (*,*) 'Знаковый конструктор не смог выделить память,ERRMSG = ',errorCode
+               CALL ExitFromProgramNormal()
+           END IF
         !обязательно зануляем массив, что бы ставить только 1
         this%signal=0
         k=0
@@ -501,6 +523,7 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
          ! i - индекс бита входного сигнала, так как окно уже загружен
          ! в конце основного цикла надо загрузить следующих бит  - поэтому +1
 
+!  !$omp parallel do SHARED(input,reference,window) PRIVATE(i,j,result) REDUCTION(+:summ)
 MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                  ! Вычисление одного значения ВКФ
                  !!WRITE(*,*) 'i ',i
@@ -514,19 +537,15 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                        !Correlate(corrCnt) = Correlate(corrCnt) + POPCNT(result) -(64-POPCNT(result))
                     END DO
 
-                   CorrelateOMP(corrCnt)=summ
+                    CorrelateOMP(corrCnt)=summ
                     summ=0
-
-
-
                     ! последний элемент массива содержит хвост, его обработка ведется отдельно с маской
                     !!WRITE(*,*) 'И ПОСЛЕДНЕЕ'
                     !!WRITE(*,*) 'WINDOW ', window(reference%signalSize)
                     result = NOT(XOR(window(reference%signalSize),reference%signal(reference%signalSize)))
                     result = AND(result,mask)
                     !!WRITE(*,*) 'result ',result
-                    CorrelateOMP(corrCnt) = CorrelateOMP(corrCnt) + POPCNT(result)&
-                                                                    - (reference%trailLen-POPCNT(result))
+                    CorrelateOMP(corrCnt) = CorrelateOMP(corrCnt) + POPCNT(result) -(reference%trailLen-POPCNT(result))
                    ! WRITE(*,*) POPCNT(result) -(reference%trailLen-POPCNT(result))
                      !!WRITE(*,*) 'DEBUG '
                  ELSE
@@ -557,7 +576,7 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                      regPtr   = 63
                      arrayPtr = arrayPtr + 1
                  END IF
-!                 WRITE(*,*) 'arrayPtr ',arrayPtr
+
                  IF (BTEST (input%signal(arrayPtr),regPtr)) THEN
                     extractedBit = 1
                  ELSE
@@ -568,14 +587,11 @@ MAIN_CYCLE:  DO i=referenceSignalLength+1, rezSignalLength
                  corrCnt=corrCnt+1
                  !WRITE(*,*) 'corrCnt ',corrCnt,  omp_get_thread_num()
               END DO MAIN_CYCLE
-
-
+! !$omp end parallel do
 
               DEALLOCATE(window)
+
     END FUNCTION   CorrelateOMP
-
-
-
 
     SUBROUTINE destructor(this)
         TYPE(signumSignal_t), INTENT(INOUT) :: this

@@ -138,11 +138,11 @@ PROGRAM main
 !                    ,shift = int(0,1)&
 !                    ,iterationCount=int(100,4))
 
-      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
-
-
-      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
-                                      ,lenInblocks = int(10,8))
+!      CALL ImpulseGeneratorTest ('test_signals\input\psp_valera.txt', 'test_signals\output\impGenTest1.pcm', osr = int(10,8))
+!
+!
+!      CALL SimplePSNGeneratorTest('test_signals\input\psp_valera.txt', 'test_signals\output\PsbSimpleGenTest1.pcm', osr = int(10,8)&
+!                                      ,lenInblocks = int(10,8))
 !!
 !!
 !       CALL BPSKGeneratorTest(      pspFileName          = 'test_signals\input\psp_valera.txt'&
@@ -164,7 +164,7 @@ PROGRAM main
 !                                   ,codedDataFileName    = 'test_signals\output\codedData.txt'&
 !                                   ,baudRateInSamples    = int(102400,8), chipRateInSamples = int(100,8) &
 !                                   ,sampleRate           = int(100*MEGA,8)&
-!                                   ,centralFrequency     = int(10*MEGA,8)&
+!                                   ,centralFrequency     = int(0*MEGA,8)&
 !                                   ,outPutSampleCapacity = int(14,1)&
 !                                   ,outPutShift          = int(20,1)&
 !                                   ,pauseLen             = int(10240*0,8))
@@ -217,9 +217,9 @@ PROGRAM main
 !                                  ,inputSignalFileName ='test_signals\output\BPSKTest1.pcm'&
 !                                  ,outputSignalFileName = 'test_signals\output\noiseAmpTEst.pcm'&
 !                                  ,amplifiedNoise = 'test_signals\output\awgnTest.pcm' &
-!                                  ,snr =  -1.0 )
+!                                  ,snr =  -3.0 )
+!!!!!
 !!!!
-!!!
 !              CALL  BPSKDemodulatorTest(      pspFileName  = 'test_signals\input\psp_valera.txt'&
 !                                   ,dataFileName           = 'test_signals\input\data.txt'&
 !                                   ,inPutFileName          = 'test_signals\output\awgnTest.pcm'&
@@ -234,12 +234,12 @@ PROGRAM main
 !                                   ,initialPhase           = 0.3*PI&
 !                                   , outPutSampleCapacity  = int(14,1)&
 !                                   , outPutShift           = int(26,1)&
-!                                   , decimationCoeff       = int(2,8)&
+!                                   , decimationCoeff       = int(1,8)&
 !                                   ,ethalonCapacity        = int(1,1)&
-!                                   ,signumState            = .TRUE.&
+!                                   ,signumState            = .True.&
 !                                   ,threshold              = int(2500,8)&
 !                                   ,thresholdSumm          = int(5,8))
-
+!
 
 
 !        CALL PhaseDetectorTest(inputFileName    = 'test_signals\output\awgnTest.pcm' &

@@ -49,7 +49,7 @@ module RawCorrOpenMPmod
 
         ! Вычисление корр. функции (Raw-  англ. сырая.)
     ! пределы [0 : длина входного сигнала- длина опорного сигнала]
-     PURE FUNCTION CorrelationRaw88(input,reference)
+      FUNCTION CorrelationRaw88(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=8
           INTEGER(1),PARAMETER                       :: arrayKindReference=8
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -57,21 +57,30 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw88(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
           ALLOCATE (CorrelationRaw88(1:inputLen))
           ! что бы не было мусора в элементах массива
           CorrelationRaw88=0
+           summ=0
           ! Выбрать пределы корреляции
+  !$omp parallel do SHARED(input,reference,CorrelationRaw88) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
+
                 DO j=1,referenceLen
-                    CorrelationRaw88(i)=CorrelationRaw88(i)+input(i+j)*reference(j)
+                    summ=summ+input(i+j)*int(reference(j),8)
                 END DO
+
+                CorrelationRaw88(i)=summ
+                summ=0
+
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw88
 
-       PURE FUNCTION CorrelationRaw84(input,reference)
+       FUNCTION CorrelationRaw84(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=8
           INTEGER(1),PARAMETER                       :: arrayKindReference=4
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -79,21 +88,30 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw84(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
           ALLOCATE (CorrelationRaw84(1:inputLen))
           ! что бы не было мусора в элементах массива
           CorrelationRaw84=0
+          summ=0
           ! Выбрать пределы корреляции
+  !$omp parallel do SHARED(input,reference,CorrelationRaw84) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
+
                 DO j=1,referenceLen
-                    CorrelationRaw84(i)=CorrelationRaw84(i)+input(i+j)*int(reference(j),8)
+                    summ=summ+input(i+j)*int(reference(j),8)
                 END DO
+
+                CorrelationRaw84(i)=summ
+                summ=0
+
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw84
 
-     PURE FUNCTION CorrelationRaw82(input,reference)
+    FUNCTION CorrelationRaw82(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=8
           INTEGER(1),PARAMETER                       :: arrayKindReference=2
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -101,18 +119,27 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw82(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
           ALLOCATE (CorrelationRaw82(1:inputLen))
           ! что бы не было мусора в элементах массива
           CorrelationRaw82=0
+           summ=0
           ! Выбрать пределы корреляции
+  !$omp parallel do SHARED(input,reference,CorrelationRaw82) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
+
                 DO j=1,referenceLen
-                    CorrelationRaw82(i)=CorrelationRaw82(i)+input(i+j)*int(reference(j),8)
+                    summ=summ+input(i+j)*int(reference(j),8)
                 END DO
+
+                CorrelationRaw82(i)=summ
+                summ=0
+
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw82
 
          FUNCTION CorrelationRaw81(input,reference)
@@ -124,9 +151,6 @@ module RawCorrOpenMPmod
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
           INTEGER(8)                                 :: summ
-          INTEGER(8),ALLOCATABLE                     :: summMatrix(:)
-          INTEGER(8)                                 :: in
-          INTEGER                                    :: num=0
 
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
@@ -139,36 +163,16 @@ module RawCorrOpenMPmod
 
 
           summ=0
-          ALLOCATE(summMatrix(1:referenceLen))
-          summMatrix=0
+
   !$omp parallel do SHARED(input,reference,CorrelationRaw81) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
 
-                ! WRITE(*,*) 'i,j, thredNum ',i,j,OMP_GET_THREAD_NUM()
-
-
                 DO j=1,referenceLen
-               ! in= int(input(i+j))! !$omp end parallel do SImD
-               !WRITE(*,*) 'i,j, thredNum ',i,j,OMP_GET_THREAD_NUM()
-
-                 !CorrelationRaw81(i)=CorrelationRaw81(i)+int(input(i+j),8)*reference(j)
-
-                summ=summ+input(i+j)*int(reference(j),8)
-              !   WRITE(*,*) input(i+j),reference(j)
-
-                 !summMatrix(j) =  input(i+j)*int(reference(j),8)
-
+                    summ=summ+input(i+j)*int(reference(j),8)
                 END DO
-
-
-!               CorrelationRaw81(i)=sum(summMatrix)
-!               summMatrix=0
-
 
                 CorrelationRaw81(i)=summ
                 summ=0
-
-
 
           END DO
  !$omp end parallel do
@@ -178,7 +182,7 @@ module RawCorrOpenMPmod
 
             ! Вычисление корр. функции (Raw-  англ. сырая.)
     ! пределы [0 : длина входного сигнала- длина опорного сигнала]
-     PURE FUNCTION CorrelationRaw11(input,reference)
+     FUNCTION CorrelationRaw11(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=1
           INTEGER(1),PARAMETER                       :: arrayKindReference=1
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -186,6 +190,7 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw11(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
@@ -193,16 +198,25 @@ module RawCorrOpenMPmod
           ! что бы не было мусора в элементах массива
           CorrelationRaw11=0
           ! Выбрать пределы корреляции
+                summ=0
+          ! Выбрать пределы корреляции
+  !$omp parallel do SHARED(input,reference,CorrelationRaw11) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
+
                 DO j=1,referenceLen
-                    CorrelationRaw11(i)=CorrelationRaw11(i)+int(input(i+j),8)*int(reference(j),8)
+                    summ=summ+input(i+j)*int(reference(j),8)
                 END DO
+
+                CorrelationRaw11(i)=summ
+                summ=0
+
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw11
 
                ! Вычисление корр. функции (Raw-  англ. сырая.)
     ! пределы [0 : длина входного сигнала- длина опорного сигнала]
-     PURE FUNCTION CorrelationRaw12(input,reference)
+    FUNCTION CorrelationRaw12(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=1
           INTEGER(1),PARAMETER                       :: arrayKindReference=2
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -210,23 +224,33 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw12(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+           INTEGER(8)                                 :: summ
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
           ALLOCATE (CorrelationRaw12(1:inputLen))
           ! что бы не было мусора в элементах массива
           CorrelationRaw12=0
+          summ=0
           ! Выбрать пределы корреляции
+  !$omp parallel do SHARED(input,reference,CorrelationRaw12) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
+
                 DO j=1,referenceLen
-                    CorrelationRaw12(i)=CorrelationRaw12(i)+int(input(i+j),8)*int(reference(j),8)
+                    summ=summ+input(i+j)*int(reference(j),8)
                 END DO
+
+                CorrelationRaw12(i)=summ
+                summ=0
+
           END DO
+ !$omp end parallel do
+
     END FUNCTION   CorrelationRaw12
 
                    ! Вычисление корр. функции (Raw-  англ. сырая.)
     ! пределы [0 : длина входного сигнала- длина опорного сигнала]
-     PURE FUNCTION CorrelationRaw14(input,reference)
+     FUNCTION CorrelationRaw14(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=1
           INTEGER(1),PARAMETER                       :: arrayKindReference=4
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -234,18 +258,28 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw14(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
+
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
           ALLOCATE (CorrelationRaw14(1:inputLen))
           ! что бы не было мусора в элементах массива
           CorrelationRaw14=0
+          summ=0
           ! Выбрать пределы корреляции
+  !$omp parallel do SHARED(input,reference,CorrelationRaw14) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
+
                 DO j=1,referenceLen
-                    CorrelationRaw14(i)=CorrelationRaw14(i)+int(input(i+j),8)*int(reference(j),8)
+                    summ=summ+input(i+j)*int(reference(j),8)
                 END DO
+
+                CorrelationRaw14(i)=summ
+                summ=0
+
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw14
 
         FUNCTION CorrelationRaw18(input,reference)
@@ -267,14 +301,11 @@ module RawCorrOpenMPmod
           CorrelationRaw18=0
           ! Выбрать пределы корреляции
            !$omp parallel do SHARED(input,reference,CorrelationRaw18) PRIVATE(i,j) REDUCTION(+:summ)
-          DO i=1,inputLen-referenceLen
+           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
 
                    summ = summ +CorrelationRaw18(i)+int(input(i+j),8)*reference(j)
-                   !WRITE(*,*) summ , int(input(i+j),8),reference(j)
-                   ! CorrelationRaw18(i)=CorrelationRaw18(i)+int(input(i+j),8)*reference(j)
 
-                    !CorrelationRaw28(i)=CorrelationRaw28(i)+int(input(i+j),8)*int(reference(j),8)
                 END DO
                    CorrelationRaw18(i) = summ
 
@@ -286,7 +317,7 @@ module RawCorrOpenMPmod
     END FUNCTION   CorrelationRaw18
 
 
-          PURE FUNCTION CorrelationRaw21(input,reference)
+          FUNCTION CorrelationRaw21(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=2
           INTEGER(1),PARAMETER                       :: arrayKindReference=1
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -294,6 +325,7 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw21(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+           INTEGER(8)                                 :: summ
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
@@ -301,11 +333,19 @@ module RawCorrOpenMPmod
           ! что бы не было мусора в элементах массива
           CorrelationRaw21=0
           ! Выбрать пределы корреляции
+          summ = 0
+         !$omp parallel do SHARED(input,reference,CorrelationRaw21) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
+
                 DO j=1,referenceLen
-                    CorrelationRaw21(i)=CorrelationRaw21(i)+int(input(i+j),8)*int(reference(j),8)
+                    summ=summ+input(i+j)*int(reference(j),8)
                 END DO
+
+                CorrelationRaw21(i)=summ
+                summ=0
+
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw21
 
       FUNCTION CorrelationRaw22(input,reference)
@@ -317,9 +357,8 @@ module RawCorrOpenMPmod
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
           INTEGER(8)                                 :: summ
-          INTEGER(8),ALLOCATABLE                     :: summMatrix(:)
-          INTEGER(8)                                 :: in
-          INTEGER                                    :: num=0
+
+
 
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
@@ -329,46 +368,22 @@ module RawCorrOpenMPmod
           CorrelationRaw22=0
           ! Выбрать пределы корреляции
          ! WRITE(*,*) 'RAW CORR 81 IN'
-
-
           summ=0
-          ALLOCATE(summMatrix(1:referenceLen))
-          summMatrix=0
+
   !$omp parallel do SHARED(input,reference,CorrelationRaw22) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
-
-                ! WRITE(*,*) 'i,j, thredNum ',i,j,OMP_GET_THREAD_NUM()
-
-
                 DO j=1,referenceLen
-               ! in= int(input(i+j))! !$omp end parallel do SImD
-
-
-                 !CorrelationRaw81(i)=CorrelationRaw81(i)+int(input(i+j),8)*reference(j)
-
-                summ=summ+int(input(i+j),8)*int(reference(j),8)
-              !   WRITE(*,*) input(i+j),reference(j)
-
-                 !summMatrix(j) =  input(i+j)*int(reference(j),8)
-
+                     summ=summ+int(input(i+j),8)*int(reference(j),8)
                 END DO
-
-
-!               CorrelationRaw81(i)=sum(summMatrix)
-!               summMatrix=0
-
-
                 CorrelationRaw22(i)=summ
-                summ=0
-!                   WRITE(*,*) 'i,j, thredNum ',i,j,OMP_GET_THREAD_NUM()
-
+                summ=0!
           END DO
  !$omp end parallel do
 
         !  WRITE(*,*) 'RAW CORR 81 OUT'
     END FUNCTION   CorrelationRaw22
 
-   PURE FUNCTION CorrelationRaw24(input,reference)
+   FUNCTION CorrelationRaw24(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=2
           INTEGER(1),PARAMETER                       :: arrayKindReference=4
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -376,6 +391,7 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw24(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ=0
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
@@ -383,14 +399,20 @@ module RawCorrOpenMPmod
           ! что бы не было мусора в элементах массива
           CorrelationRaw24=0
           ! Выбрать пределы корреляции
+                  summ=0
+
+  !$omp parallel do SHARED(input,reference,CorrelationRaw24) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw24(i)=CorrelationRaw24(i)+int(input(i+j),8)*int(reference(j),8)
+                     summ=summ+int(input(i+j),8)*int(reference(j),8)
                 END DO
+                CorrelationRaw24(i)=summ
+                summ=0!
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw24
 
-       PURE FUNCTION CorrelationRaw28(input,reference)
+      FUNCTION CorrelationRaw28(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=2
           INTEGER(1),PARAMETER                       :: arrayKindReference=8
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -398,6 +420,7 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw28(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+           INTEGER(8)                                :: summ
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
@@ -405,14 +428,19 @@ module RawCorrOpenMPmod
           ! что бы не было мусора в элементах массива
           CorrelationRaw28=0
           ! Выбрать пределы корреляции
+          summ=0
+         !$omp parallel do SHARED(input,reference,CorrelationRaw28) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw28(i)=CorrelationRaw28(i)+int(input(i+j),8)*int(reference(j),8)
+                     summ=summ+int(input(i+j),8)*int(reference(j),8)
                 END DO
+                CorrelationRaw28(i)=summ
+                summ=0!
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw28
 
-       PURE FUNCTION CorrelationRaw41(input,reference)
+       FUNCTION CorrelationRaw41(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=4
           INTEGER(1),PARAMETER                       :: arrayKindReference=1
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -420,6 +448,8 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw41(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
+
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
@@ -427,14 +457,19 @@ module RawCorrOpenMPmod
           ! что бы не было мусора в элементах массива
           CorrelationRaw41=0
           ! Выбрать пределы корреляции
+          summ=0
+         !$omp parallel do SHARED(input,reference,CorrelationRaw41) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw41(i)=CorrelationRaw41(i)+int(input(i+j),8)*int(reference(j),8)
+                     summ=summ+int(input(i+j),8)*int(reference(j),8)
                 END DO
+                CorrelationRaw41(i)=summ
+                summ=0!
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw41
 
-    PURE FUNCTION CorrelationRaw42(input,reference)
+    FUNCTION CorrelationRaw42(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=4
           INTEGER(1),PARAMETER                       :: arrayKindReference=2
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -442,6 +477,8 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw42(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+           INTEGER(8)                                 :: summ
+
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
@@ -449,14 +486,19 @@ module RawCorrOpenMPmod
           ! что бы не было мусора в элементах массива
           CorrelationRaw42=0
           ! Выбрать пределы корреляции
+          summ=0
+         !$omp parallel do SHARED(input,reference,CorrelationRaw42) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw42(i)=CorrelationRaw42(i)+int(input(i+j),8)*int(reference(j),8)
+                     summ=summ+int(input(i+j),8)*int(reference(j),8)
                 END DO
+                CorrelationRaw42(i)=summ
+                summ=0!
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw42
 
-        PURE FUNCTION CorrelationRaw44(input,reference)
+       FUNCTION CorrelationRaw44(input,reference)
           INTEGER(1),PARAMETER                       :: arrayKindInput=4
           INTEGER(1),PARAMETER                       :: arrayKindReference=4
           INTEGER(arrayKindInput)     ,INTENT(IN)    :: input(:)
@@ -464,18 +506,24 @@ module RawCorrOpenMPmod
           INTEGER(8),ALLOCATABLE                     :: CorrelationRaw44(:)
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
+          INTEGER(8)                                 :: summ
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
           ALLOCATE (CorrelationRaw44(1:inputLen))
           ! что бы не было мусора в элементах массива
           CorrelationRaw44=0
+          summ=0
           ! Выбрать пределы корреляции
+         !$omp parallel do SHARED(input,reference,CorrelationRaw44) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
                 DO j=1,referenceLen
-                    CorrelationRaw44(i)=CorrelationRaw44(i)+int(input(i+j),8)*int(reference(j),8)
+                     summ=summ+int(input(i+j),8)*int(reference(j),8)
                 END DO
+                CorrelationRaw44(i)=summ
+                summ=0!
           END DO
+ !$omp end parallel do
     END FUNCTION   CorrelationRaw44
 
     FUNCTION CorrelationRaw48(input,reference)
@@ -487,7 +535,7 @@ module RawCorrOpenMPmod
           INTEGER(8)                                 :: i,j
           INTEGER(8)                                 :: inputLen, referenceLEn
           INTEGER(8)                                 :: summ
-          INTEGER(8)                                 :: in
+
           ! длительность выходного сигнала в отсчетах
           inputLen=SIZE(input)
           referenceLen=SIZE(reference)
@@ -496,18 +544,15 @@ module RawCorrOpenMPmod
           CorrelationRaw48=0
           summ=0
           ! Выбрать пределы корреляции
-
+         !$omp parallel do SHARED(input,reference,CorrelationRaw48) PRIVATE(i,j) REDUCTION(+:summ)
           DO i=1,inputLen-referenceLen
-
                 DO j=1,referenceLen
-                    in= int(input(i+j),8)
-                    summ  = summ + in*reference(j)
-                    !CorrelationRaw48(i)=CorrelationRaw48(i)+int(input(i+j),8)*reference(j)
+                     summ=summ+int(input(i+j),8)*int(reference(j),8)
                 END DO
-
-                    CorrelationRaw48(i) = summ
-                    summ=0
+                CorrelationRaw48(i)=summ
+                summ=0!
           END DO
+ !$omp end parallel do
 
     END FUNCTION   CorrelationRaw48
 

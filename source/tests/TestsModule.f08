@@ -1017,8 +1017,8 @@ call omp_set_num_threads( 4 )
 
          TYPE(BPSKDemodulator_t)               :: DemodulatorBPSK
          TYPE(analyticSignal_t)  :: sig
-          TYPE(analyticSignal_t)  :: sig2
-         TYPE(complexSignal_t) ::  signal_1
+
+
 
 
 
@@ -1925,7 +1925,7 @@ WRITE(*,*) 'констркуткор отработал'
                                      )
            WRITE(*,*) 'GFSK constructor '
 
-           messageLength = 2000
+           messageLength = 200
            ! формирование пакета данных без контрольной суммы
            payloadDataBitArray =  GenerateRandomPayloadBitArray(messageLength)
           ! WRITE(*,*) 'size payloadDataBitArray ',size(payloadDataBitArray)
