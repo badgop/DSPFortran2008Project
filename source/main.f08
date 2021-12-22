@@ -257,8 +257,8 @@ PROGRAM main
 !                                ,level               = int(0,2)&
 !                                ,outLevel            = int(1,2))
 !
-         CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
-                                    , resultFileName = 'test\res2ult.txt' )
+!         CALL BERTestSignumCorrelation (parameterFileName= 'test\berTestSignum.txt'&
+!                                    , resultFileName = 'test\res2ult.txt' )
 
 !           CALL  ArrayReverseTest()
 
@@ -479,6 +479,19 @@ PROGRAM main
 !                                     , inputRefFileName =  'test_signals\input\20_mhz_1_25_cut_int.txt'&
 !                                     , shift = int(16,1)&
 !                                    ,outputFileName  = 'test_signals\output\generatedNoise.pcm' )
+
+
+
+CALL TestDFT(romLengthInBits=int(32,1),romLenthTruncedInBits=int(16,1),outputSignalSampleCapacity=int(14,1)&
+                             ,samplingFrequency=10*KILO&
+                             ,phase=real(0.0,8)&
+                             ,signalLengthInSamples=1024&
+                             ,centralFrequency=int(1111,4)&
+                             ,file1name = 'test_signals\output\dft_RE.pcm'&
+                             ,file2name = 'test_signals\output\dft_IM.pcm'&
+                             ,file3name = 'test_signals\output\dft_in.pcm'&
+                             ,file4Name = 'test_signals\output\dft_module.pcm'&
+                             ,shift = int(6,4))
 
 
 

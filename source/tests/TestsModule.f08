@@ -2149,5 +2149,122 @@ WRITE(*,*) 'констркуткор отработал'
 
      END SUBROUTINE  TestAWGNInternalGenerator
 
+      SUBROUTINE TestDFT(romLengthInBits,romLenthTruncedInBits,outputSignalSampleCapacity&
+                             ,samplingFrequency,phase&
+                             ,signalLengthInSamples,centralFrequency, file1Name, file2Name,file3Name,file4Name,shift)
+
+             USE analyticSignalModule
+            USE DDSModule
+            USE MathConstModule
+            USE PrefixModule
+            USE ModuleWriteReadArrayFromToFile
+            USE WriteReadAnalyticSignalToFromFile
+            USE DFTmod
+            USE FastModuleMod
+
+            !разрядность аккамулятора фазы
+            INTEGER(1), INTENT(IN) :: romLengthInBits
+            !число бит до которых усекатется таблица ПЗУ
+            INTEGER(1), INTENT(IN) :: romLenthTruncedInBits
+            !разрядность выходного сигнала
+            INTEGER(1), INTENT(IN) :: outputSignalSampleCapacity
+
+            !частота дискретизации
+            INTEGER(4), INTENT(IN) :: samplingFrequency
+            !центральная частота 1 и 2 выходных сигналов
+            INTEGER(4), INTENT(IN) :: centralFrequency
+
+            !начальная фаза
+            REAL(8),    INTENT(IN)    :: phase
+            ! длина выходного сигнала в периодах гармонич колебания
+            !INTEGER(4), INTENT(IN)    :: periods
+            INTEGER(4) ,INTENT(IN) :: signalLengthInSamples
+
+            CHARACTER(*),INTENT(IN) :: file1Name
+            CHARACTER(*),INTENT(IN) :: file2Name
+            CHARACTER(*),INTENT(IN) :: file3Name
+            CHARACTER(*),INTENT(IN) :: file4Name
+
+            INTEGER(4), INTENT(IN) :: shift
+
+            INTEGER(8), ALLOCATABLE :: frequencys(:)
+
+
+            INTEGER(8), ALLOCATABLE :: tmpRe(:)
+            INTEGER(8), ALLOCATABLE :: tmpIm(:)
+            INTEGER(8), ALLOCATABLE :: tmpmodule(:)
+
+
+            INTEGER(2), ALLOCATABLE :: outputArray(:)
+            INTEGER(2), ALLOCATABLE :: tmpRe2(:)
+            INTEGER(2), ALLOCATABLE :: tmpIm2(:)
+
+            INTEGER(2), ALLOCATABLE :: tmpmodule2(:)
+
+            TYPE(DDS_t) ::ddsGenerator
+            TYPE(analyticSignal_t) ::imputFreqSignal
+            TYPE(analyticSignal_t) ::outputSignal
+            TYPE(analyticSignal_t) ::outputSignal2
+
+            INTEGER(1) :: status
+            INTEGER(4) :: sizeOfArray
+
+
+             sizeOfArray = size (outputArray)
+
+
+
+                ! инициаализируем генератор
+            status= ddsGenerator%Constructor(romLengthInBits,romLenthTruncedInBits,&
+                                             samplingFrequency,outputSignalSampleCapacity)
+
+
+             CALL ddsGenerator%ComputeOutput(int(centralFrequency,8),int(signalLengthInSamples,8),outputsignal)
+
+
+             !извлекаем массив из обьекта
+             CALL outputsignal%ExtractSignalData(outputArray)
+
+
+             CALL  WriteArrayToFile(outputArray,file3Name)
+
+
+
+            CALL  DFTint2ReNew(outputArray,tmpRe, tmpIm)
+
+
+
+
+
+
+
+
+            tmpmodule = GetFastMouleFromComplexInt8_8 (tmpRe,tmpIm)
+
+            ALLOCATE(tmpmodule2(1:sizeOfArray))
+            tmpmodule2 = SHIFTA(tmpmodule,shift)
+
+
+
+            CALL  WriteArrayToFile( tmpmodule2,file4Name)
+
+
+            ALLOCATE(tmpRe2(1:sizeOfArray))
+            ALLOCATE(tmpIm2(1:sizeOfArray))
+
+            tmpRe2 = SHIFTA(tmpRe,shift)
+            tmpIm2 = SHIFTA(tmpIM,shift)
+
+            CALL  WriteArrayToFile(tmpRe2,file1Name)
+            CALL  WriteArrayToFile( tmpIm2,file2Name)
+
+
+
+
+
+
+      END SUBROUTINE TestDFT
+
+
 
 end module TestsModule

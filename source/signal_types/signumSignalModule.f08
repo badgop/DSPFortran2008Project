@@ -39,7 +39,7 @@ MODULE signumSignalModule
         PROCEDURE                 :: CorrelateOMP
         FINAL                     :: destructor
         !операторы
-        generic :: operator   (.CONV.) =>  CorrelateOMP
+        generic :: operator   (.CONV.) =>  Correlate
     END TYPE signumSignal_t
 
 CONTAINS
